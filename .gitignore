@@ -1,0 +1,5 @@
+# gitignorefile for ignoring specific files or file extentions
+
+*.txt
+*.dat
+*.pro.*
