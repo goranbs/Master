@@ -54,6 +54,18 @@ void Atom::set_type(string atom_type){
     */
 }
 
+void Atom::set_type_number(int atom_type_nr){
+    ATOM_TYPE_NUMBER = atom_type_nr;
+}
+
+void Atom::set_charge(double q){
+    ATOM_CHARGE = q;
+}
+
+void Atom::set_part_of_molecule(int molecule_nr){
+    MOLECULE_NUMBER = molecule_nr;
+}
+
 void Atom::cross_boundary(int i, int j, int k){
     /* i = 1, if the atom has crossed the boundary in positive x-direction, i = -1 for negative direction
      * and i is zero if it has not crossed.
@@ -81,6 +93,18 @@ vector <double> Atom::get_position(){
 
 string Atom::get_type(){
     return ATOM_TYPE;
+}
+
+int Atom::get_type_number(){
+    return ATOM_TYPE_NUMBER;
+}
+
+double Atom::get_charge(){
+    return ATOM_CHARGE;
+}
+
+int Atom::get_molecule_number(){
+    return MOLECULE_NUMBER;
 }
 
 void Atom::update_position(const vector <double> &r_){          // R. reset postion

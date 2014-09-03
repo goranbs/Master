@@ -25,17 +25,24 @@ public:
     inline const vector <double> &force();
     inline const double potential();
 //    inline const double potential() const;
-    vector <double> get_position();
 
     inline const vector <double> &return_initial_position();
     void cross_boundary(int i, int j , int k);
     inline const vector<double> &return_n_crossings() const;
 
+    void set_part_of_molecule(int molecule_nr);
     void set_type(string atom_type);
-    string get_type();
-    bool getIs_matrix() const;
+    void set_type_number(int atom_type_nr);
+    void set_charge(double q);
     void setIs_matrix(bool value);
     void set_position(vector <double> &r_);
+
+    bool getIs_matrix() const;
+    string get_type();
+    int get_type_number();
+    int get_molecule_number();
+    double get_charge();
+    vector <double> get_position();
 
 private:
     vector <double> r;            // position of atom
@@ -48,6 +55,9 @@ private:
     //int N;
     bool is_matrix;
     string ATOM_TYPE;
+    int ATOM_TYPE_NUMBER;
+    double ATOM_CHARGE;
+    int MOLECULE_NUMBER;
     vector <string> atomlist = {"H", "He", "Li", "Be", "C", "O", "Al", "Si", "Ca"};
 
 };

@@ -4,3 +4,10 @@
 *.dat
 *.pro.*
 *.o
+*.png
+*.jpeg
+*.eps
+*.svg
+*.TIFF
+*.tif*
+
