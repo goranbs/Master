@@ -10,7 +10,6 @@
  * - Travel              r^2(t)     Atom.travel(i)   = r(t) - r_initial
  */
 
-
 Atom::Atom(vector<double> &r_, vector<double> &v_, vector<double> &f_, double &u_){
     // construct the Atom object that holds the r, v, f, u, n_crossings and initial position r0.
     //dist = vector <double> (3);

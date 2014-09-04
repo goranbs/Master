@@ -47,10 +47,12 @@ OBJECTS_DIR   = ./
 
 SOURCES       = ../CreateInitialStates/main.cpp \
 		../CreateInitialStates/moleculesystem.cpp \
-		../CreateInitialStates/atom.cpp 
+		../CreateInitialStates/atom.cpp \
+		../CreateInitialStates/bond.cpp 
 OBJECTS       = main.o \
 		moleculesystem.o \
-		atom.o
+		atom.o \
+		bond.o
 DIST          = ../../../Qt/5.3/gcc_64/mkspecs/features/spec_pre.prf \
 		../../../Qt/5.3/gcc_64/mkspecs/common/shell-unix.conf \
 		../../../Qt/5.3/gcc_64/mkspecs/common/unix.conf \
@@ -155,7 +157,8 @@ DIST          = ../../../Qt/5.3/gcc_64/mkspecs/features/spec_pre.prf \
 		../../../Qt/5.3/gcc_64/mkspecs/features/lex.prf \
 		../CreateInitialStates/CreateInitialStates.pro ../CreateInitialStates/main.cpp \
 		../CreateInitialStates/moleculesystem.cpp \
-		../CreateInitialStates/atom.cpp
+		../CreateInitialStates/atom.cpp \
+		../CreateInitialStates/bond.cpp
 QMAKE_TARGET  = CreateInitialStates
 DESTDIR       = #avoid trailing-slash linebreak
 TARGET        = CreateInitialStates
@@ -429,14 +432,20 @@ compiler_clean:
 
 ####### Compile
 
-main.o: ../CreateInitialStates/main.cpp 
+main.o: ../CreateInitialStates/main.cpp ../CreateInitialStates/atom.h \
+		../CreateInitialStates/moleculesystem.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../CreateInitialStates/main.cpp
 
-moleculesystem.o: ../CreateInitialStates/moleculesystem.cpp ../CreateInitialStates/moleculesystem.h
+moleculesystem.o: ../CreateInitialStates/moleculesystem.cpp ../CreateInitialStates/moleculesystem.h \
+		../CreateInitialStates/atom.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moleculesystem.o ../CreateInitialStates/moleculesystem.cpp
 
 atom.o: ../CreateInitialStates/atom.cpp ../CreateInitialStates/atom.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o atom.o ../CreateInitialStates/atom.cpp
+
+bond.o: ../CreateInitialStates/bond.cpp ../CreateInitialStates/bond.h \
+		../CreateInitialStates/atom.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o bond.o ../CreateInitialStates/bond.cpp
 
 ####### Install
 

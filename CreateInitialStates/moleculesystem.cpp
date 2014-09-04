@@ -86,6 +86,11 @@ void MoleculeSystem::Setup_calciumhydroxide(int n_unit_cells_x, int n_unit_cells
     masses.push_back(mass_oxygen);
     masses.push_back(mass_hydrogen);
 
+    vector <Bond> bonds;
+    Bond bond;
+    bond.set_new_bond(1,1,1);
+    bonds.push_back(bond);
+
     Initialize(Portlandite,n_unit_cells_x,n_unit_cells_y, n_unit_cells_z, unit_cell_length_x,unit_cell_length_y, unit_cell_length_z);
     if (output == "Ovito"){
         Write_Initial_State_Ovito(Portlandite, "portlandite_ovito.txt", n_atom_types);
@@ -125,13 +130,14 @@ void MoleculeSystem::Setup_Calcium(int n_unit_cells_x, int n_unit_cells_y, int n
     yhi = 0;
     zhi = 0;
 
+    vector <Bond> bonds;
 
     Initialize(Calcium, n_unit_cells_x, n_unit_cells_y, n_unit_cells_z, unit_cell_length_x, unit_cell_length_y, unit_cell_length_z);
     if (output == "Ovito"){
         Write_Initial_State_Ovito(Calcium, "calcium_ovito.txt", n_atom_types);
     }
     else {
-        Write_Initial_State_LAMMPS(Calcium, "calcium_LAMMPS.dat", n_atom_types);
+        Write_Initial_State_LAMMPS(Calcium, bonds, "calcium_LAMMPS.dat", n_atom_types);
     }
 
 }
@@ -419,12 +425,13 @@ void MoleculeSystem::Setup_Kaolinite(int n_unit_cells_x, int n_unit_cells_y, int
     masses.push_back(mass_hydrogen);
 
     Initialize(kaolinite, n_unit_cells_x, n_unit_cells_y, n_unit_cells_z, unit_cell_length_x, unit_cell_length_y, unit_cell_length_z);
+    vector <Bond> bonds;
 
     if (output == "Ovito"){
         Write_Initial_State_Ovito(kaolinite, "kaolinite_ovito.txt", n_atom_types);
     }
     else {
-        Write_Initial_State_LAMMPS(kaolinite, "kaolinite_LAMMPS.dat", n_atom_types);
+        Write_Initial_State_LAMMPS(kaolinite, bonds, "kaolinite_LAMMPS.dat", n_atom_types);
     }
 }
 
@@ -508,6 +515,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     int n_atom_types = 3;        // number of atom types
 
     vector <Atom> Portlandite;
+    vector <Bond> bonds;
 
     // molecule number 1
     Atom new_atom(Ca1,v,f,u);           // #1 Ca
@@ -539,6 +547,12 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(1);
     Portlandite.push_back(new_atom);
+
+    Bond bond;
+    bond.set_new_bond(1,2,4);
+    bonds.push_back(bond);
+    bond.set_new_bond(1,3,5);
+    bonds.push_back(bond);
     //--------end molecule #1 -------------------
     // molecule number 2
     new_atom.set_position(Ca2);         // #2 Ca
@@ -571,6 +585,10 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_part_of_molecule(2);
     Portlandite.push_back(new_atom);
 
+    bond.set_new_bond(1,7,9);
+    bonds.push_back(bond);
+    bond.set_new_bond(1,8,10);
+    bonds.push_back(bond);
     //--------end molecule #2 -------------------
     // molecule number 3
     new_atom.set_position(Ca3);         // #3 Ca
@@ -603,6 +621,10 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_part_of_molecule(3);
     Portlandite.push_back(new_atom);
 
+    bond.set_new_bond(1,12,14);
+    bonds.push_back(bond);
+    bond.set_new_bond(1,13,15);
+    bonds.push_back(bond);
     //--------end molecule #4 -------------------
     // molecule number 4
     new_atom.set_position(Ca4);         // #4 Ca
@@ -634,6 +656,11 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(4);
     Portlandite.push_back(new_atom);
+
+    bond.set_new_bond(1,17,19);
+    bonds.push_back(bond);
+    bond.set_new_bond(1,18,20);
+    bonds.push_back(bond);
     //------ end molecule #4 ---------------------
 
     // Ca = 1; O = 2; H = 3;
@@ -641,36 +668,44 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     masses.push_back(mass_oxygen);    // 2
     masses.push_back(mass_hydrogen);  // 3
 
+    int molecules_per_unit_cell = 4;
+    int bonds_per_unit_cell = 8;
     double unit_cell_length_x, unit_cell_length_y, unit_cell_length_z;
     unit_cell_length_x = 2*a;
     unit_cell_length_y = 2*b*sin(6*PI/18);
     unit_cell_length_z = c;
 
-    Initialize_2pointO(Portlandite,n_unit_cells_x,n_unit_cells_y, n_unit_cells_z, unit_cell_length_x,unit_cell_length_y, unit_cell_length_z);
+    Initialize_2pointO(Portlandite,bonds,n_unit_cells_x,n_unit_cells_y, n_unit_cells_z, unit_cell_length_x,unit_cell_length_y, unit_cell_length_z,molecules_per_unit_cell,bonds_per_unit_cell);
 
     if (output == "Ovito"){
         Write_Initial_State_Ovito(Portlandite, "portlandite_ovito.txt", n_atom_types);
     }
     else {
-        Write_Initial_State_LAMMPS(Portlandite, "portlandite_LAMMPS.dat", n_atom_types);
+        Write_Initial_State_LAMMPS(Portlandite, bonds, "portlandite_LAMMPS.dat", n_atom_types);
+
     }
 
 }
 
 // Initialize 2.0 is working now, and updates molecule number as it should. Just set the molecule number to the atoms in the
 // function where the unit cell i created!
-void MoleculeSystem::Initialize_2pointO(vector <Atom> &atoms, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi){
+void MoleculeSystem::Initialize_2pointO(vector <Atom> &atoms, vector <Bond> &bonds, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi, int molecules_per_unit_cell, int bonds_per_unit_cell){
 
     vector <double> ri (3,0.0);
     vector <double> r (3,0.0);
+    vector <int> ANB (2,0);
     string atom_type;
     int atom_type_nr;
     int molecule_nr;
     int unit_cell_nr = 0;
     int N_unit_cell_atoms = atoms.size();  // number of atoms in one unit cell.
+    int N_bonds = bonds.size();
+    int bond_nr = 0;
+    int bond_type = 0;
     Atom new_atom = atoms[0];
-
+    Bond new_bond;
     vector <Atom> AtomContainer;
+    vector <Bond> BondContainer;
 
     // unit cell loop:
     for (int i=0; i<lx; i++){          // unit cell x
@@ -691,7 +726,7 @@ void MoleculeSystem::Initialize_2pointO(vector <Atom> &atoms, int &lx, int &ly, 
                     atom_type = atoms[atom].get_type();
                     atom_type_nr = atoms[atom].get_type_number();
 
-                    molecule_nr =  4*unit_cell_nr + atoms[atom].get_molecule_number();
+                    molecule_nr =  molecules_per_unit_cell*unit_cell_nr + atoms[atom].get_molecule_number();
 
                     /*
                     cout << "------------------------------------------" << endl;
@@ -710,12 +745,21 @@ void MoleculeSystem::Initialize_2pointO(vector <Atom> &atoms, int &lx, int &ly, 
                     AtomContainer.push_back(new_atom);
 
                 }
+                for (int bond=0; bond<N_bonds;bond++){
+                    ANB = bonds[bond].get_atoms();
+                    bond_nr = bonds_per_unit_cell*unit_cell_nr; // ANB[] + bond_nr = atom number
+                    bond_type = bonds[bond].get_bond_type();
+                    new_bond.set_new_bond(bond_type,ANB[0]+bond_nr,ANB[1]+bond_nr);
+                    BondContainer.push_back(new_bond);
+
+                }
             unit_cell_nr = unit_cell_nr + 1;
             }
         }
     }
     //cout << AtomContainer.size() << endl;
     atoms = AtomContainer;
+    bonds = BondContainer;
 }
 
 void MoleculeSystem::Initialize(vector <Atom> &atoms, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi){
@@ -790,15 +834,19 @@ void MoleculeSystem::Write_Initial_State_Ovito(vector <Atom> &atoms, string file
 
 }
 
-void MoleculeSystem::Write_Initial_State_LAMMPS(vector <Atom> &atoms, string filename, int &n_atom_types){
+void MoleculeSystem::Write_Initial_State_LAMMPS(vector<Atom> &atoms, string &filename, int &n_atom_types){
 
     vector <double> r (3,0.0);
+
+    int bond_types = 1; // for now...
 
     ofstream myfile;
     myfile.open(filename);
     myfile << "# LAMMPS data set file. Genereated by Goeran Brekke Svaland" << endl;
-    myfile << "           " << atoms.size() <<  " atoms" << endl;                    // number of atoms
+    myfile << "           " << atoms.size() << " atoms" << endl;                    // number of atoms
     myfile << "           " << n_atom_types << " atom types" << endl;        // number of atom types
+    myfile << "           " << bonds.size() << " bonds" << endl;
+    myfile << "           " << bond_types   << " bond types" << endl;
 
     /*
     myfile << number of bonds << endl;
@@ -818,32 +866,32 @@ void MoleculeSystem::Write_Initial_State_LAMMPS(vector <Atom> &atoms, string fil
     myfile << "    " <<  zlo << "    " << zhi << "    zlo zhi" << endl;
 
     myfile << endl << "Masses" << endl;
-    myfile << "# atom-type  mass(au)" << endl << endl;
+    //myfile << "# atom-type  mass(au)" << endl << endl;
 
     for (int j=0; j<n_atom_types; j++){
         myfile << "       " << j+1 << "        " << masses[j] << endl;
     }
 
     myfile << endl <<  "Atoms" << endl;
-    myfile << "# atom-ID  molecule-ID  atom-type   x      y      z" << endl << endl;
+    //myfile << "# atom-ID  molecule-ID  atom-type   x      y      z" << endl << endl;
 
     for (uint i=0; i<atoms.size(); i++){
         r = atoms[i].get_position();
         myfile << "       "  << i+1 << "       " << atoms[i].get_molecule_number() << "       " << atoms[i].get_type_number() <<  "       " << r[0] << "       " << r[1] << "       " << r[2] << endl;
     }
 
-    /*
-    // bonds :-) Only working for Portlandite....
-    myfile << "Bonds" << endl;
-    myfile << "# Bond-nr   bond-type   atom1   atom2" << endl;
-    for (uint k=0; k<(atoms.size()/4); k+4){
-        myfile << "       " << k+1 << "       " << 1 << "       " << k+1 << "       " << k+2 << endl;
-        myfile << "       " << k+1 << "       " << 1 << "       " << k+1 << "       " << k+3 << endl;
-        myfile << "       " << k+1 << "       " << 2 << "       " << k+2 << "       " << k+4 << endl;
-        myfile << "       " << k+1 << "       " << 2 << "       " << k+3 << "       " << k+5 << endl;
 
+    // bonds :-)
+    myfile << "Bonds" << endl << endl;
+    myfile << "# Bond-nr   bond-type   atom1   atom2" << endl;
+    vector <int> ANB (2,0);
+
+    for (int k=0;k<bonds.size();k++){
+        ANB = bonds[k].get_atoms();
+        myfile << "       "  << k+1 << "       " << bonds[k].get_bond_type() << "       " << ANB[0] << "       " << ANB[1] << endl;
     }
-    */
+
+
     myfile.close();
 
     cout << "--------------------------------------------------------" << endl;
