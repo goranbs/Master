@@ -834,7 +834,7 @@ void MoleculeSystem::Write_Initial_State_Ovito(vector <Atom> &atoms, string file
 
 }
 
-void MoleculeSystem::Write_Initial_State_LAMMPS(vector<Atom> &atoms, vector<Bond> &bonds, string &filename, int &n_atom_types){
+void MoleculeSystem::Write_Initial_State_LAMMPS(vector<Atom> &atoms, vector<Bond> &bonds, string filename, int &n_atom_types){
 
     vector <double> r (3,0.0);
 
