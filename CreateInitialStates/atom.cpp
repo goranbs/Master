@@ -11,7 +11,11 @@
  */
 
 
-Atom::Atom(vector<double> &r_, vector<double> &v_, vector<double> &f_, double &u_){
+Atom::Atom(){
+
+}
+
+void Atom::set_initial_state(vector <double> &r_, vector <double> &v_, vector <double> &f_, double &u_){
     // construct the Atom object that holds the r, v, f, u, n_crossings and initial position r0.
     //dist = vector <double> (3);
     n_crossings = vector <double> (3);
@@ -23,7 +27,6 @@ Atom::Atom(vector<double> &r_, vector<double> &v_, vector<double> &f_, double &u
     r0 = r_;
 
     setIs_matrix(false);  // default
-
 }
 
 void Atom::set_position(vector <double> &r_){
