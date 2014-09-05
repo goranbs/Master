@@ -28,7 +28,7 @@ private:
     void Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bonds, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi);
     void Write_Initial_State_Ovito(vector <Atom> &atoms, string filename, int &n_atom_types);
     void Write_Initial_State_LAMMPS(vector <Atom> &atoms, string filename, int &n_atom_types);
-    void Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vector<Bond> &bonds, string filename, int &n_atom_types);
+    void Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vector <Bond> &bonds, string filename, int &n_atom_types);
     double xlo, xhi, ylo, yhi, zlo, zhi;  // system size.
     vector <double> masses;
 
