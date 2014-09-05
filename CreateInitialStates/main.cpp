@@ -3,6 +3,7 @@
 #include <vector>
 #include <iomanip>
 #include <atom.h>
+#include <bond.h>
 #include <moleculesystem.h>
 
 using namespace std;

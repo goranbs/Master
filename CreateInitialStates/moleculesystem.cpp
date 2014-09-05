@@ -96,7 +96,7 @@ void MoleculeSystem::Setup_calciumhydroxide(int n_unit_cells_x, int n_unit_cells
         Write_Initial_State_Ovito(Portlandite, "portlandite_ovito.txt", n_atom_types);
     }
     else {
-        Write_Initial_State_LAMMPS(Portlandite, "calciumhydroxide_LAMMPS.dat", n_atom_types);
+        Write_Initial_State_LAMMPS(Portlandite, bonds, "calciumhydroxide_LAMMPS.dat", n_atom_types);
     }
 
 }
@@ -834,7 +834,7 @@ void MoleculeSystem::Write_Initial_State_Ovito(vector <Atom> &atoms, string file
 
 }
 
-void MoleculeSystem::Write_Initial_State_LAMMPS(vector<Atom> &atoms, string &filename, int &n_atom_types){
+void MoleculeSystem::Write_Initial_State_LAMMPS(vector<Atom> &atoms, vector<Bond> &bonds, string &filename, int &n_atom_types){
 
     vector <double> r (3,0.0);
 
