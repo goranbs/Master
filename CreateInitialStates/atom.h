@@ -10,8 +10,10 @@ using namespace std;
 class Atom{
 
 public:
-    Atom(vector <double> &r_, vector <double> &v_, vector <double> &f_, double &u_);
+
+    Atom();
     void set_all(const vector <double> &r_, const vector <double> &v_ , const vector <double> &f_, const double &u_, int &atom_type_nr, double &q);
+    void set_initial_state(vector <double> &r_, vector <double> &v_, vector <double> &f_, double &u_);
     void update_position(const vector <double> &r_);
     void update_velocity(const vector <double> &v_);
     void update_force(const vector <double> &f_);
@@ -21,13 +23,13 @@ public:
     void add_potential(double &u_);
     void clear_force();
     void clear_potential();
-    inline const vector<double> &position();
-    inline const vector <double> &velocity();
-    inline const vector <double> &force();
-    inline const double potential();
+    inline vector <double> &position();
+    inline vector <double> &velocity();
+    inline vector <double> &force();
+    inline double potential();
 //    inline const double potential() const;
 
-    inline const vector <double> &return_initial_position();
+    inline const vector<double> &return_initial_position();
     void cross_boundary(int i, int j , int k);
     inline const vector<double> &return_n_crossings() const;
 
@@ -63,16 +65,16 @@ private:
 
 };
 
-inline const vector < double > &Atom::position(){               // R. return position
+inline vector < double > &Atom::position(){               // R. return position
     return r;
 }
-inline const vector < double > &Atom::velocity(){               // V. return velocity
+inline vector < double > &Atom::velocity(){               // V. return velocity
     return v;
 }
-inline const vector < double > &Atom::force(){                  // F. return force
+inline vector < double > &Atom::force(){                  // F. return force
     return f;
 }
-inline const double Atom::potential() {                        // P. return potential
+inline double Atom::potential() {                        // P. return potential
     return u;
 }
 inline const vector<double> &Atom::return_initial_position(){   // R0. return initial position
