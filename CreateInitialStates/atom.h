@@ -21,13 +21,13 @@ public:
     void add_potential(double &u_);
     void clear_force();
     void clear_potential();
-    inline const vector<double> &position();
-    inline const vector <double> &velocity();
-    inline const vector <double> &force();
-    inline const double potential();
+    inline vector <double> &position();
+    inline vector <double> &velocity();
+    inline vector <double> &force();
+    inline double potential();
 //    inline const double potential() const;
 
-    inline const vector <double> &return_initial_position();
+    inline const vector<double> &return_initial_position();
     void cross_boundary(int i, int j , int k);
     inline const vector<double> &return_n_crossings() const;
 
@@ -63,16 +63,16 @@ private:
 
 };
 
-inline const vector < double > &Atom::position(){               // R. return position
+inline vector < double > &Atom::position(){               // R. return position
     return r;
 }
-inline const vector < double > &Atom::velocity(){               // V. return velocity
+inline vector < double > &Atom::velocity(){               // V. return velocity
     return v;
 }
-inline const vector < double > &Atom::force(){                  // F. return force
+inline vector < double > &Atom::force(){                  // F. return force
     return f;
 }
-inline const double Atom::potential() {                        // P. return potential
+inline double Atom::potential() {                        // P. return potential
     return u;
 }
 inline const vector<double> &Atom::return_initial_position(){   // R0. return initial position

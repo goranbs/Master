@@ -2,9 +2,12 @@
 #define MOLECULESYSTEM_H
 
 #include <vector>
-#include <atom.h>
+#include "atom.h"
 #include <string>
-#include <bond.h>
+#include "bond.h"
+
+using namespace std;
+
 
 class MoleculeSystem
 {

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <atom.h>
+#include "atom.h"
 #include <cmath>
 
 double PI = 3.14159265;

@@ -1,8 +1,7 @@
 #ifndef BOND_H
 #define BOND_H
 
-#include <atom.h>
-#include <moleculesystem.h>
+#include "atom.h"
 
 using namespace std;
 
