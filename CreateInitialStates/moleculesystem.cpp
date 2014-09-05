@@ -501,6 +501,9 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     yhi = a;
     zhi = 0.0;
 
+    double cah = 1.05; // charge (e) for hydroxide Calcium
+    double oh = -0.95; // charge (e) for hydroxyl Oxygen
+    double ho = 0.425; // charge (e) for hydroxyl Hydrogen
 
     vector <double> v = {0,0,0}; // initial velocity
     vector <double> f = {0,0,0}; // initial force on atom
@@ -514,30 +517,35 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type("Ca");
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(1);
+    new_atom.set_charge(cah);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(O1);          // #5 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(1);
+    new_atom.set_charge(oh);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(O4);          // #8 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(1);
+    new_atom.set_charge(oh);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(H1);          // #13 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(1);
+    new_atom.set_charge(ho);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(H4);          // #16 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(1);
+    new_atom.set_charge(ho);
     Portlandite.push_back(new_atom);
     //--------end molecule #1 -------------------
     // molecule number 2
@@ -545,30 +553,35 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type("Ca");
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(2);
+    new_atom.set_charge(cah);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(O2);          // #6 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(2);
+    new_atom.set_charge(oh);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(O6);          // #10 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(2);
+    new_atom.set_charge(oh);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(H2);          // #14 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(2);
+    new_atom.set_charge(ho);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(H6);          // #18 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(2);
+    new_atom.set_charge(ho);
     Portlandite.push_back(new_atom);
 
     //--------end molecule #2 -------------------
@@ -577,30 +590,35 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type("Ca");
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(3);
+    new_atom.set_charge(cah);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(O3);          // #7 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(3);
+    new_atom.set_charge(oh);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(O7);          // #11 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(3);
+    new_atom.set_charge(oh);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(H3);          // #15 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(3);
+    new_atom.set_charge(oh);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(H7);          // #19 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(3);
+    new_atom.set_charge(oh);
     Portlandite.push_back(new_atom);
 
     //--------end molecule #4 -------------------
@@ -609,30 +627,35 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type("Ca");
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(4);
+    new_atom.set_charge(cah);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(O5);          // #9 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(4);
+    new_atom.set_charge(oh);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(O8);          // #12 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(4);
+    new_atom.set_charge(oh);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(H5);          // #17 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(4);
+    new_atom.set_charge(ho);
     Portlandite.push_back(new_atom);
 
     new_atom.set_position(H8);          // #20 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(4);
+    new_atom.set_charge(ho);
     Portlandite.push_back(new_atom);
     //------ end molecule #4 ---------------------
 

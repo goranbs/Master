@@ -26,6 +26,19 @@ Atom::Atom(vector<double> &r_, vector<double> &v_, vector<double> &f_, double &u
 
 }
 
+void Atom::set_all(const vector<double> &r_, const vector<double> &v_, const vector<double> &f_, const double &u_, int &atom_type_nr, double &q){
+    u = u_;
+    r = r_;
+    v = v_;
+    f = f_;
+    r0 = r_;
+    setIs_matrix(false);  // default
+    //ATOM_TYPE = atom_type;
+    ATOM_TYPE_NUMBER = atom_type_nr;
+    ATOM_CHARGE = q;
+
+}
+
 void Atom::set_position(vector <double> &r_){
     for (int cor=0; cor <3; cor++){
         r[cor] = r_[cor];

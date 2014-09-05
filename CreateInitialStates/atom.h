@@ -11,6 +11,7 @@ class Atom{
 
 public:
     Atom(vector <double> &r_, vector <double> &v_, vector <double> &f_, double &u_);
+    void set_all(const vector <double> &r_, const vector <double> &v_ , const vector <double> &f_, const double &u_, int &atom_type_nr, double &q);
     void update_position(const vector <double> &r_);
     void update_velocity(const vector <double> &v_);
     void update_force(const vector <double> &f_);
