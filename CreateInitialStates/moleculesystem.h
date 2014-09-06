@@ -28,10 +28,10 @@ public:
 private:
     void Initialize(vector <Atom> &atoms, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi);
     void Initialize_2pointO(vector <Atom> &atoms, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi);
-    void Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bonds, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi);
+    void Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bonds, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi, int &molecules_per_unit_cell);
     void Write_Initial_State_Ovito(vector <Atom> &atoms, string filename, int &n_atom_types);
     void Write_Initial_State_LAMMPS(vector <Atom> &atoms, string filename, int &n_atom_types);
-    void Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vector <Bond> &bonds, string filename, int &n_atom_types);
+    void Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vector <Bond> &bonds, string filename, int &n_atom_types, int &N_unit_cells);
     double xlo, xhi, ylo, yhi, zlo, zhi;  // system size.
     vector <double> masses;
 

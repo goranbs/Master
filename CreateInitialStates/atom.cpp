@@ -29,7 +29,7 @@ void Atom::set_initial_state(vector <double> &r_, vector <double> &v_, vector <d
     setIs_matrix(false);  // default
 }
 
-void Atom::set_all(const vector<double> &r_, const vector<double> &v_, const vector<double> &f_, const double &u_, int &atom_type_nr, double &q){
+void Atom::set_all(const vector<double> &r_, const vector<double> &v_, const vector<double> &f_, const double &u_, int &atom_type_nr, double &q, int &index_number){
     u = u_;
     r = r_;
     v = v_;
@@ -39,6 +39,7 @@ void Atom::set_all(const vector<double> &r_, const vector<double> &v_, const vec
     //ATOM_TYPE = atom_type;
     ATOM_TYPE_NUMBER = atom_type_nr;
     ATOM_CHARGE = q;
+    INDEX_NUMBER = index_number;
 
 }
 
@@ -68,6 +69,10 @@ void Atom::set_type(string atom_type){
         cout << "ATOM TYPE is not in vocabulary" << endl;
     }
     */
+}
+
+void Atom::set_index_number(int &index_number){
+    INDEX_NUMBER = index_number;
 }
 
 void Atom::set_type_number(int atom_type_nr){
@@ -121,6 +126,10 @@ double Atom::get_charge(){
 
 int Atom::get_molecule_number(){
     return MOLECULE_NUMBER;
+}
+
+int Atom::get_index_number(){
+    return INDEX_NUMBER;
 }
 
 void Atom::update_position(const vector <double> &r_){          // R. reset postion

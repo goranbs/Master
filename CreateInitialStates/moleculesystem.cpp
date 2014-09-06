@@ -718,28 +718,34 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     unit_cell_length_y = 2*b*sin(6*PI/18);
     unit_cell_length_z = c;
 
-    Initialize_3pointO(Portlandite,bonds, n_unit_cells_x,n_unit_cells_y, n_unit_cells_z, unit_cell_length_x,unit_cell_length_y, unit_cell_length_z);
+    int molecules_per_unit_cell = 4;
+    Initialize_3pointO(Portlandite,bonds,n_unit_cells_x,n_unit_cells_y, n_unit_cells_z, unit_cell_length_x,unit_cell_length_y, unit_cell_length_z, molecules_per_unit_cell);
 
     if (output == "Ovito"){
         Write_Initial_State_Ovito(Portlandite, "portlandite_ovito.txt", n_atom_types);
     }
     else {
-        Write_Initial_State_LAMMPS_2pointO(Portlandite, bonds, "portlandite_LAMMPS.dat", n_atom_types);
+        int N_unit_cells = n_unit_cells_x*n_unit_cells_y*n_unit_cells_z;
+        Write_Initial_State_LAMMPS_2pointO(Portlandite, bonds, "portlandite_LAMMPS.dat", n_atom_types, N_unit_cells);
     }
 
 }
-void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bonds, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi){
+void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bonds, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi, int &molecules_per_unit_cell){
 
     vector <double> ri (3,0.0);
     vector <double> r (3,0.0);
     string atom_type;
+    int index_number;
     int atom_type_nr;
     int molecule_nr;
     int unit_cell_nr = 0;
     int N_unit_cell_atoms = atoms.size();  // number of atoms in one unit cell.
     Atom new_atom = atoms[0];
-
     vector <Atom> AtomContainer;
+    Bond bond1 = bonds[0];
+    int index1 = 0;
+    int index2 = 0;
+    vector <Bond> BondContainer;
 
     // unit cell loop:
     for (int i=0; i<lx; i++){          // unit cell x
@@ -760,31 +766,34 @@ void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bon
                     atom_type = atoms[atom].get_type();
                     atom_type_nr = atoms[atom].get_type_number();
 
-                    molecule_nr =  4*unit_cell_nr + atoms[atom].get_molecule_number();
-
-                    /*
-                    cout << "------------------------------------------" << endl;
-                    cout << "molecule nr     : " << molecule_nr <<  " atom nr: " << 1 + atom + unit_cell_nr*N_unit_cell_atoms << endl;
-                    cout << "unit_cell_nr    : " << unit_cell_nr << " i=" << i <<" j=" << j << " k=" << k << endl;
-                    cout << "atom molecule nr: " << atoms[atom].get_molecule_number() << endl;
-                    */
+                    molecule_nr =  molecules_per_unit_cell*unit_cell_nr + atoms[atom].get_molecule_number();
 
                     for (int cor=0; cor<3; cor++){ r[cor] = r[cor] + ri[cor];}
 
+                    index_number = (unit_cell_nr+1)*atom;
                     atom_type = atoms[atom].get_type();
                     new_atom.set_position(r);
                     new_atom.set_type(atom_type);
                     new_atom.set_type_number(atom_type_nr);
                     new_atom.set_part_of_molecule(molecule_nr);
+                    new_atom.set_index_number(index_number);
                     AtomContainer.push_back(new_atom);
 
+                }
+                for (int AtomBond=0; AtomBond<bonds.size(); AtomBond++){
+                    bond1 = bonds[AtomBond];
+                    index1 = bond1.get_atom_index_number1() + unit_cell_nr;
+                    index2 = bond1.get_atom_index_number2() + unit_cell_nr;
+                    bond1.set_atom_index_number1(index1);
+                    bond1.set_atom_index_number2(index2);
+                    BondContainer.push_back(bond1);
                 }
             unit_cell_nr = unit_cell_nr + 1;
             }
         }
     }
-    //cout << AtomContainer.size() << endl;
     atoms = AtomContainer;
+    bonds = BondContainer;
 }
 
 
@@ -800,7 +809,6 @@ void MoleculeSystem::Initialize_2pointO(vector <Atom> &atoms, int &lx, int &ly, 
     int unit_cell_nr = 0;
     int N_unit_cell_atoms = atoms.size();  // number of atoms in one unit cell.
     Atom new_atom = atoms[0];
-
     vector <Atom> AtomContainer;
 
     // unit cell loop:
@@ -921,11 +929,25 @@ void MoleculeSystem::Write_Initial_State_Ovito(vector <Atom> &atoms, string file
 
 }
 
-void MoleculeSystem::Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vector <Bond> &bonds, string filename, int &n_atom_types){
+void MoleculeSystem::Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vector <Bond> &bonds, string filename, int &n_atom_types, int &N_unit_cells){
     vector <double> r (3,0.0);  // holds positions temporarly
 
     int n_bonds = 0;
     int n_bond_types = 0;
+    vector <int> bondtypes;
+    int type = bonds[0].get_bondtype();
+    bondtypes.push_back(type);
+    string found = "True";
+    for (uint i=1; i<bonds.size(); i++){
+        type = bonds[i].get_bondtype();
+        for (int j=0; j<bondtypes.size();j++){
+            if (type == bondtypes[j]){ found = "False";}
+        }
+        if (found == "False"){ bondtypes.push_back(type);}
+        found = "True"; // reset
+    }
+    n_bond_types = bondtypes.size();
+
     ofstream myfile;
     myfile.open(filename);
     myfile << "# LAMMPS data set file. Genereated by Goeran Brekke Svaland" << endl;
@@ -951,14 +973,20 @@ void MoleculeSystem::Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vec
 
     // starting block: Bonds, containing: Bond-nr   bond-type   atom1   atom2
     myfile << endl << "Bonds" << endl << endl;
+    int N_bonds = bonds.size()*N_unit_cells;
+    for (int k=0; k<N_bonds; k++){
+        myfile << "       "  << k+1 << "       " << bonds[k].get_bondtype() << "       " << bonds[k].get_atom_index_number1() << "       " << bonds[k].get_atom_index_number2() << endl;
+    }
 
 
     myfile.close();
     cout << "--------------------------------------------------------" << endl;
-    cout << "****   Initial state file for Ovito is generated    ****" << endl;
+    cout << "****   Initial state file for LAMMPS is generated    ****" << endl;
     cout << "Filename            : " << filename << endl;
     cout << "Number of atoms     : " << atoms.size() << endl;
     cout << "Number of atom types: " << n_atom_types << endl;
+    cout << "Number of bonds     : " << n_bonds << endl;
+    cout << "Number of bond types: " << n_bond_types << endl;
     cout << xlo << " " << xhi << "     xlo xhi" << endl;
     cout << ylo << " " << yhi << "     ylo yhi" << endl;
     cout << zlo << " " << zhi << "     zlo zhi" << endl;

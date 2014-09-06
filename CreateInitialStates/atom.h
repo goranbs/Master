@@ -12,7 +12,7 @@ class Atom{
 public:
 
     Atom();
-    void set_all(const vector <double> &r_, const vector <double> &v_ , const vector <double> &f_, const double &u_, int &atom_type_nr, double &q);
+    void set_all(const vector <double> &r_, const vector <double> &v_ , const vector <double> &f_, const double &u_, int &atom_type_nr, double &q, int &index_number);
     void set_initial_state(vector <double> &r_, vector <double> &v_, vector <double> &f_, double &u_);
     void update_position(const vector <double> &r_);
     void update_velocity(const vector <double> &v_);
@@ -33,6 +33,7 @@ public:
     void cross_boundary(int i, int j , int k);
     inline const vector<double> &return_n_crossings() const;
 
+    void set_index_number(int &index_number);
     void set_part_of_molecule(int molecule_nr);
     void set_type(string atom_type);
     void set_type_number(int atom_type_nr);
@@ -40,6 +41,7 @@ public:
     void setIs_matrix(bool value);
     void set_position(vector <double> &r_);
 
+    int get_index_number();
     bool getIs_matrix() const;
     string get_type();
     int get_type_number();
@@ -61,6 +63,7 @@ private:
     int ATOM_TYPE_NUMBER;
     double ATOM_CHARGE;
     int MOLECULE_NUMBER;
+    int INDEX_NUMBER;
     vector <string> atomlist = {"H", "He", "Li", "Be", "C", "O", "Al", "Si", "Ca"};
 
 };
