@@ -534,7 +534,6 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
     angle1.set_angle(angletype, new_atom, new_atom, new_atom);
-    angle2.set_angle(angletype, new_atom, new_atom, new_atom);
 
     new_atom.set_position(O1);          // #5 O
     new_atom.set_type("O");
@@ -544,7 +543,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 2;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle1.reset_atom2(new_atom);
+    angle1.reset_atom1(new_atom);
 
     bond1.set_bond(bondtype, new_atom, new_atom);
     bond1.set_atom_index_number1(2);   // atom number 2
@@ -557,7 +556,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 3;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle2.reset_atom2(new_atom);
+    angle1.reset_atom3(new_atom);
 
     bond2.set_bond(bondtype, new_atom, new_atom);
     bond2.set_atom_index_number1(3); // atom number 3
@@ -570,7 +569,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 4;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle1.reset_atom3(new_atom);
+    //angle1.reset_atom3(new_atom);
 
     bond1.set_new_atom2(new_atom);
     bond1.set_atom_index_number2(4);
@@ -583,14 +582,14 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 5;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle2.reset_atom3(new_atom);
+    //angle2.reset_atom3(new_atom);
 
      bond2.set_new_atom2(new_atom);
      bond2.set_atom_index_number2(5);  // atom number 5
      bonds.push_back(bond1);
      bonds.push_back(bond2);
      angles.push_back(angle1);
-     angles.push_back(angle2);
+     //angles.push_back(angle2);
 
     //--------end molecule #1 -------------------
     // molecule number 2
@@ -603,7 +602,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
     angle1.set_angle(angletype, new_atom,new_atom,new_atom);
-    angle2.set_angle(angletype, new_atom,new_atom,new_atom);
+    //angle2.set_angle(angletype, new_atom,new_atom,new_atom);
 
     new_atom.set_position(O2);          // #6 O
     new_atom.set_type("O");
@@ -613,7 +612,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 7;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle1.reset_atom2(new_atom);
+    angle1.reset_atom1(new_atom);
 
     bond1.set_bond(bondtype, new_atom, new_atom);
     bond1.set_atom_index_number1(7);  // atom number 7
@@ -626,7 +625,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 8;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle2.reset_atom2(new_atom);
+    angle1.reset_atom3(new_atom);
 
     bond2.set_bond(bondtype, new_atom, new_atom);
     bond2.set_atom_index_number1(8);  // atom number 8
@@ -639,7 +638,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 9;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle1.reset_atom3(new_atom);
+    //angle1.reset_atom3(new_atom);
 
     bond1.set_new_atom2(new_atom);
     bond1.set_atom_index_number2(9);    // atom number 9
@@ -652,14 +651,14 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 10;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle2.reset_atom3(new_atom);
+    //angle2.reset_atom3(new_atom);
 
     bond2.set_new_atom2(new_atom);
     bond2.set_atom_index_number2(10);   // atom number 10
     bonds.push_back(bond1);
     bonds.push_back(bond2);
     angles.push_back(angle1);
-    angles.push_back(angle2);
+    //angles.push_back(angle2);
 
     //--------end molecule #2 -------------------
     // molecule number 3
@@ -672,7 +671,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
     angle1.set_angle(angletype, new_atom,new_atom,new_atom);
-    angle2.set_angle(angletype, new_atom,new_atom,new_atom);
+    //angle2.set_angle(angletype, new_atom,new_atom,new_atom);
 
     new_atom.set_position(O3);          // #7 O
     new_atom.set_type("O");
@@ -682,7 +681,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 12;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle1.reset_atom2(new_atom);
+    angle1.reset_atom1(new_atom);
 
     bond1.set_bond(bondtype, new_atom, new_atom);
     bond1.set_atom_index_number1(12);  // atom number 12
@@ -695,7 +694,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 13;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle2.reset_atom2(new_atom);
+    angle1.reset_atom3(new_atom);
 
     bond2.set_bond(bondtype, new_atom, new_atom);
     bond2.set_atom_index_number1(13);  // atom number 13
@@ -708,7 +707,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 14;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle1.reset_atom3(new_atom);
+    //angle1.reset_atom3(new_atom);
 
     bond1.set_new_atom2(new_atom);
     bond1.set_atom_index_number2(14);   // atom number 14
@@ -721,14 +720,14 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 15;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle2.reset_atom3(new_atom);
+    //angle2.reset_atom3(new_atom);
 
     bond2.set_new_atom2(new_atom);
     bond2.set_atom_index_number2(15);  // atom number 15
     bonds.push_back(bond1);
     bonds.push_back(bond2);
     angles.push_back(angle1);
-    angles.push_back(angle2);
+    //angles.push_back(angle2);
     //--------end molecule #4 -------------------
     // molecule number 4
     new_atom.set_position(Ca4);         // #4 Ca
@@ -740,7 +739,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
     angle1.set_angle(angletype, new_atom,new_atom,new_atom);
-    angle2.set_angle(angletype, new_atom,new_atom,new_atom);
+    //angle2.set_angle(angletype, new_atom,new_atom,new_atom);
 
     new_atom.set_position(O5);          // #9 O
     new_atom.set_type("O");
@@ -750,7 +749,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 17;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle1.reset_atom2(new_atom);
+    angle1.reset_atom1(new_atom);
 
     bond1.set_bond(bondtype,new_atom, new_atom);
     bond1.set_atom_index_number1(17);   // atom number 17
@@ -763,7 +762,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 18;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle2.reset_atom2(new_atom);
+    angle1.reset_atom3(new_atom);
 
     bond2.set_bond(bondtype,new_atom, new_atom);
     bond2.set_atom_index_number1(18);   // atom number 18
@@ -776,7 +775,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 19;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle1.reset_atom3(new_atom);
+    //angle1.reset_atom3(new_atom);
 
     bond1.set_new_atom2(new_atom);
     bond1.set_atom_index_number2(19);  // atom number 19
@@ -789,7 +788,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     index = 20;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-    angle2.reset_atom3(new_atom);
+    //angle2.reset_atom3(new_atom);
 
     bond2.set_new_atom2(new_atom);
     bond2.set_atom_index_number2(20);  // atom number 20
@@ -797,7 +796,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bonds.push_back(bond1);
     bonds.push_back(bond2);
     angles.push_back(angle1);
-    angles.push_back(angle2);
+    //angles.push_back(angle2);
     //------ end molecule #4 ---------------------
 
     // Ca = 1; O = 2; H = 3;
@@ -812,7 +811,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
 
     int molecules_per_unit_cell = 4;
     int atoms_per_unit_cell = 20;
-    int angles_per_unit_cell = 8;
+    int angles_per_unit_cell = 4;
     Initialize_3pointO(Portlandite,bonds,angles,n_unit_cells_x,n_unit_cells_y, n_unit_cells_z,
                        unit_cell_length_x,unit_cell_length_y, unit_cell_length_z, molecules_per_unit_cell, atoms_per_unit_cell, angles_per_unit_cell);
 
