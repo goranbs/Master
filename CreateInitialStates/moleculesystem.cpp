@@ -895,9 +895,9 @@ void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bon
                 }
                 for (int Angle=0; Angle<angles.size(); Angle++){
                     angletype = angles[Angle].get_angletype();
-                    ix1 = angles[Angle].get_atom1_index_number() + angles_per_unit_cell*unit_cell_nr;
-                    ix3 = angles[Angle].get_atom2_index_number() + angles_per_unit_cell*unit_cell_nr;
-                    ix2 = angles[Angle].get_atom3_index_number() + angles_per_unit_cell*unit_cell_nr;
+                    ix1 = angles[Angle].get_atom1_index_number() + Atoms_per_unit_cell*unit_cell_nr;
+                    ix2 = angles[Angle].get_atom2_index_number() + Atoms_per_unit_cell*unit_cell_nr;
+                    ix3 = angles[Angle].get_atom3_index_number() + Atoms_per_unit_cell*unit_cell_nr;
                     angle.set_atom_index_numbers(ix1,ix2,ix3);
                     angle.set_angletype(angletype);
                     AngleContainer.push_back(angle);
