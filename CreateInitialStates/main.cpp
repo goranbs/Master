@@ -27,7 +27,7 @@ int main(){
 
     // setup a Portlandite surface:
     MoleculeSystem Portlandite;
-    Portlandite.Setup_Portlandite(1,1,2, output);  // remember: the number of molcules is wrong! # molecules = # unit cells in my code. Need to look into this!
+    Portlandite.Setup_Portlandite(10,10,2, output);  // remember: the number of molcules is wrong! # molecules = # unit cells in my code. Need to look into this!
 
 
 

@@ -446,7 +446,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     double c = 4.911;      // c  // 4.871 ? webmineral.com
 
     double x,y,z,alpha,beta,gamma, theta, factor, ca_factor;
-    double CaOH,OH,CaCa;
+    double CaOH,OH;
 
     // plane angles (deg):
     alpha = 90;
@@ -460,7 +460,6 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     // bond distances:
     OH = 0.942;            // observed bond distance O-H
     CaOH = 2.369;          // observed bond distance Ca-OH
-    //z = 0.93;
     //z = sqrt(pow(CaOH,2.0) - pow(a*tan(3*PI/18),2.0)); // z = 1.14826
     z = 1.148268;
     x = a/2.0;
@@ -497,12 +496,13 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     vector <double> H8 = O8;             // # 20
     H8[2] = O8[2] - OH;
 
+    // unit cell system size:
     xlo = -0.5*a;
-    ylo = 0.0;
-    zlo = 0.0;
+    ylo = -y;
+    zlo = -z-OH;
     xhi = 2*a;
-    yhi = a;
-    zhi = 0.0;
+    yhi = 2*b*tan(3*PI/18.0);
+    zhi = z+OH;
 
     double cah = 1.05; // charge (e) for hydroxide Calcium
     double oh = -0.95; // charge (e) for hydroxyl Oxygen
@@ -515,9 +515,14 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
 
     vector <Atom> Portlandite;
     vector <Bond> bonds;
+    vector <Angle> angles;
     Bond bond1;
     Bond bond2;
     int bondtype = 1;
+    Angle angle1;
+    Angle angle2;
+    int angletype = 1;
+    int index = 1;
 
     // molecule number 1
     Atom new_atom;                    // #1 Ca
@@ -526,45 +531,66 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(1);
     new_atom.set_charge(cah);
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.set_angle(angletype, new_atom, new_atom, new_atom);
+    angle2.set_angle(angletype,new_atom, new_atom, new_atom);
 
     new_atom.set_position(O1);          // #5 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(1);
     new_atom.set_charge(oh);
+    index = 2;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.reset_atom2(new_atom);
 
     bond1.set_bond(bondtype, new_atom, new_atom);
+    bond1.set_atom_index_number1(2);   // atom number 2
 
     new_atom.set_position(O4);          // #8 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(1);
     new_atom.set_charge(oh);
+    index = 3;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle2.reset_atom2(new_atom);
 
     bond2.set_bond(bondtype, new_atom, new_atom);
+    bond2.set_atom_index_number1(3); // atom number 3
 
     new_atom.set_position(H1);          // #13 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(1);
     new_atom.set_charge(ho);
+    index = 4;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.reset_atom3(new_atom);
 
     bond1.set_new_atom2(new_atom);
+    bond1.set_atom_index_number2(4);
 
     new_atom.set_position(H4);          // #16 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(1);
     new_atom.set_charge(ho);
+    index = 5;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle2.reset_atom3(new_atom);
 
      bond2.set_new_atom2(new_atom);
+     bond2.set_atom_index_number2(5);  // atom number 5
      bonds.push_back(bond1);
      bonds.push_back(bond2);
+     angles.push_back(angle1);
+     angles.push_back(angle2);
 
     //--------end molecule #1 -------------------
     // molecule number 2
@@ -573,45 +599,68 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(2);
     new_atom.set_charge(cah);
+    index = 6;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.set_angle(angletype, new_atom,new_atom,new_atom);
+    angle2.set_angle(angletype, new_atom,new_atom,new_atom);
 
     new_atom.set_position(O2);          // #6 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(2);
     new_atom.set_charge(oh);
+    index = 7;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.reset_atom2(new_atom);
 
     bond1.set_bond(bondtype, new_atom, new_atom);
+    bond1.set_atom_index_number1(7);  // atom number 7
 
     new_atom.set_position(O6);          // #10 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(2);
     new_atom.set_charge(oh);
+    index = 8;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle2.reset_atom2(new_atom);
 
     bond2.set_bond(bondtype, new_atom, new_atom);
+    bond2.set_atom_index_number1(8);  // atom number 8
 
     new_atom.set_position(H2);          // #14 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(2);
     new_atom.set_charge(ho);
+    index = 9;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.reset_atom3(new_atom);
 
     bond1.set_new_atom2(new_atom);
+    bond1.set_atom_index_number2(9);    // atom number 9
 
     new_atom.set_position(H6);          // #18 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(2);
     new_atom.set_charge(ho);
+    index = 10;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle2.reset_atom3(new_atom);
 
     bond2.set_new_atom2(new_atom);
+    bond2.set_atom_index_number2(10);   // atom number 10
     bonds.push_back(bond1);
     bonds.push_back(bond2);
+    angles.push_back(angle1);
+    angles.push_back(angle2);
+
     //--------end molecule #2 -------------------
     // molecule number 3
     new_atom.set_position(Ca3);         // #3 Ca
@@ -619,45 +668,67 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(3);
     new_atom.set_charge(cah);
+    index = 11;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.set_angle(angletype, new_atom,new_atom,new_atom);
+    angle2.set_angle(angletype, new_atom,new_atom,new_atom);
 
     new_atom.set_position(O3);          // #7 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(3);
     new_atom.set_charge(oh);
+    index = 12;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.reset_atom2(new_atom);
 
     bond1.set_bond(bondtype, new_atom, new_atom);
+    bond1.set_atom_index_number1(12);  // atom number 12
 
     new_atom.set_position(O7);          // #11 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(3);
     new_atom.set_charge(oh);
+    index = 13;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle2.reset_atom2(new_atom);
 
     bond2.set_bond(bondtype, new_atom, new_atom);
+    bond2.set_atom_index_number1(13);  // atom number 13
 
     new_atom.set_position(H3);          // #15 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(3);
     new_atom.set_charge(oh);
+    index = 14;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.reset_atom3(new_atom);
 
     bond1.set_new_atom2(new_atom);
+    bond1.set_atom_index_number2(14);   // atom number 14
 
     new_atom.set_position(H7);          // #19 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(3);
     new_atom.set_charge(oh);
+    index = 15;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle2.reset_atom3(new_atom);
 
     bond2.set_new_atom2(new_atom);
+    bond2.set_atom_index_number2(15);  // atom number 15
     bonds.push_back(bond1);
     bonds.push_back(bond2);
+    angles.push_back(angle1);
+    angles.push_back(angle2);
     //--------end molecule #4 -------------------
     // molecule number 4
     new_atom.set_position(Ca4);         // #4 Ca
@@ -665,47 +736,68 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(4);
     new_atom.set_charge(cah);
+    index = 16;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
-
-    bond1.set_bond(bondtype,new_atom, new_atom);
+    angle1.set_angle(angletype, new_atom,new_atom,new_atom);
+    angle2.set_angle(angletype, new_atom,new_atom,new_atom);
 
     new_atom.set_position(O5);          // #9 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(4);
     new_atom.set_charge(oh);
+    index = 17;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.reset_atom2(new_atom);
 
-    bond2.set_bond(bondtype,new_atom, new_atom);
+    bond1.set_bond(bondtype,new_atom, new_atom);
+    bond1.set_atom_index_number1(17);   // atom number 17
 
     new_atom.set_position(O8);          // #12 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(4);
     new_atom.set_charge(oh);
+    index = 18;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle2.reset_atom2(new_atom);
 
-    bond1.set_new_atom2(new_atom);
+    bond2.set_bond(bondtype,new_atom, new_atom);
+    bond2.set_atom_index_number1(18);   // atom number 18
 
     new_atom.set_position(H5);          // #17 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(4);
     new_atom.set_charge(ho);
+    index = 19;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle1.reset_atom3(new_atom);
 
-    bond2.set_new_atom2(new_atom);
+    bond1.set_new_atom2(new_atom);
+    bond1.set_atom_index_number2(19);  // atom number 19
 
     new_atom.set_position(H8);          // #20 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(4);
     new_atom.set_charge(ho);
+    index = 20;
+    new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
+    angle2.reset_atom3(new_atom);
 
     bond2.set_new_atom2(new_atom);
+    bond2.set_atom_index_number2(20);  // atom number 20
+
     bonds.push_back(bond1);
     bonds.push_back(bond2);
+    angles.push_back(angle1);
+    angles.push_back(angle2);
     //------ end molecule #4 ---------------------
 
     // Ca = 1; O = 2; H = 3;
@@ -719,22 +811,26 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     unit_cell_length_z = c;
 
     int molecules_per_unit_cell = 4;
-    Initialize_3pointO(Portlandite,bonds,n_unit_cells_x,n_unit_cells_y, n_unit_cells_z, unit_cell_length_x,unit_cell_length_y, unit_cell_length_z, molecules_per_unit_cell);
+    int atoms_per_unit_cell = 20;
+    int angles_per_unit_cell = 8;
+    Initialize_3pointO(Portlandite,bonds,angles,n_unit_cells_x,n_unit_cells_y, n_unit_cells_z,
+                       unit_cell_length_x,unit_cell_length_y, unit_cell_length_z, molecules_per_unit_cell, atoms_per_unit_cell, angles_per_unit_cell);
 
     if (output == "Ovito"){
         Write_Initial_State_Ovito(Portlandite, "portlandite_ovito.txt", n_atom_types);
     }
     else {
         int N_unit_cells = n_unit_cells_x*n_unit_cells_y*n_unit_cells_z;
-        Write_Initial_State_LAMMPS_2pointO(Portlandite, bonds, "portlandite_LAMMPS.dat", n_atom_types, N_unit_cells);
+        Write_Initial_State_LAMMPS_2pointO(Portlandite, bonds, angles, "portlandite_LAMMPS.dat", n_atom_types, N_unit_cells);
     }
 
 }
-void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bonds, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi, int &molecules_per_unit_cell){
+void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bonds, vector<Angle> &angles, int &lx, int &ly, int &lz, double &xi, double &yi, double &zi, int &molecules_per_unit_cell, int &Atoms_per_unit_cell, int &angles_per_unit_cell){
 
     vector <double> ri (3,0.0);
     vector <double> r (3,0.0);
     string atom_type;
+    double charge = 0;
     int index_number;
     int atom_type_nr;
     int molecule_nr;
@@ -746,6 +842,12 @@ void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bon
     int index1 = 0;
     int index2 = 0;
     vector <Bond> BondContainer;
+    Angle angle;
+    vector <Angle> AngleContainer;
+    int ix1 = 0;
+    int ix2 = 0;
+    int ix3 = 0;
+    int angletype = 0;
 
     // unit cell loop:
     for (int i=0; i<lx; i++){          // unit cell x
@@ -753,13 +855,6 @@ void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bon
             for (int k=0; k<lz; k++){  // unit cell z
 
                 ri[0] = i*xi; ri[1] = j*yi; ri[2] = k*zi;
-
-                if (ri[0] < xlo){ xlo = ri[0];}
-                if (ri[0] > xhi){ xhi = ri[0];}
-                if (ri[1] < ylo){ ylo = ri[1];}
-                if (ri[1] > yhi){ yhi = ri[1];}
-                if (ri[2] < zlo){ zlo = ri[2];}
-                if (ri[2] > zhi){ zhi = ri[2];}
 
                 for (int atom=0; atom<N_unit_cell_atoms ;atom++){
                     r = atoms[atom].get_position();
@@ -770,23 +865,41 @@ void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bon
 
                     for (int cor=0; cor<3; cor++){ r[cor] = r[cor] + ri[cor];}
 
+                    if (r[0] < xlo){ xlo = r[0];}
+                    if (r[0] > xhi){ xhi = r[0];}
+                    if (r[1] < ylo){ ylo = r[1];}
+                    if (r[1] > yhi){ yhi = r[1];}
+                    if (r[2] < zlo){ zlo = r[2];}
+                    if (r[2] > zhi){ zhi = r[2];}
+
+
                     index_number = (unit_cell_nr+1)*atom;
                     atom_type = atoms[atom].get_type();
+                    charge = atoms[atom].get_charge();
                     new_atom.set_position(r);
                     new_atom.set_type(atom_type);
                     new_atom.set_type_number(atom_type_nr);
                     new_atom.set_part_of_molecule(molecule_nr);
                     new_atom.set_index_number(index_number);
+                    new_atom.set_charge(charge);
                     AtomContainer.push_back(new_atom);
 
                 }
                 for (int AtomBond=0; AtomBond<bonds.size(); AtomBond++){
                     bond1 = bonds[AtomBond];
-                    index1 = bond1.get_atom_index_number1() + unit_cell_nr;
-                    index2 = bond1.get_atom_index_number2() + unit_cell_nr;
+                    index1 = bond1.get_atom_index_number1() + Atoms_per_unit_cell*unit_cell_nr;
+                    index2 = bond1.get_atom_index_number2() + Atoms_per_unit_cell*unit_cell_nr;
                     bond1.set_atom_index_number1(index1);
                     bond1.set_atom_index_number2(index2);
                     BondContainer.push_back(bond1);
+                }
+                for (int Angle=0; Angle<angles.size(); Angle++){
+                    angletype = angles[Angle].get_angletype();
+                    ix1 = angles[Angle].get_atom1_index_number() + angles_per_unit_cell*unit_cell_nr;
+                    ix3 = angles[Angle].get_atom2_index_number() + angles_per_unit_cell*unit_cell_nr;
+                    ix2 = angles[Angle].get_atom3_index_number() + angles_per_unit_cell*unit_cell_nr;
+                    angle.set_atom_index_numbers(ix1,ix2,ix3);
+                    AngleContainer.push_back(angle);
                 }
             unit_cell_nr = unit_cell_nr + 1;
             }
@@ -929,24 +1042,14 @@ void MoleculeSystem::Write_Initial_State_Ovito(vector <Atom> &atoms, string file
 
 }
 
-void MoleculeSystem::Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vector <Bond> &bonds, string filename, int &n_atom_types, int &N_unit_cells){
+void MoleculeSystem::Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vector <Bond> &bonds, vector <Angle> angles, string filename, int &n_atom_types, int &N_unit_cells){
     vector <double> r (3,0.0);  // holds positions temporarly
 
-    int n_bonds = 0;
-    int n_bond_types = 0;
-    vector <int> bondtypes;
-    int type = bonds[0].get_bondtype();
-    bondtypes.push_back(type);
-    string found = "True";
-    for (uint i=1; i<bonds.size(); i++){
-        type = bonds[i].get_bondtype();
-        for (int j=0; j<bondtypes.size();j++){
-            if (type == bondtypes[j]){ found = "False";}
-        }
-        if (found == "False"){ bondtypes.push_back(type);}
-        found = "True"; // reset
-    }
-    n_bond_types = bondtypes.size();
+
+    int n_bonds = bonds.size();
+    int n_angles = angles.size();
+    int n_bond_types = get_n_bond_types(bonds);
+    int n_angle_types = get_n_angle_types(angles);
 
     ofstream myfile;
     myfile.open(filename);
@@ -955,27 +1058,38 @@ void MoleculeSystem::Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vec
     myfile << "           " << n_atom_types << " atom types" << endl;        // number of atom types
     myfile << "           " << n_bonds << " bonds" << endl;                  // number of bonds
     myfile << "           " << n_bond_types << " bond types" << endl;        // number of bond types
+    myfile << "           " << n_angles << " angles" << endl;                // number of angles
+    myfile << "           " << n_angle_types << " angle types" << endl;      // number of angle types
     // system size:
     myfile << "    " <<  xlo << "    " << xhi << "    xlo xhi" << endl;
     myfile << "    " <<  ylo << "    " << yhi << "    ylo yhi" << endl;
     myfile << "    " <<  zlo << "    " << zhi << "    zlo zhi" << endl;
 
     // starting block: Masses, containing:  atom-type  mass(au)
-    myfile << endl << "Masses" << endl;
+    myfile << endl << "Masses" << endl << endl;
     for (int j=0; j<n_atom_types; j++){ myfile << "       " << j+1 << "        " << masses[j] << endl;}
 
     // starting block: Atoms, containing: atom-ID  molecule-ID  atom-type   x  y  z
-    myfile << endl <<  "Atoms" << endl;
+    myfile << endl <<  "Atoms" << endl << endl;
     for (uint i=0; i<atoms.size(); i++){
         r = atoms[i].get_position();
-        myfile << "       "  << i+1 << "       " << atoms[i].get_molecule_number() << "       " << atoms[i].get_type_number() <<  "       " << r[0] << "       " << r[1] << "       " << r[2] << endl;
+        myfile << "       "  << i+1 << "       " << atoms[i].get_molecule_number() << "       " << atoms[i].get_type_number() <<  "       " <<  atoms[i].get_charge() <<"       " << r[0] << "       " << r[1] << "       " << r[2] << endl;
+        //myfile << "       "  << i+1 << "       " << atoms[i].get_molecule_number() << "       " << atoms[i].get_type() <<  "       " <<  atoms[i].get_charge() <<"       " << r[0] << "       " << r[1] << "       " << r[2] << endl;
+
     }
 
     // starting block: Bonds, containing: Bond-nr   bond-type   atom1   atom2
     myfile << endl << "Bonds" << endl << endl;
-    int N_bonds = bonds.size()*N_unit_cells;
-    for (int k=0; k<N_bonds; k++){
+    for (int k=0; k<bonds.size(); k++){
         myfile << "       "  << k+1 << "       " << bonds[k].get_bondtype() << "       " << bonds[k].get_atom_index_number1() << "       " << bonds[k].get_atom_index_number2() << endl;
+        //myfile << "       "  << k+1 << "       " << bonds[k].get_bondtype() << "       " << bonds[k].get_atomtype1() << "       " << bonds[k].get_atomtype2() << endl;
+
+    }
+
+    // starting block: Angles, containing: Angle-nr   angle-type   atom1   atom2   atom3
+    myfile << endl << "Angles" << endl << endl;
+    for (int i=0; i<angles.size(); i++){
+        myfile <<  "       "  << i+1 << "       " << angles[i].get_angletype() << "       " << angles[i].get_atom1_index_number() << "       " << angles[i].get_atom2_index_number() << "       " << angles[i].get_atom3_index_number() << endl;
     }
 
 
@@ -994,6 +1108,7 @@ void MoleculeSystem::Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vec
 }
 
 void MoleculeSystem::Write_Initial_State_LAMMPS(vector <Atom> &atoms, string filename, int &n_atom_types){
+
 
     vector <double> r (3,0.0);
 
@@ -1063,4 +1178,41 @@ void MoleculeSystem::Write_Initial_State_LAMMPS(vector <Atom> &atoms, string fil
 
 } // end;
 
+int MoleculeSystem::get_n_angle_types(vector <Angle> &angles){
+
+    vector <int> angletypes;
+    int type = angles[0].get_angletype();
+    angletypes.push_back(type);
+
+    string found = "True";
+    for (uint i=1; i<angles.size(); i++){
+        type = angles[i].get_angletype();
+        for (int j=0; j<angletypes.size();j++){ // check if this type is in bondtypes:
+            if (type == angletypes[j]){ found = "False";}
+        }
+        if (found == "True"){ angletypes.push_back(type);}  // found a new type! Store it in bondtypes
+        found = "True"; // reset
+    }
+
+    return angletypes.size();
+}
+
+int MoleculeSystem::get_n_bond_types(vector <Bond> &bonds){
+
+    vector <int> bondtypes;
+    int type = bonds[0].get_bondtype();
+    bondtypes.push_back(type);
+
+    string found = "True";
+    for (uint i=1; i<bonds.size(); i++){
+        type = bonds[i].get_bondtype();
+        for (int j=0; j<bondtypes.size();j++){ // check if this type is in bondtypes:
+            if (type == bondtypes[j]){ found = "False";}
+        }
+        if (found == "True"){ bondtypes.push_back(type);}  // found a new type! Store it in bondtypes
+        found = "True"; // reset
+    }
+
+    return bondtypes.size();
+}
 

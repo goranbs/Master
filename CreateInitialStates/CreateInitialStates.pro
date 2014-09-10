@@ -7,10 +7,12 @@ CONFIG -= qt
 SOURCES += main.cpp \
     moleculesystem.cpp \
     atom.cpp \
-    bond.cpp
+    bond.cpp \
+    angle.cpp
 
 HEADERS += \
     moleculesystem.h \
     atom.h \
-    bond.h
+    bond.h \
+    angle.h
 
