@@ -534,7 +534,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
     angle1.set_angle(angletype, new_atom, new_atom, new_atom);
-    angle2.set_angle(angletype,new_atom, new_atom, new_atom);
+    angle2.set_angle(angletype, new_atom, new_atom, new_atom);
 
     new_atom.set_position(O1);          // #5 O
     new_atom.set_type("O");
@@ -899,6 +899,7 @@ void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bon
                     ix3 = angles[Angle].get_atom2_index_number() + angles_per_unit_cell*unit_cell_nr;
                     ix2 = angles[Angle].get_atom3_index_number() + angles_per_unit_cell*unit_cell_nr;
                     angle.set_atom_index_numbers(ix1,ix2,ix3);
+                    angle.set_angletype(angletype);
                     AngleContainer.push_back(angle);
                 }
             unit_cell_nr = unit_cell_nr + 1;
@@ -907,6 +908,7 @@ void MoleculeSystem::Initialize_3pointO(vector <Atom> &atoms, vector <Bond> &bon
     }
     atoms = AtomContainer;
     bonds = BondContainer;
+    angles = AngleContainer;
 }
 
 

@@ -24,6 +24,10 @@ void Angle::set_atom_index_numbers(int &index1, int &index2, int &index3){
 
 }
 
+void Angle::set_angletype(int &angletype){
+    ANGLE_TYPE = angletype;
+}
+
 void Angle::reset_atom1(Atom &atom1){
     ATOM_TYPE1 = atom1.get_type();
     ATOMTYPE_NUMBER1 = atom1.get_type_number();

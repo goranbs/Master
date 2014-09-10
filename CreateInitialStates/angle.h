@@ -15,6 +15,7 @@ public:
     void reset_atom1(Atom &atom1);
     void reset_atom2(Atom &atom2);
     void reset_atom3(Atom &atom3);
+    void set_angletype(int &angletype);
     void set_atom_index_numbers(int &index1, int &index2, int &index3);
 
     string get_atomtype1();
