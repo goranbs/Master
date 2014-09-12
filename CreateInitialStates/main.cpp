@@ -12,8 +12,8 @@ int main(){
 
     // should be able to choose between generating a LAMMPS file or a ovito file!
 
-    //string output = "Ovito";
-    string output = "LAMMPS";  // not operative
+    string output = "Ovito";
+    //string output = "LAMMPS";  // not operative
 
     /*
     // setup Kaolinite:

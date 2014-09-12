@@ -466,34 +466,34 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     y = (b/2.0)*tan(3*PI/18.0);  // lenght scale
 
     vector <double> Ca1 = {0,0,0};                                  // # 1   v
-    vector <double> Ca2 = {a,0,0};                                  // # 2   v
-    vector <double> Ca3 = {a*cos(6*PI/18),a*sin(6*PI/18),0};        // # 3   v
-    vector <double> Ca4 = {a*(1+cos(6*PI/18)),a*sin(6*PI/18),0};    // # 4   v
+    vector <double> Ca2 = {a,0,0};                                  // # 11  v
+    vector <double> Ca3 = {a*cos(6*PI/18),a*sin(6*PI/18),0};        // # 6   v
+    vector <double> Ca4 = {a*(1+cos(6*PI/18)),a*sin(6*PI/18),0};    // # 16  v
 
-    vector <double> O1 = {-a/2.0,-(b/2.0)*tan(3*PI/18.0),z};        // # 5   v
-    vector <double> O2 = {0,b*tan(3*PI/18.0),z};                    // # 6   v
-    vector <double> O3 = {a/2.0,(b/2.0)*tan(3*PI/18.0),-z};         // # 7   v
-    vector <double> O4 = {a/2.0,-y,z};                              // # 8   v
-    vector <double> O5 = {a,2*b*tan(3*PI/18.0),-z};                 // # 9   v
-    vector <double> O6 = {a,b*tan(3*PI/18.0),z};                    // # 10  v
-    vector <double> O7 = {3*a/2.0, (b/2.0)*tan(3*PI/18.0),-z};      // # 11  v
-    vector <double> O8 = {2*a,2*b*tan(3*PI/18.0),-z};               // # 12  v
+    vector <double> O1 = {-a/2.0,-(b/2.0)*tan(3*PI/18.0),z};        // # 2   v
+    vector <double> O2 = {0,b*tan(3*PI/18.0),z};                    // # 7   v
+    vector <double> O3 = {a/2.0,(b/2.0)*tan(3*PI/18.0),-z};         // # 12  v
+    vector <double> O4 = {a/2.0,-y,z};                              // # 3   v
+    vector <double> O5 = {a,2*b*tan(3*PI/18.0),-z};                 // # 17  v
+    vector <double> O6 = {a,b*tan(3*PI/18.0),z};                    // # 8   v
+    vector <double> O7 = {3*a/2.0, (b/2.0)*tan(3*PI/18.0),-z};      // # 13  v
+    vector <double> O8 = {2*a,2*b*tan(3*PI/18.0),-z};               // # 18  v
 
-    vector <double> H1 = O1;             // # 13
+    vector <double> H1 = O1;             // # 4  v
     H1[2] = O1[2] + OH;
-    vector <double> H2 = O2;             // # 14
+    vector <double> H2 = O2;             // # 9  v
     H2[2] = O2[2] + OH;
-    vector <double> H3 = O3;             // # 15
+    vector <double> H3 = O3;             // # 14 v
     H3[2] = O3[2] - OH;
-    vector <double> H4 = O4;             // # 16
+    vector <double> H4 = O4;             // # 5  v
     H4[2] = O4[2] + OH;
-    vector <double> H5 = O5;             // # 17
+    vector <double> H5 = O5;             // # 19 v
     H5[2] = O5[2] - OH;
-    vector <double> H6 = O6;             // # 18
+    vector <double> H6 = O6;             // # 10 v
     H6[2] = O6[2] + OH;
-    vector <double> H7 = O7;             // # 19
+    vector <double> H7 = O7;             // # 15 v
     H7[2] = O7[2] - OH;
-    vector <double> H8 = O8;             // # 20
+    vector <double> H8 = O8;             // # 20 v
     H8[2] = O8[2] - OH;
 
     // unit cell system size:
@@ -535,7 +535,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     Portlandite.push_back(new_atom);
     angle1.set_angle(angletype, new_atom, new_atom, new_atom);
 
-    new_atom.set_position(O1);          // #5 O
+    new_atom.set_position(O1);          // #2 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(1);
@@ -548,7 +548,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond1.set_bond(bondtype, new_atom, new_atom);
     bond1.set_atom_index_number1(2);   // atom number 2
 
-    new_atom.set_position(O4);          // #8 O
+    new_atom.set_position(O4);          // #3 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(1);
@@ -561,7 +561,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond2.set_bond(bondtype, new_atom, new_atom);
     bond2.set_atom_index_number1(3); // atom number 3
 
-    new_atom.set_position(H1);          // #13 H
+    new_atom.set_position(H1);          // #4 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(1);
@@ -574,7 +574,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond1.set_new_atom2(new_atom);
     bond1.set_atom_index_number2(4);
 
-    new_atom.set_position(H4);          // #16 H
+    new_atom.set_position(H4);          // #5 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(1);
@@ -593,7 +593,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
 
     //--------end molecule #1 -------------------
     // molecule number 2
-    new_atom.set_position(Ca2);         // #2 Ca
+    new_atom.set_position(Ca3);         // #6 Ca
     new_atom.set_type("Ca");
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(2);
@@ -604,7 +604,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     angle1.set_angle(angletype, new_atom,new_atom,new_atom);
     //angle2.set_angle(angletype, new_atom,new_atom,new_atom);
 
-    new_atom.set_position(O2);          // #6 O
+    new_atom.set_position(O2);          // #7 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(2);
@@ -617,7 +617,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond1.set_bond(bondtype, new_atom, new_atom);
     bond1.set_atom_index_number1(7);  // atom number 7
 
-    new_atom.set_position(O6);          // #10 O
+    new_atom.set_position(O6);          // #8 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(2);
@@ -630,7 +630,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond2.set_bond(bondtype, new_atom, new_atom);
     bond2.set_atom_index_number1(8);  // atom number 8
 
-    new_atom.set_position(H2);          // #14 H
+    new_atom.set_position(H2);          // #9 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(2);
@@ -643,7 +643,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond1.set_new_atom2(new_atom);
     bond1.set_atom_index_number2(9);    // atom number 9
 
-    new_atom.set_position(H6);          // #18 H
+    new_atom.set_position(H6);          // #10 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(2);
@@ -662,7 +662,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
 
     //--------end molecule #2 -------------------
     // molecule number 3
-    new_atom.set_position(Ca3);         // #3 Ca
+    new_atom.set_position(Ca2);         // #11 Ca
     new_atom.set_type("Ca");
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(3);
@@ -673,7 +673,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     angle1.set_angle(angletype, new_atom,new_atom,new_atom);
     //angle2.set_angle(angletype, new_atom,new_atom,new_atom);
 
-    new_atom.set_position(O3);          // #7 O
+    new_atom.set_position(O3);          // #12 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(3);
@@ -686,7 +686,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond1.set_bond(bondtype, new_atom, new_atom);
     bond1.set_atom_index_number1(12);  // atom number 12
 
-    new_atom.set_position(O7);          // #11 O
+    new_atom.set_position(O7);          // #13 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(3);
@@ -699,7 +699,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond2.set_bond(bondtype, new_atom, new_atom);
     bond2.set_atom_index_number1(13);  // atom number 13
 
-    new_atom.set_position(H3);          // #15 H
+    new_atom.set_position(H3);          // #14 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(3);
@@ -712,7 +712,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond1.set_new_atom2(new_atom);
     bond1.set_atom_index_number2(14);   // atom number 14
 
-    new_atom.set_position(H7);          // #19 H
+    new_atom.set_position(H7);          // #15 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(3);
@@ -730,7 +730,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     //angles.push_back(angle2);
     //--------end molecule #4 -------------------
     // molecule number 4
-    new_atom.set_position(Ca4);         // #4 Ca
+    new_atom.set_position(Ca4);         // #16 Ca
     new_atom.set_type("Ca");
     new_atom.set_type_number(1);
     new_atom.set_part_of_molecule(4);
@@ -741,7 +741,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     angle1.set_angle(angletype, new_atom,new_atom,new_atom);
     //angle2.set_angle(angletype, new_atom,new_atom,new_atom);
 
-    new_atom.set_position(O5);          // #9 O
+    new_atom.set_position(O5);          // #17 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(4);
@@ -754,7 +754,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond1.set_bond(bondtype,new_atom, new_atom);
     bond1.set_atom_index_number1(17);   // atom number 17
 
-    new_atom.set_position(O8);          // #12 O
+    new_atom.set_position(O8);          // #18 O
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(4);
@@ -767,7 +767,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     bond2.set_bond(bondtype,new_atom, new_atom);
     bond2.set_atom_index_number1(18);   // atom number 18
 
-    new_atom.set_position(H5);          // #17 H
+    new_atom.set_position(H5);          // #19 H
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(4);
