@@ -1,0 +1,77 @@
+# LAMMPS in file for generating a system of portlandite (Ca(OH)2).
+# values gathered from Molecular models of Hydroxide, Oxyhydroxide and clay phases and the development of a general force field. Cygan et al.
+
+dimension         3
+boundary          p p p          # periodic boundary conditions
+
+units             real           # real units
+#atom_style        molecular      # atom-ID molecule-ID atom-type x y z
+atom_style        full           # atom-ID molecule-ID atom-type charge x y z
+neighbor          0.3 bin        # typic neighbor adjust for units=lj
+
+neigh_modify      every 2 delay 10 check yes
+
+read_restart      restart.portlandite.1000.txt
+#read_restart      restart.portlandite.1000.mpiio
+
+#--------------GROUPS--------------------------------------------------------------
+group             ca    type 1     # all calcium atoms
+group             ox    type 2     # all oxygen atoms
+group             h     type 3     # all hydrogen atoms
+group             OH    type 2 3   # OH-group
+group             CaO   type 1 2   # Ca-O
+group             CaOH  type 1 2 3 # CaOH 
+
+#--------------Kspace STLE---------------------------------------------------------
+kspace_style	  pppm 1.0e-4
+
+
+#--------------RUNTIME--------------------------------------------------------------
+
+#fix       fix-ID group style keywordargs...
+#fix       fix-ID group npt temp T_start T_end T_damping iso Pstart Pend P_damping
+fix               1 all npt temp 300.0 300.0 100.0 iso 1.0 1.0 1000.0
+
+
+#--------------COMPUTES-------------------------------------------------------------
+#compute          ID group-ID style
+compute           myTemp all temp                     # temperature of group of atoms
+compute           TempCOM all temp/com                # temperature of group of atoms subtracting the center-of-mass velocity
+compute           radialDist ca rdf 100               # radial distribution of atoms g(r)
+compute           disp_Ca ca displace/atom            # displacement from initial position. returns a per-atom value 
+compute           dispCa ca reduce sum c_disp_Ca[4]   # absolute displacement of Ca
+compute           disp_O ox displace/atom             # disp. Oxygen
+compute           dispO ox reduce sum c_disp_O[4]     # abs. disp O  
+compute           disp_H h displace/atom              # disp. Hydrogen
+compute           dispH h reduce sum c_disp_H[4]      # abs. disp H
+compute           rog CaOH gyration                   # radius of gyration of the molecules present.. Hopefully...
+compute           bondl OH bond/local dist            # returns array of bondlengths 
+compute 	  bondl2 OH reduce sum c_bondl        # sums bondlengths !!! Needs to divide by number of bonds !!!
+
+# fix_ave/time    ID group-ID ave/time Nevery Nrepeat Nfreq value1 value2.... keywordargs..
+#fix               scalar_values_portlandite  all ave/time 1 100 100 c_myTemp c_TempCOM c_dispCa c_dispO c_dispH c_bondl2 file dump.portlandite_restart 
+#fix               rdf_portlandite ca ave/time 100 1 100 c_radialDist file rdf.portlandite_restart mode vector
+
+#-------------Timesteps ThermoStyle Dumps-------------------------------------------
+timestep          1.0        # fsec 0.5*10E-15s
+thermo_style      custom step temp press etotal ecoul eangle ebond evdwl        # print style
+thermo            10         # timesteps to print output 
+
+#dump   dump-ID group-ID style N file args
+#dump              1 all atom 100 ./dump/portlandite.*.txt
+
+restart           100000 tempered_portlandite_300K.txt
+
+run               100000
+
+
+
+
+
+
+
+
+
+
+
+

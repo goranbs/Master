@@ -464,20 +464,22 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     z = 1.148268;
     x = a/2.0;
     y = (b/2.0)*tan(3*PI/18.0);  // lenght scale
+    // y = x*tan(30deg)
 
-    vector <double> Ca1 = {0,0,0};                                  // # 1   v
-    vector <double> Ca2 = {a,0,0};                                  // # 11  v
-    vector <double> Ca3 = {a*cos(6*PI/18),a*sin(6*PI/18),0};        // # 6   v
-    vector <double> Ca4 = {a*(1+cos(6*PI/18)),a*sin(6*PI/18),0};    // # 16  v
+    //-------------------------------------------------------Atom number:    |  atom numbers part of molecule:
+    vector <double> Ca1 = {0,0,0};                                  // # 1   v  2,3,4,5
+    vector <double> Ca2 = {a,0,0};                                  // # 11  v  12,13,14,15
+    vector <double> Ca3 = {a*cos(6*PI/18),a*sin(6*PI/18),0};        // # 6   v  7,8,9,10
+    vector <double> Ca4 = {a*(1+cos(6*PI/18)),a*sin(6*PI/18),0};    // # 16  v  17,18,19,20
 
-    vector <double> O1 = {-a/2.0,-(b/2.0)*tan(3*PI/18.0),z};        // # 2   v
-    vector <double> O2 = {0,b*tan(3*PI/18.0),z};                    // # 7   v
-    vector <double> O3 = {a/2.0,(b/2.0)*tan(3*PI/18.0),-z};         // # 12  v
-    vector <double> O4 = {a/2.0,-y,z};                              // # 3   v
-    vector <double> O5 = {a,2*b*tan(3*PI/18.0),-z};                 // # 17  v
-    vector <double> O6 = {a,b*tan(3*PI/18.0),z};                    // # 8   v
-    vector <double> O7 = {3*a/2.0, (b/2.0)*tan(3*PI/18.0),-z};      // # 13  v
-    vector <double> O8 = {2*a,2*b*tan(3*PI/18.0),-z};               // # 18  v
+    vector <double> O1 = {-x,-y,z};       // # 2   v
+    vector <double> O2 = {0,2*y,z};       // # 7   v
+    vector <double> O3 = {x,y,-z};        // # 12  v
+    vector <double> O4 = {x,-y,z};        // # 3   v
+    vector <double> O5 = {2*x,4*y,-z};    // # 17  v
+    vector <double> O6 = {2*x,2*y,z};     // # 8   v
+    vector <double> O7 = {3*x,y,-z};      // # 13  v
+    vector <double> O8 = {4*x,4*y,-z};    // # 18  v
 
     vector <double> H1 = O1;             // # 4  v
     H1[2] = O1[2] + OH;
@@ -520,7 +522,6 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     Bond bond2;
     int bondtype = 1;
     Angle angle1;
-    Angle angle2;
     int angletype = 1;
     int index = 1;
 
@@ -539,6 +540,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type("O");
     new_atom.set_type_number(2);
     new_atom.set_part_of_molecule(1);
+
     new_atom.set_charge(oh);
     index = 2;
     new_atom.set_index_number(index);
@@ -703,7 +705,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(3);
-    new_atom.set_charge(oh);
+    new_atom.set_charge(ho);
     index = 14;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
@@ -716,7 +718,7 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     new_atom.set_type("H");
     new_atom.set_type_number(3);
     new_atom.set_part_of_molecule(3);
-    new_atom.set_charge(oh);
+    new_atom.set_charge(ho);
     index = 15;
     new_atom.set_index_number(index);
     Portlandite.push_back(new_atom);
@@ -1051,6 +1053,13 @@ void MoleculeSystem::Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vec
     int n_angles = angles.size();
     int n_bond_types = get_n_bond_types(bonds);
     int n_angle_types = get_n_angle_types(angles);
+
+    xlo = xlo - 0.1;
+    ylo = ylo - 0.1;
+    zlo = zlo - 0.1;
+    xhi = xhi + 0.1;
+    yhi = yhi + 0.1;
+    zhi = zhi + 0.1;
 
     ofstream myfile;
     myfile.open(filename);
