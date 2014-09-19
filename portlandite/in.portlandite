@@ -12,8 +12,13 @@ neighbor          0.3 bin        # typic neighbor adjust for units=lj
 neigh_modify      every 2 delay 10 check yes
 
 #read_data         portlandite_LAMMPS.dat
-read_data         a_portlandite_LAMMPS_10_10_2.dat
+read_data         portlandite_LAMMPS_10_10_2.dat
 #replicate	  x y z
+
+variable dumploc string ./dump/  # location of dumpfiles
+variable Nstep equal 1000       # number of timesteps
+variable dt equal 1.0            # timestep
+variable Nprint equal 100         # timesteps to print output info to screen
 
 #--------------GROUPS--------------------------------------------------------------
 group             ca    type 1     # all calcium atoms
@@ -59,6 +64,19 @@ velocity          all create 10.0 654654 rot yes dist gaussian
 fix               1 all nvt temp 10.0 300.0 100.0
 #fix               1 all nve 
 
+#--------------DUMPFILES------------------------------------------------------------
+variable dumpFile string ${dumploc}dump.portlandite
+variable dumpRDF string ${dumploc}dump.portlandite.rdf
+variable dumpState string ${dumploc}dump.portlandite.*.txt
+variable dumpRestart string ${dumploc}restart.portlandite
+print "--------------------------------------------------"
+print "dumpFile = ${dumpFile}"
+print "dumpRDF = ${dumpRDF}"
+print "dumpRestart = ${dumpRestart}"
+print "dump state files = ${dumpState}"
+print "Number of timesteps = ${Nstep}"
+print "--------------------------------------------------"
+
 #--------------COMPUTES-------------------------------------------------------------
 #compute          ID group-ID style
 compute           myTemp all temp                     # temperature of group of atoms
@@ -75,23 +93,22 @@ compute           bondl OH bond/local dist            # returns array of bondlen
 compute 	  bondl2 OH reduce sum c_bondl        # sums bondlengths !!! Needs to divide by number of bonds !!!
 
 # fix_ave/time    ID group-ID ave/time Nevery Nrepeat Nfreq value1 value2.... keywordargs..
-fix               scalar_values_portlandite  all ave/time 1 100 100 c_myTemp c_TempCOM c_dispCa c_dispO c_dispH c_bondl2 file dump.portlandite 
-fix               rdf_portlandite ca ave/time 100 1 100 c_radialDist file rdf.portlandite mode vector
+fix               scalar_values_portlandite  all ave/time 1 100 ${Nprint} c_myTemp c_TempCOM c_dispCa c_dispO c_dispH c_bondl2 file ${dumpFile}
+#fix               rdf_portlandite ca ave/time 100 1 100 c_radialDist file ${dumpRDF} mode vector
 
 #-------------Timesteps ThermoStyle Dumps-------------------------------------------
-timestep          1.0        # fsec 0.5*10E-15s
+timestep          ${dt}            # fsec 0.5*10E-15s
 thermo_style      custom step temp press etotal ecoul eangle ebond evdwl        # print style
-thermo            10         # timesteps to print output 
+thermo            ${Nprint}         # timesteps to print output 
 
 #dump             dump-ID group-ID style N file args
-#dump             1 all atom 100 portlandite.*.mpiio
+#dump             1 all atom ${Nprint} ${dumpState}
 
-restart           1000 restart.portlandite.*.txt
-#restart           1000 restart.portlandite.*.mpiio  # this creates a segmentation fault !!! why?
+restart  ${Nstep} ${dumpRestart}
+#restart           ${Nstep} ${dumpRestart}
+#restart           ${Nstep} restart.portlandite.*.mpiio  # this creates a segmentation fault !!! why?
 
-run               1000
-
-
+run      ${Nstep}
 
 
 
