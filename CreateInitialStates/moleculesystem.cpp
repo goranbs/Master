@@ -1226,3 +1226,22 @@ int MoleculeSystem::get_n_bond_types(vector <Bond> &bonds){
     return bondtypes.size();
 }
 
+
+
+/*
+void MoleculeSystem::Write_Initial_State_PDB(vector <Atom> &atoms, vector <Bond> &bonds, vector <Angle> &angles, string filename, int &n_atom_types, int &N_unit_cells){
+    ofstream myfile;
+    myfile.open(filename);
+
+    myfile << "HEADER      Portlandite" << endl;
+    myfile << "COMPND      " << endl;
+    myfile << "SOURCE      " << endl;
+
+    vector <double> r (3,0);
+
+    for (int i=0; i<atoms.size(); i++){
+        r = atoms[i].get_position();
+        myfile << "HETATM    " << i << "  " << atoms[i].get_type() << "   OCAO    " << atoms[i].get_molecule_number() << "      " << r[0] << " " << r[1] << " " << r[2] << " " << atoms[i].get_charge() << endl;
+    }
+}
+*/
