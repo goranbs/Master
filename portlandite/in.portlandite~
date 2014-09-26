@@ -1,0 +1,122 @@
+# LAMMPS in file for generating a system of portlandite (Ca(OH)2).
+# values gathered from Molecular models of Hydroxide, Oxyhydroxide and clay phases and the development of a general force field. Cygan et al.
+
+dimension         3
+boundary          p p p          # periodic boundary conditions
+
+units             real           # real units
+#atom_style        molecular      # atom-ID molecule-ID atom-type x y z
+atom_style        full           # atom-ID molecule-ID atom-type charge x y z
+neighbor          0.3 bin        # typic neighbor adjust for units=lj
+
+neigh_modify      every 2 delay 10 check yes
+
+#read_data         portlandite_LAMMPS.dat
+read_data         a_portlandite_LAMMPS_10_10_2.dat
+#replicate	  x y z
+
+variable dumploc string ./dump/  # location of dumpfiles
+variable Nstep equal 10000       # number of timesteps
+variable dt equal 1.0            # timestep
+variable Nprint equal 100         # timesteps to print output info to screen
+
+#--------------GROUPS--------------------------------------------------------------
+group             ca    type 1     # all calcium atoms
+group             ox    type 2     # all oxygen atoms
+group             h     type 3     # all hydrogen atoms
+group             OH    type 2 3   # OH-group
+group             CaO   type 1 2   # Ca-O
+group             CaOH  type 1 2 3 # CaOH 
+
+#--------------PAIRS---------------------------------------------------------------
+pair_style        lj/cut/coul/long 11.943      # 3*3.981, 3.981=distance between Ca-atoms
+#pair_style        lj/cut/coul/cut  11.943
+#pair_style        lj/cut 11.943
+#pair_coeff       I J  Do      Ro   cutoff1 cutoff2 // cutoff1=LJ-cutoff cutoff2=coulomb-cutoff
+#pair_coeff       I J epsilon sigma cutoff1 cutoff2
+pair_coeff        1 1 5.0298e-6 6.2428 3.0   # coeff hydroxide calcium
+pair_coeff        1 2 8.8401e-4 4.898  3.0   # Coeff between type 1 and type 2 atoms  ( Ca-O )
+pair_coeff        1 3 0.0 3.1214     3.0   # coeff Ca-H
+pair_coeff        2 2 0.1554 3.5532  3.0   # coeff O-O
+pair_coeff        2 3 0.0 1.776      3.0   # coeff hydroxyl oxygen (O-H)
+pair_coeff        3 3 0.0 0.0        3.0   # coeff H-H
+
+
+#--------------BONDS----------------------------------------------------------------
+bond_style        harmonic
+dihedral_style    none
+improper_style    none
+
+bond_coeff        1 554.1349 1.0   #bond_coeff  bond-type K r_o  #table2 cygan et al.
+
+#--------------ANGLES---------------------------------------------------------------
+angle_style       harmonic
+angle_coeff       1 30.0 109.47  #angle_coeff  angle-type k2 theta_o
+kspace_style	  pppm 1.0e-4
+
+
+#--------------INITIAL VELOCITY-----------------------------------------------------
+velocity          all create 10.0 654654 rot yes dist gaussian  
+
+#--------------RUNTIME--------------------------------------------------------------
+#fix              fix-ID group style keyword args
+#fix              fix-ID group nvt temp T_start T_end T_damping  // using the Nose-Hoover thermostat         
+fix               1 all nvt temp 10.0 300.0 100.0
+#fix               1 all nve 
+
+#--------------DUMPFILES------------------------------------------------------------
+variable dumpFile string ${dumploc}dump.portlandite
+variable dumpRDF string ${dumploc}dump.portlandite.rdf
+variable dumpState string ${dumploc}dump.portlandite.*.txt
+variable dumpRestart string $dumploc}restart.portlandite
+print "--------------------------------------------------"
+print "dumpFile = ${dumpFile}"
+print "dumpRDF = ${dumpRDF}"
+print "dumpRestart = ${dumpRestart}"
+print "dump state files = ${dumpState}"
+print "--------------------------------------------------"
+
+#--------------COMPUTES-------------------------------------------------------------
+#compute          ID group-ID style
+compute           myTemp all temp                     # temperature of group of atoms
+compute           TempCOM all temp/com                # temperature of group of atoms subtracting the center-of-mass velocity
+compute           radialDist ca rdf 100               # radial distribution of atoms g(r)
+compute           disp_Ca ca displace/atom            # displacement from initial position. returns a per-atom value 
+compute           dispCa ca reduce sum c_disp_Ca[4]   # absolute displacement of Ca !!! Need to divide by number of Ca atoms !!!
+compute           disp_O ox displace/atom             # disp. Oxygen
+compute           dispO ox reduce sum c_disp_O[4]     # abs. disp O  
+compute           disp_H h displace/atom              # disp. Hydrogen
+compute           dispH h reduce sum c_disp_H[4]      # abs. disp H
+compute           rog CaOH gyration                   # radius of gyration of the molecules present.. Hopefully...
+compute           bondl OH bond/local dist            # returns array of bondlengths 
+compute 	  bondl2 OH reduce sum c_bondl        # sums bondlengths !!! Needs to divide by number of bonds !!!
+
+# fix_ave/time    ID group-ID ave/time Nevery Nrepeat Nfreq value1 value2.... keywordargs..
+#fix               scalar_values_portlandite  all ave/time 1 100 ${Nprint} c_myTemp c_TempCOM c_dispCa c_dispO c_dispH c_bondl2 file ${dumpFile}
+#fix               rdf_portlandite ca ave/time 100 1 100 c_radialDist file ${dumpRDF} mode vector
+
+#-------------Timesteps ThermoStyle Dumps-------------------------------------------
+timestep          ${dt}            # fsec 0.5*10E-15s
+thermo_style      custom step temp press etotal ecoul eangle ebond evdwl        # print style
+thermo            ${Nprint}         # timesteps to print output 
+
+#dump             dump-ID group-ID style N file args
+#dump             1 all atom ${Nprint} ${dumpState}
+
+restart  ${Nstep} ${dumpRestart}
+#restart           ${Nstep} ${dumpRestart}
+#restart           ${Nstep} restart.portlandite.*.mpiio  # this creates a segmentation fault !!! why?
+
+run      ${Nstep}
+
+
+
+
+
+
+
+
+
+
+
+

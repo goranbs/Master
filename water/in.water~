@@ -1,0 +1,61 @@
+# SPC/E water box benchmark
+
+dimension        3
+boundary         p p p                          # periodic in all dimentions
+
+units            lj                             # unitless. real, micro, nano, 
+atom_style       full                           # atom-ID molecule-ID atom-type charge x y z 
+neighbor         0.3 bin
+#neigh_modify    delay 5
+
+read_data        Ice-Ic-40A-box.dat
+
+pair_style	 lj/cut/coul/long 9.8 9.8
+kspace_style	 pppm 1.0e-4
+
+pair_coeff	 1 1 0.15535 3.166
+pair_coeff	 * 2 0.00000 0.0000	
+
+bond_style	 harmonic
+angle_style	 harmonic
+dihedral_style	 none
+improper_style	 none
+
+bond_coeff	 1 1000.00 1.000
+angle_coeff	 1 100.0 109.47
+
+special_bonds    lj/coul 0.0 0.0 0.5
+
+neighbor         2.0 bin
+neigh_modify	 every 1 delay 10 check yes
+
+#velocity	 all create 20 432567 dist thermostyle
+velocity         all create 1.0 432323 rot yes dist gaussian
+
+#fix		 1 all nve #0.0001 20 0 b 1 a 1
+#fix		 2 all nve #temp 300.0 300.0 100.0
+fix              1 all nvt temp 1.0 5.0 100.0               
+
+# uniform & timestep
+
+timestep	 0.02 # lj units of time
+thermo_style     one
+thermo		 10 # timesteps that should be printed to screen
+
+dump		 1 all atom 2 ./dump/water.*.txt
+
+#dump		 2 all image 500 image.*.jpg type type &
+#		 zoom 1.6 adiam 1.5
+#dump_modify	 2 pad 5
+
+#dump		 3 all movie 100 movie.mpg type type &
+#		 zoom 1.6 adiam 1.5
+#dump_modify	 3 pad 5
+
+restart          1000 water_restart_300K.txt
+
+run		 1000
+
+
+
+

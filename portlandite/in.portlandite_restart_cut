@@ -1,0 +1,103 @@
+# LAMMPS in file for generating a system of portlandite (Ca(OH)2).
+# values gathered from Molecular models of Hydroxide, Oxyhydroxide and clay phases and the development of a general force field. Cygan et al.
+
+dimension         3
+boundary          p p p          # periodic boundary conditions
+
+units             real           # real units
+atom_style        full           # atom-ID molecule-ID atom-type charge x y z
+neighbor          0.3 bin        # typic neighbor adjust for units=lj
+neigh_modify      every 2 delay 10 check yes
+kspace_style	  pppm 1.0e-4
+
+read_restart      restart.portlandite 
+#include
+#replicate         1 1 3
+
+variable Restartfilename string cut_portlandite.restart     # restart file name
+variable dumploc string ./dump/                             # location of dumpfiles
+variable Nstep equal 5000                                   # number of timesteps    20ps = 20,000fsec
+variable dt equal 1.0                                       # timestep
+variable Nprint equal 100                                   # timesteps to print output info to screen
+
+#--------------GROUPS--------------------------------------------------------------
+group   ca    type 1     # all calcium atoms
+group   ox    type 2     # all oxygen atoms
+group   h     type 3     # all hydrogen atoms
+group   OH    type 2 3   # OH-group
+group   CaO   type 1 2   # Ca-O
+group   CaOH  type 1 2 3 # CaOH 
+
+#--------------REGIONS--------------------------------------------------------------
+
+#print "number of atoms: ${atom}" 
+#region centerBlock block -0.5 -0.5 -0.5 -0.5 EDGE EDGE side in
+#region centerBlock delete  
+region void cylinder z 30 30 7.0 -5.0 EDGE side in
+delete_atoms region void mol yes
+#print "number of atoms: ${atom}" 
+#----------------------------------------------------------------------------
+
+#fix     1 all nvt temp 10.0 300.0 100.0
+fix      1 all npt temp 300.0 300.0 100.0 iso 0.0 1.0 100.0 
+
+#--------------DUMPFILES------------------------------------------------------------
+variable dumpFile string ${dumploc}dump.portlandite.data
+variable dumpRDF string ${dumploc}dump.portlandite.rdf
+variable dumpState string ${dumploc}dump.*.portlandite.txt
+variable dumpRestart string ${dumploc}${Restartfilename}
+variable dumpMaster string /home/goran/Goran/Master/portlandite/restartfiles/${Restartfilename}
+
+
+variable pMoleMass equal 74.09268                        # (g/mol) portlandide
+variable nMolecules equal atoms/4                        # Number of Molecules in system
+variable nAvog equal 6.0221415e23                        # Avogadro's number
+variable pMoleculeMass equal (${pMoleMass}/${nAvog})     # /(g/molecule)
+variable A3_in_cm3 equal 1e-24                           # Angstrom^3 in cm^3
+
+#--------------COMPUTES-------------------------------------------------------------
+#compute          ID group-ID style
+compute           myTemp all temp                     # temperature of group of atoms
+compute           TempCOM all temp/com                # temperature of group of atoms subtracting the center-of-mass velocity
+compute           radialDist ca rdf 100               # radial distribution of atoms g(r)
+compute           disp_Ca ca displace/atom            # displacement from initial position. returns a per-atom value 
+compute           dispCa ca reduce sum c_disp_Ca[4]   # absolute displacement of C
+compute           disp_O ox displace/atom             # disp. Oxygen
+compute           dispO ox reduce sum c_disp_O[4]     # abs. disp O  
+compute           disp_H h displace/atom              # disp. Hydrogen
+compute           dispH h reduce sum c_disp_H[4]      # abs. disp H
+compute           rog CaOH gyration                   # radius of gyration of the molecules present.. Hopefully...
+compute           bondl OH bond/local dist            # returns array of bondlengths 
+compute 	  bondl2 OH reduce sum c_bondl        # sums bondlengths !!! Needs to divide by number of bonds !!!
+compute           Pressure all pressure TempCOM       # pressure
+#compute           Pressure all reduce sum c_Pr        # pressure
+
+variable Dens equal v_nMolecules*${pMoleculeMass}/(vol*${A3_in_cm3})  # density of the system
+
+# fix_ave/time    ID group-ID ave/time Nevery Nrepeat Nfreq value1 value2.... keywordargs..
+fix               scalar_values_portlandite  all ave/time 1 100 ${Nprint} c_myTemp c_TempCOM c_dispCa c_dispO c_dispH c_bondl2 c_Pressure v_Dens file ${dumpFile}
+fix               rdf_portlandite ca ave/time 100 1 100 c_radialDist file ${dumpRDF} mode vector
+
+#-------------Timesteps ThermoStyle Dumps-------------------------------------------
+timestep          ${dt}            # fsec 0.5*10E-15s
+thermo_style      custom step temp press c_Pressure etotal ecoul eangle ebond evdwl v_Dens        # print style
+thermo            ${Nprint}         # timesteps to print output 
+
+#dump    dump-ID group-ID style N file args
+dump             1 all atom ${Nprint} ${dumpState}
+
+restart  ${Nstep} ${dumpRestart}
+restart  ${Nstep} ${dumpMaster}
+
+
+run      ${Nstep}
+
+print "----------------------DUMP----------------------------" 
+print "dumpFile = ${dumpFile}" 
+print "dumpRDF = ${dumpRDF}" 
+print "dumpRestart = ${dumpRestart}" 
+print "dump state files = ${dumpState}" 
+print "Number of timesteps = ${Nstep}" 
+print "------------------------------------------------------" 
+
+

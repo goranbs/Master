@@ -1,5 +1,6 @@
 # gitignorefile for ignoring specific files or file extentions
 
+*.avi
 *.txt
 *.dat
 *.pro.*

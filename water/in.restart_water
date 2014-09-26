@@ -1,0 +1,100 @@
+# Reference: M. Orsi, Comparative assessment of the ELBA coarse-grained 
+# model for water, Molecular Physics, DOI:10.1080/00268976.2013.844373
+
+units real
+atom_style full
+kspace_style pppm 1.0e-5
+
+read_restart restart_water.txt           # equilibrated at 298K, 1atm.
+
+#-----------------VARIABLES--------------------------------------------------------
+variable dumplocation string ./dump/  # location of the dump files
+
+variable Nrun equal 10000                # Timesteps
+variable Tstep equal 0.1                 # timestep
+variable Nf equal ${Nrun}/100            # Print to screen every Nf timestep, Nf = Nfreq
+variable Ne equal 10                     # use every Ne timestep in ave/time output
+variable Nr equal ${Nf}/${Ne}            # Number of timesteps to use in average
+variable Ndump equal 1000                # Timesteps to dump
+variable Nr_rdf equal 0.5*${Nrun}/${Ne}  # Number of timesteps to use in average in rdf sim. 
+
+variable watMoleMass equal 18.0153                       # /(g/mol)
+variable nAvog equal 6.0221415e23                        # Avogadro's number
+variable watMoleculeMass equal (${watMoleMass}/${nAvog}) # /(g/molecule)
+variable A3_in_cm3 equal 1e-24                           # Angstrom^3 in cm^3
+variable nAtoms equal atoms                              # Number of atoms
+variable nMolecules equal v_nAtoms/3                     # Number of molecules
+variable Nbonds equal v_nMolecules*2                     # 2 bonds per molecule
+
+variable Text equal 298.0                                # external temperature 25C
+variable Pext equal 1.0                                  # 1atm pressure
+
+#---------------GROUPS--------------------------------------------------------------
+group hydrogen type 1
+group oxygen type 2
+group OH type 1 2
+
+
+neighbor 2.0 bin
+neigh_modify every 1 delay 0 check yes
+
+timestep ${Tstep}
+
+#fix ID group-ID shake 1.0e-4 tolerance maxIter b=bondtypes bondtype1... a=atomtypes atomtype1....
+
+fix integrate all npt temp ${Text} ${Text} 100.0 iso ${Pext} ${Pext} 1000.0
+fix removeMomentum all momentum 1 linear 1 1 1
+
+print "----------------DUMPLOCATION-----------------------"
+variable dumpWater string ${dumplocation}dump.water_LAMMPS
+variable dumpState string ${dumplocation}water.*.txt
+variable dumpRestart string ${dumplocation}restart_water.*.txt
+print "dump water        = ${dumpWater}"
+print "dump states       = ${dumpState}"
+print "restart file      = ${dumpRestart}"
+print "---------------------------------------------------"
+
+#-------------------COMPUTES--------------------------------------------------------
+compute T all temp
+fix TempAve all ave/time ${Ne} ${Nr} ${Nf} c_T 
+
+variable P equal press
+fix PressAve all ave/time ${Ne} ${Nr} ${Nf} v_P
+
+compute PE all pe pair kspace
+variable PE_Mol equal c_PE/v_nMolecules
+fix PEAve_Mol all ave/time ${Ne} ${Nr} ${Nf} v_PE_Mol
+
+variable Dens equal v_nMolecules*${watMoleculeMass}/(vol*${A3_in_cm3})    # is this the right way of calculating the density of water?
+fix DensAve all ave/time ${Ne} ${Nr} ${Nf} v_Dens file density_water.txt
+
+compute rdf all rdf 1000 2 2 # oxygen-oxygen
+fix rdf all ave/time ${Ne} ${Nr_rdf} ${Nrun} c_rdf file rdf_water.txt mode vector
+
+#------------------MyComputes--------------------------------------------------------
+
+
+compute     myTemp all temp                     # temperature of group of atoms
+compute     TempCOM all temp/com                # temperature of group of atoms subtracting the center-of-mass velocity
+compute     Pressure all pressure TempCOM       #
+compute     msd oxygen msd com yes              # displacement from initial position. Center Of Mass calculation, drift is subtracted
+compute     rog OH gyration                     # radius of gyration of the water molecule
+compute     bl OH bond/local dist               # returns array of bondlengths 
+compute     bondl OH reduce sum c_bl            # sums bondlengths !!! Needs to divide by number of bonds !!!
+variable    Bondl equal c_bondl/${Nbonds}
+
+# fix_ave/time    ID group-ID ave/time Nevery Nrepeat Nfreq value1 value2.... keywordargs..
+fix         dump_water all ave/time 1 100 100 c_myTemp c_TempCOM c_msd[4] c_rog v_Bondl v_Dens c_Pressure file ${dumpWater} mode scalar
+
+#------------------PRINTS AND DUMPS--------------------------------------------------
+thermo_style custom step temp f_TempAve press f_PressAve f_PEAve_Mol f_DensAve etotal pe
+thermo_modify flush yes
+thermo ${Nf}
+
+dump trj all atom ${Ndump} ${dumpState}
+#dump trj all atom ${Ndump} water.*.txt
+
+run ${Nrun}
+
+#write_restart ${dumpRestart}
+
