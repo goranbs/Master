@@ -820,6 +820,11 @@ void MoleculeSystem::Setup_Portlandite(int n_unit_cells_x, int n_unit_cells_y, i
     if (output == "Ovito"){
         Write_Initial_State_Ovito(Portlandite, "portlandite_ovito.txt", n_atom_types);
     }
+    if (output == "Charge"){
+        int N_unit_cells = n_unit_cells_x*n_unit_cells_y*n_unit_cells_z;
+        Write_Initial_State_ovito_charge(Portlandite, bonds, angles, "portlandite_charge.txt", n_atom_types, N_unit_cells);
+
+    }
     else {
         int N_unit_cells = n_unit_cells_x*n_unit_cells_y*n_unit_cells_z;
         Write_Initial_State_LAMMPS_2pointO(Portlandite, bonds, angles, "portlandite_LAMMPS.dat", n_atom_types, N_unit_cells);
@@ -1228,20 +1233,25 @@ int MoleculeSystem::get_n_bond_types(vector <Bond> &bonds){
 
 
 
-/*
-void MoleculeSystem::Write_Initial_State_PDB(vector <Atom> &atoms, vector <Bond> &bonds, vector <Angle> &angles, string filename, int &n_atom_types, int &N_unit_cells){
+void MoleculeSystem::Write_Initial_State_ovito_charge(vector <Atom> &atoms, vector <Bond> &bonds, vector <Angle> &angles, string filename, int &n_atom_types, int &N_unit_cells){
+    vector <double> r (3,0.0);
+
     ofstream myfile;
     myfile.open(filename);
+    myfile << atoms.size() << endl;          // number of atoms
+    myfile << 0 << endl;                      // timestep 0
+    myfile << "# this is a file generated with charges present" << endl;
 
-    myfile << "HEADER      Portlandite" << endl;
-    myfile << "COMPND      " << endl;
-    myfile << "SOURCE      " << endl;
-
-    vector <double> r (3,0);
-
-    for (int i=0; i<atoms.size(); i++){
+    cout.precision(3);
+    for (uint i=0; i<atoms.size(); i++){
         r = atoms[i].get_position();
-        myfile << "HETATM    " << i << "  " << atoms[i].get_type() << "   OCAO    " << atoms[i].get_molecule_number() << "      " << r[0] << " " << r[1] << " " << r[2] << " " << atoms[i].get_charge() << endl;
+        myfile << setw(3) << atoms[i].get_type() << " " << setw(5) << atoms[i].get_type_number() << " " << setw(5) << atoms[i].get_charge() << " " << setw(10) << r[0] << " " << setw(10) << r[1] << " " << setw(10) << r[2] << endl;
     }
+    myfile.close();
+
+    cout << "--------------------------------------------------------" << endl;
+    cout << "****   Initial state file with charges is generated    ****" << endl;
+    cout << "Filename            : " << filename << endl;
+    cout << "Number of atoms     : " << atoms.size() << endl;
+    cout << "Number of atom types: " << n_atom_types << endl;
 }
-*/

@@ -34,6 +34,7 @@ private:
     void Write_Initial_State_Ovito(vector <Atom> &atoms, string filename, int &n_atom_types);
     void Write_Initial_State_LAMMPS(vector <Atom> &atoms, string filename, int &n_atom_types);
     void Write_Initial_State_LAMMPS_2pointO(vector<Atom> &atoms, vector <Bond> &bonds, vector <Angle> angles, string filename, int &n_atom_types, int &N_unit_cells);
+    void Write_Initial_State_ovito_charge(vector <Atom> &atoms, vector <Bond> &bonds, vector <Angle> &angles, string filename, int &n_atom_types, int &N_unit_cells);
     int get_n_bond_types(vector <Bond> &bonds);
     int get_n_angle_types(vector <Angle> &angles);
     double xlo, xhi, ylo, yhi, zlo, zhi;  // system size.
