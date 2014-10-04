@@ -18,6 +18,7 @@ to the next)
 
 import sys
 import os
+import time as TID
 import numpy as np
 
 def readfile(filename, readlines):
@@ -57,17 +58,17 @@ def compare(time1,time2,types,x):
     if(ltime1 != ltime2):
         print "ERROR! The number of indices of the state arrays are different!"
         print "len(time1)=%g len(time2)=%g" % (ltime1,ltime2)
-    
-    ntypes = 0
-    nsearch = 0
+
+    ntypes = 0    # number of particles we track
+    nsearch = 0   # number of times that we have to search for the particle
     pos_cross = 0; neg_cross = 0; no_cross = 0
     for i in range(lentime1):
         if (time1[1][i] in types):
-            ntypes += 1
-            x1 = time1[2] # get the positions at time t
+            ntypes += 1   # count the number of particles we track. 
+            x1 = time1[2][i] # get the x-positions at time t
             if (time2[0][i] == time1[0][i]):
                 # find if atom has crossed line:
-                x2 = time1[2][i]
+                x2 = time1[2][i] # position at time t+1
                 if (x1 < x and x < x2):
                     pos_cross += 1 # particle has crossed the line in pos x dir
                 elif (x1 > x and x > x2):
@@ -85,14 +86,15 @@ def compare(time1,time2,types,x):
 #                        print "found it at line %g, index %g == %g" % (j,time2[0][j],time1[0][i])
                 if (index is not None):
                     # find if atom has crossed line:
-                    x2 = time2[2][j]
+                    x2 = time2[2][j] # position at time t+1
                     if (x1 < x and x < x2):
                         pos_cross += 1 # particle has crossed the line in pos x dir
                     elif (x1 > x and x > x2):
                         neg_cross += 1 # particle has crossed the line in neg x dir
                     else:
                         no_cross += 1 # the particle did not cross the line
-                        
+                else:
+                    print "WARNING! did not find matching particle! pid=%g" % time1[0][i]
             
             
     #print "particles: %g == %g ?" % (ntypes, (no_cross+pos_cross+neg_cross))
@@ -115,7 +117,7 @@ def gothroughfiles(path):
     return sortedfilenames,time
     
     
-def plotting(compares,time):
+def plotting(compares,time,types):
 
     import matplotlib.pyplot as plt
     plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -123,27 +125,42 @@ def plotting(compares,time):
     #rc('font',**{'family':'serif','serif':['Palatino']})
     plt.rc('text', usetex=True)
     #print " len(time)=%g \n len(compares)=%g " % (len(time),len(compares))
+    
+    mean_cross = np.mean(compares[:,0])
+    std_cross = np.std(compares[:,0])
+    #mean_pos = np.mean(compares[:,1])
+    #mean_neg = np.mean(compares[:,2])
+    mean_search = np.mean(compares[:,5])
+    std_search = np.std(compares[:,5])
+    mean_nocross = np.mean(compares[:,3])
+    std_nocross = np.std(compares[:,3])
+    
+    print "-------------------------"
+    print "particle types:"
+    for i in range(len(types)):
+        print "                %g" % types[i]
+    
     plt.figure()
     plt.plot(time[1:],compares[:,0],'b-')
     plt.hold(True)
     plt.plot(time[1:],compares[:,1],'g--')
     plt.plot(time[1:],compares[:,2],'y--')
     plt.hold(False)
-    plt.title('Number of crossings as function of time')
+    plt.title(r'Number of crossings as function of time. $ N_{cross} = $ %.f $ \pm $ %.f' % (mean_cross, std_cross))
     plt.xlabel('Time [fsec]')
     plt.ylabel('crossings')
     plt.legend([r'$n(t)$',r'$n_{pos}(t)$',r'$n_{neg}(t)$'],loc='upper left')
     
     plt.figure()
-    plt.plot(time[1:],compares[:,4],'r-*')
-    plt.title('Number of particles that did not cross')
+    plt.plot(time[1:],compares[:,3],'r-*')
+    plt.title(r'Number of particles that did not cross. $ N_{nocross} = $ %.f $ \pm $ %.f' % (mean_nocross, std_nocross))
     plt.xlabel('Time [fsec]')
     plt.ylabel('Particles')
     plt.legend([r'$n(t)$'],loc='lower left')
     
     plt.figure()
     plt.plot(time[1:],compares[:,5],'r-*')
-    plt.title('Number of times we had to search for the comparison particle')
+    plt.title('Number of times we had to search for the comparison particle.$ N_{search} = $ %.f $ \pm $ %.f' % (mean_search, std_search))
     plt.xlabel('Timestep file')
     plt.ylabel('Number of searches')
     plt.legend([r'$N(file)$'],loc='upper left')
@@ -156,40 +173,69 @@ def testtwofiles():
     file1 = os.path.join(path, filename1)
     file2 = os.path.join(path, filename2)
     
-    types = [4]
-    x = 0.01    
+    types = [4] # just track the oxygen atoms in water
+    x = 0.5    
     readlines = 9
     
     print "running testtwofiles ..."
     n = compare(readfile(file1,readlines),readfile(file2,readlines),types,x)
     print n
-    
-    
+
+def testplot():
+    # run the function plotting for test.
+
+    time = np.linspace(0,10,100)
+    compares = []
+    types = [4]
+    for i in range(len(time)-1):
+        j = i+1
+        pos = 0.1*j
+        neg = (j - 0.1*j)
+        compares.append([pos - neg ,pos, neg,j-(pos-neg),j,(0.1*j*j - 0.2*j*(j-0.2))])
+    compares = np.array(compares)
+    plotting(compares,time,types)
 
 def main():
+    # does it have something to say that the system is simulated under npt?
+
     path = "/home/goran/Goran/PythonScripting/statefiles/"
 
     filenames,time= gothroughfiles(path)
     compares = []
     types = [4]    # only looking for oxygen in water
-    x = 0.01       # passing through boarder at 0.01*(xhi - xlo)
+    x = 0.5       # passing through boarder at 0.5*(xhi - xlo)
     readlines = 9  # number of lines in beginning of files that should be neglected 
     iterations = (len(filenames) - 1)
+    
+    Grandtime_start = TID.clock()
+    times = []
+    #run = "test"
+    run = "run"
+    
+    if (run == "test"):
+        testplot()
+        testtwofiles()
+    
+    else: 
+        for i in range(iterations):
+            tid = TID.clock()
+            filename1 = filenames[i]
+            filename2 = filenames[i+1]
+            file1 = os.path.join(path,filename1)
+            file2 = os.path.join(path,filename2)
+            print " (%g / %g) Comparing files %s and %s " % (i+1,iterations,filename1,filename2)
+            n = compare(readfile(file1,readlines),readfile(file2,readlines),types,x)
+            compares.append(n)
+            print "           CPU timeuseage: %.f s" % (TID.clock() - tid)
+            times.append(TID.clock() - tid) # timeuseange
 
-    testtwofiles()
-'''
-    for i in range(iterations):
-        filename1 = filenames[i]
-        filename2 = filenames[i+1]
-        file1 = os.path.join(path,filename1)
-        file2 = os.path.join(path,filename2)
-        print " (%g / %g) Comparing files %s and %s " % (i+1,iterations,filename1,filename2)
-        n = compare(readfile(file1,readlines),readfile(file2,readlines),types,x)
-        compares.append(n)
-
-    compares = np.array(compares)
-    plotting(compares,time)
-'''
+        compares = np.array(compares)
+        plotting(compares,time,types)
+        print "netCrossings, pos, neg, no_cross, totParticles, n_searches"
+        print compares
+        print "----------------------------------------------------------"
+        print "Total cpu-time: %.1f s" % (TID.clock() - Grandtime_start)
+        #print times
 
 if (__name__ == "__main__"):
     main()
