@@ -34,4 +34,6 @@ date
 # Long listing of files in $dest to check file sizes
 ls -lh $dest
 
+# we should think about removing older archive files..
+# use newest archive to process information and generate plots in ipython notebook
 
