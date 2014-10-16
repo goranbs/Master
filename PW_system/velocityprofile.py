@@ -153,13 +153,12 @@ def readfile(filename):
     return t,Natoms,system_size,matrix,readstructure, entries
 
 
-def velocityprofile(t,Natoms,system_size,matrix,entries):
+def velocityprofile(time,Natoms,system_size,matrix,entries,save_fig=None,showplot=False):
     '''
     velocityprofile should divide the central part of the system into bins,
     spanning across the shaft/tube in its z-direction. Find what atoms that
     belong to each bin, and average their velocity.
     '''
-    import numpy as np
 
     dx = 0.25     # remember that the system is scaled to be 1 wide, long and high.
     x = 0.5       # middle of the system
@@ -177,62 +176,160 @@ def velocityprofile(t,Natoms,system_size,matrix,entries):
     natoms_in_bins = np.zeros(nbins)
     
     for i in range(Natoms):
-        if (matrix['type'][i] == oxygen): # !!! We get all the oxygen atoms, not only in water!
+        if (matrix['type'][i] == oxygen): # !!! We get all the oxygen atoms, only water!
             if ((matrix['xs'][i] < (x + dx)) and (matrix['xs'][i] > (x - dx))):
                 # then the values lie in the desired x-range
-                indx = int(round(matrix['ys'][i]*(nbins-1)))
-                atom = Atom(matrix['id'])
-                atom.set_all(matrix['mol'],matrix['type'],matrix['xs'],matrix['ys'],matrix['zs'],matrix['vx'],matrix['vy'],matrix['vz'],matrix['fx'],matrix['fy'],matrix['fz'])
-                bins[indx].append(atom)
+                indx = int(round(matrix['zs'][i]*(nbins-1)))
+                #atom = Atom(matrix['id'])
+                #atom.set_all(matrix['mol'],matrix['type'],matrix['xs'],matrix['ys'],matrix['zs'],matrix['vx'],matrix['vy'],matrix['vz'],matrix['fx'],matrix['fy'],matrix['fz'])
+                #bins[indx].append(atom)
                 natoms_in_bins[indx] += 1
                 vx[indx] += matrix['vx'][i]
                 vy[indx] += matrix['vy'][i]
                 vz[indx] += matrix['vz'][i]
     
-    '''
-    atom = Atom(10)
-    atom.set_molID('test')
-    bins[0].append(atom)
-    print bins
-    '''
-    print natoms_in_bins
+    #print natoms_in_bins
     for i in range(nbins):
-        vx[i] = vx[i]/natoms_in_bins[i]
-        vy[i] = vy[i]/natoms_in_bins[i]
-        vz[i] = vz[i]/natoms_in_bins[i]
+        if (natoms_in_bins[i] != 0):
+            vx[i] = vx[i]/natoms_in_bins[i]
+            vy[i] = vy[i]/natoms_in_bins[i]
+            vz[i] = vz[i]/natoms_in_bins[i]
     
     zlo = system_size[4]
     zhi = system_size[5]
     zax = np.linspace(zlo,zhi,nbins)
 
     # now plotting:
-    import matplotlib.pyplot as plt
-    
+    '''
     plt.figure()
     plt.plot(vx,zax,'b--')
     plt.hold(True)
     plt.plot(vz,zax,'r--')
     plt.plot(vy,zax,'y--')
     plt.hold(False)
-    plt.title('velocity along the z-axis')
+    plt.title('velocity along the z-axis at timestep t=%g' % time)
     plt.xlabel('v [Aangstrom/fsec]')
     plt.ylabel('z [Aangstrom]')
-    plt.legend(['v_x(y)','v_z(y)','v_y(y)'],loc='lower left')
-    
+    plt.legend(['v_x(z)','v_z(z)','v_y(z)'],loc='lower left')
+    '''
     factor = 10**5  # conversion factor from [Aangstrom/fsec] to [m/s]
     plt.figure()
-    plt.plot(vx*factor,zax,'b--')
+    plt.plot(vx*factor,zax,'b-')
     plt.hold(True)
     plt.plot(vz*factor,zax,'r--')
     plt.plot(vy*factor,zax,'y--')
     plt.hold(False)
-    plt.title('velocity along the z-axis')
+    plt.title('velocity along the z-axis at timestep t=%g' % time)
     plt.xlabel('v [m/s]')
     plt.ylabel('z [Aangstrom]')
-    plt.legend(['v_x(y)','v_z(y)','v_y(y)'],loc='lower left')
+    plt.legend(['v_x(z)','v_z(z)','v_y(z)'],loc='lower left')
     
-    plt.show(True)
+    if save_fig is not None:
+        filename = 'velocityprofile_' + str(time) + '.png'
+        plt.savefig(filename,format='png')
     
+    plt.figure()
+    plt.plot(natoms_in_bins,np.linspace(0,nbins,nbins),'b--o')
+    plt.title('Number of oxygen atoms counted in bin along z-axis, \nand then hopefully the number of water molecules')
+    plt.xlabel('number of oxygen atoms')
+    plt.ylabel('bin')
+    plt.legend(['oxygen atoms'],loc='upper right')
+    
+    
+    if save_fig is not None:
+        filename = 'oxygendistribution_' + str(time) + '.png'
+        plt.savefig(filename,format='png')
+    
+    plt.show(showplot)
+    
+
+def density(time,Natoms,system_size,matrix,entries,save_fig=None,showplot=False):
+    '''
+    Calculate the density of the water in bulk and inside the tube.
+    Density is only mass per unit volume, so we can again count the number 
+    of oxygen atoms present in some volum, multiply with the mass of a
+    water molecule, and divide by the volume.
+    '''
+    oxygen = 4                           # index type of oxygen in water
+    x = y = z = 0.5                      # Center of system 
+    dx_tube = 0.2    # Create box in middle of system
+    dx_bulk = 0.15   #  Bulk box
+    
+    nbins = 15
+    natoms_tube_dist = np.zeros(nbins)
+    natoms_bulk = 0
+    
+    for i in range(Natoms):
+        if (matrix['type'][i] == oxygen): # only count oxygen atoms
+            
+            if (matrix['xs'][i] < (x + dx_tube) and matrix['xs'][i] > (x - dx_tube)):
+                # divide into layers in z-direction to find a density distribution
+                indx = int(round(matrix['zs'][i]*(nbins-1)))
+                natoms_tube_dist[indx] += 1
+            
+            if ((matrix['xs'][i] < dx_bulk) or (matrix['xs'][i] > (1 - dx_bulk))):
+                # The particle is in lower or upper region of the system
+                # e.g is in bulk.
+                natoms_bulk += 1
+    
+    #print natoms_tube_dist
+    #print natoms_bulk
+#     need to calculate the volumes of the boxes!
+    
+    factor = 10**(-15)    # Conversion factor from Aangstrom to meter    
+    #size_x = (system_size[1] - system_size[0])*factor   # m
+    size_y = (system_size[3] - system_size[2])*factor    # m !!
+    size_z = (system_size[5] - system_size[4])*factor    # m !!
+    dz = (size_z/nbins)*factor                           # m !!
+
+    volume_bulk = size_y*size_z*(2*dx_bulk)              # [m**3]
+    volume_tube = size_y*(2*dx_tube)*dz                  # [m**3]
+    
+    Na = 6.022*10**(23)   # Avogadro constant [molecules/mol]
+    M_oxygen = 15.9994    # [u] = [g/mol]
+    M_hydrogen = 1.008    # [u] = [g/mol]
+    M_water = M_oxygen*(2*M_hydrogen)/1000 # [kg/mol]
+    mass_water_molecule = M_water/Na     # [kg/mol * molecules/mol = kg]
+    
+    density_water_bulk = mass_water_molecule*natoms_bulk/volume_bulk # [kg/m**3]  
+    
+    zax = np.linspace(system_size[4], system_size[5],nbins)
+    density_water_tube = np.zeros(nbins)
+    f = mass_water_molecule/volume_tube                      
+    for i in range(nbins):
+        if (natoms_tube_dist[i] != 0):
+            density_water_tube[i] = f*natoms_tube_dist[i]
+    
+    # plotting of density porfile in tube:
+    
+    plt.plot(density_water_tube,zax,'bo--')
+    plt.title('Density profile for water between the plates')
+    plt.xlabel('Density [kg/m**3]')
+    plt.ylabel('z [Aangsrom]')
+    plt.legend(['rho_{water}'],loc='lower right') 
+    
+    if save_fig is not None:
+        filename = 'densityprofile_water_ ' + str(time) + '.png'
+        plt.savefig(filename, format='png')
+    
+    plt.show(showplot)
+    
+    print "----------------------------------------------"    
+    print "Density of water in bulk, rho=%.1f [kg/m**3]" % density_water_bulk
+    print "----------------------------------------------"
+    print density_water_tube
+    
+    
+def main():
+    path = "/home/goran/Goran/PythonScripting/statefiles/"
+    filename = "dump.PW_npt_minimized.20000.txt"
+    
+    t,Natoms,system_size, matrix, readstructure, entries = readfile(filename)
+
+#    velocityprofile(t,Natoms,system_size,matrix,entries,1,showplot=True)
+    density(t,Natoms,system_size,matrix,entries,1,showplot=True)    
+
+
 class Atom:
     
     def __init__(self,atom_index):
@@ -285,17 +382,12 @@ class Atom:
     
     def get_velocity(self):
         return self.vel
-    
-    
-def main():
-    path = "/home/goran/Goran/PythonScripting/statefiles/"
-    filename = "dump.PW_npt_minimized.20000.txt"
-    
-    t,Natoms,system_size, matrix, readstructure, entries = readfile(filename)
-
-    velocityprofile(t,Natoms,system_size,matrix,entries)
+        
+        
 
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    import numpy as np
     main()
        
        
