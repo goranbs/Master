@@ -131,6 +131,7 @@ def readfile(filename):
     #for i in range(Natoms):
     #matrix = [ID, MOL, TYPE, XS, YS, ZS, VX, VY, VZ, FX, FY, FZ]
     matrix = {'id':ID,'mol':MOL,'type':TYPE,'xs':XS,'ys':YS,'zs':ZS,'vx':VX,'vy':VY,'vz':VZ,'fx':FX,'fy':FY,'fz':FZ}
+    types = [] # list of atom types
 
     indexes = len(readstructure)
     for i in range(Natoms):
@@ -142,15 +143,18 @@ def readfile(filename):
     for i in range(Natoms):
         for j in range(indexes):
             if matrix[entries[j]] is not None:
-                if (entries[j] in ['id', 'mol', 'type']):
-                    matrix[entries[j]][i] = int(matrix[entries[j]][i])
+                if (entries[j] in ['id', 'mol', 'type']): # if entries is either id, mol or type:
+                    matrix[entries[j]][i] = int(matrix[entries[j]][i])   # ints
+                    if (entries[j] == 'type'):
+                        if (matrix[entries[j]][i] not in types):
+                            types.append(matrix[entries[j]][i]) # add atom type to list of atom types
                 else:
-                    matrix[entries[j]][i] = float(matrix[entries[j]][i])
+                    matrix[entries[j]][i] = float(matrix[entries[j]][i]) # floats
     '''
     for j in range(len(entries)):
         print matrix[entries[j]]
     '''
-    return t,Natoms,system_size,matrix,readstructure, entries
+    return t,Natoms,system_size,matrix,readstructure, entries,types
 
 
 def velocityprofile(time,Natoms,system_size,matrix,entries,save_fig=None,showplot=False):
@@ -163,7 +167,7 @@ def velocityprofile(time,Natoms,system_size,matrix,entries,save_fig=None,showplo
     dx = 0.25     # remember that the system is scaled to be 1 wide, long and high.
     x = 0.5       # middle of the system
     oxygen = 4    # atom type
-    nbins = 15
+    nbins = 20
     bins = []
 
     for i in range(nbins):
@@ -207,13 +211,13 @@ def velocityprofile(time,Natoms,system_size,matrix,entries,save_fig=None,showplo
     plt.plot(vz,zax,'r--')
     plt.plot(vy,zax,'y--')
     plt.hold(False)
-    plt.title('velocity along the z-axis at timestep t=%g' % time)
+    plt.title('velocity along the z-axis at timestep t=%g ps' % time)
     plt.xlabel('v [Aangstrom/fsec]')
     plt.ylabel('z [Aangstrom]')
     plt.legend(['v_x(z)','v_z(z)','v_y(z)'],loc='lower left')
     '''
     factor = 10**5  # conversion factor from [Aangstrom/fsec] to [m/s]
-    plt.figure()
+    fig1 = plt.figure()
     plt.plot(vx*factor,zax,'b-')
     plt.hold(True)
     plt.plot(vz*factor,zax,'r--')
@@ -223,24 +227,30 @@ def velocityprofile(time,Natoms,system_size,matrix,entries,save_fig=None,showplo
     plt.xlabel('v [m/s]')
     plt.ylabel('z [Aangstrom]')
     plt.legend(['v_x(z)','v_z(z)','v_y(z)'],loc='lower left')
+    plt.show(showplot)
     
     if save_fig is not None:
-        filename = 'velocityprofile_' + str(time) + '.png'
-        plt.savefig(filename,format='png')
+        if save_fig is not False:
+            filename = 'velocityprofile_' + str(time) + '.png'
+            plt.savefig(filename,format='png')
+            print " saving plot 1: Velocity plot"
+    plt.close(fig1)
+        
     
-    plt.figure()
+    fig2 = plt.figure()
     plt.plot(natoms_in_bins,np.linspace(0,nbins,nbins),'b--o')
-    plt.title('Number of oxygen atoms counted in bin along z-axis, \nand then hopefully the number of water molecules')
+    plt.title('Number of oxygen atoms counted in bin along z-axis, \nand then hopefully the number of water molecules. t=%g ps' % time)
     plt.xlabel('number of oxygen atoms')
     plt.ylabel('bin')
     plt.legend(['oxygen atoms'],loc='upper right')
-    
+    plt.show(showplot)
     
     if save_fig is not None:
-        filename = 'oxygendistribution_' + str(time) + '.png'
-        plt.savefig(filename,format='png')
-    
-    plt.show(showplot)
+        if save_fig is not False:
+            filename = 'oxygendistribution_' + str(time) + '.png'
+            plt.savefig(filename,format='png')
+            print " saving plot 2: oxygen distribution"
+    plt.close(fig2)
     
 
 def density(time,Natoms,system_size,matrix,entries,save_fig=None,showplot=False):
@@ -250,8 +260,8 @@ def density(time,Natoms,system_size,matrix,entries,save_fig=None,showplot=False)
     of oxygen atoms present in some volum, multiply with the mass of a
     water molecule, and divide by the volume.
     '''
-    oxygen = 4                           # index type of oxygen in water
-    x = y = z = 0.5                      # Center of system 
+    oxygen = 4       # index type of oxygen in water
+    x = 0.5          # Center of system 
     dx_tube = 0.2    # Create box in middle of system
     dx_bulk = 0.15   #  Bulk box
     
@@ -276,58 +286,147 @@ def density(time,Natoms,system_size,matrix,entries,save_fig=None,showplot=False)
     #print natoms_bulk
 #     need to calculate the volumes of the boxes!
     
-    factor = 10**(-15)    # Conversion factor from Aangstrom to meter    
-    #size_x = (system_size[1] - system_size[0])*factor   # m
-    size_y = (system_size[3] - system_size[2])*factor    # m !!
-    size_z = (system_size[5] - system_size[4])*factor    # m !!
-    dz = (size_z/nbins)*factor                           # m !!
-
-    volume_bulk = size_y*size_z*(2*dx_bulk)              # [m**3]
-    volume_tube = size_y*(2*dx_tube)*dz                  # [m**3]
+    factor = 1 #10**(-7)    # Conversion factor from Aangstrom to centimeter 
+    factor1 = 10**(-21)      # conversion Aangstrom**3 to cm**3
+    #size_x = (system_size[1] - system_size[0])*factor   # [A]
+    size_y = (system_size[3] - system_size[2])*factor    # [A] system length y-dir
+    size_z = (system_size[5] - system_size[4])*factor    # [A] system length z-dir
+    dz = (size_z/nbins)*factor                           # [A] bin hight
+    dx_tube = dx_tube*factor                             # [A]
+    dx_bulk = dx_bulk*factor                             # [A]
     
-    Na = 6.022*10**(23)   # Avogadro constant [molecules/mol]
-    M_oxygen = 15.9994    # [u] = [g/mol]
-    M_hydrogen = 1.008    # [u] = [g/mol]
-    M_water = M_oxygen*(2*M_hydrogen)/1000 # [kg/mol]
-    mass_water_molecule = M_water/Na     # [kg/mol * molecules/mol = kg]
+    volume_bulk = size_y*size_z*(2*dx_bulk)*factor1              # [cm**3]
+    volume_tube = size_y*(2*dx_tube)*dz*factor1                  # [cm**3]
     
-    density_water_bulk = mass_water_molecule*natoms_bulk/volume_bulk # [kg/m**3]  
+    Na = 6.0221413*10**(23)            # Avogadro constant [molecules/mol]
+    M_oxygen = 15.9994                 # [u] = [g/mol]
+    M_hydrogen = 1.008                 # [u] = [g/mol]
+    M_water = M_oxygen*(2*M_hydrogen)  # Molar mass of water [g/mol]
+    #mass_water_molecule = M_water/Na   # Mass of one water moecule [g]     
+    mass_water_molecule = 2.99153*10**(-23)
+    
+    density_water_bulk = mass_water_molecule*natoms_bulk/volume_bulk # [g/m**3]  
     
     zax = np.linspace(system_size[4], system_size[5],nbins)
     density_water_tube = np.zeros(nbins)
-    f = mass_water_molecule/volume_tube                      
+    f = mass_water_molecule/volume_tube
+                      
+    average = 0
+    n_in_average = 0                 
     for i in range(nbins):
         if (natoms_tube_dist[i] != 0):
             density_water_tube[i] = f*natoms_tube_dist[i]
+            average += density_water_tube[i]
+            n_in_average += 1
+    
+    average = average/n_in_average
+    avg_array = np.ones(len(density_water_tube))
+    for i in range(len(density_water_tube)):
+        avg_array[i] = average
     
     # plotting of density porfile in tube:
-    
+    fig3 = plt.figure()
     plt.plot(density_water_tube,zax,'bo--')
-    plt.title('Density profile for water between the plates')
-    plt.xlabel('Density [kg/m**3]')
+    plt.hold(True)
+    plt.plot(avg_array,zax,'r--')
+    plt.title('Density profile for water between the plates.\nAt time %g ps' % time)
+    plt.xlabel('Density [g/cm**3]')
     plt.ylabel('z [Aangsrom]')
-    plt.legend(['rho_{water}'],loc='lower right') 
-    
-    if save_fig is not None:
-        filename = 'densityprofile_water_ ' + str(time) + '.png'
-        plt.savefig(filename, format='png')
-    
+    plt.legend(['rho_{water}','average'],loc='lower right') 
     plt.show(showplot)
+
+    if save_fig is not None:
+        if save_fig is not False:
+            filename = 'densityprofile_water_ ' + str(time) + '.png'
+            plt.savefig(filename, format='png')
+            print " saving plot 3: density profile of water"
+    plt.close(fig3)
     
     print "----------------------------------------------"    
-    print "Density of water in bulk, rho=%.1f [kg/m**3]" % density_water_bulk
+    print "Density of water in bulk, rho=%.3f [g/cm**3]" % density_water_bulk
+    print "Number of molecules counted: %g " % natoms_bulk 
+    print "Mass of one water molecule = %g " % mass_water_molecule
     print "----------------------------------------------"
     print density_water_tube
     
+def density_system_CO2(time,Natoms,system_size,matrix,entries,masses,save_fig=None,showplot=False):
+    Na = 6.0221413*10**(23)                   # Avogadro constant [molecules/mol]
+    conversionfactor = 10**(-21)               # [A**3 -> cm**3]
+    
+    size_x = (system_size[1] - system_size[0]) # [A] system length x-dir
+    size_y = (system_size[3] - system_size[2]) # [A] system length y-dir
+    size_z = (system_size[5] - system_size[4]) # [A] system length z-dir
+    vol_Aa = size_x*size_y*size_z              # [A**3]
+    vol_cm = vol_Aa*conversionfactor           # [cm**3]        
+    mass_CO2 = masses['C'] + 2*masses['O']     # Mass CO2 [au]
+    CO2_mass_g = mass_CO2/Na                   # mass of CO2 molecule [g]
+    
+    # count number of C particles in the system:
+    
+    carbon = 1
+    nmolecules = 0
+    for i in range(Natoms):
+        if (matrix['type'][i] == carbon):
+            nmolecules += 1
+            
+    tot_mass_CO2 = nmolecules*CO2_mass_g      # [g]
+    density = tot_mass_CO2/vol_cm             # [g/cm**3]
+    dens_kg_m3 = density*10**(-3)              # [kg/m**3]
+    
+    #print size_x, size_y, size_z
+    print "-------- Density of system ----------"
+    print " # molecules = %g " % nmolecules
+    print " mass CO2    = %g [g/mol]" % mass_CO2
+    print " mass CO2    = %g [g]" % CO2_mass_g 
+    print " volume      = %g [cm**3]" % vol_cm 
+    print " rho         = %g [g/cm**3]" % density
+    print " rho         = %g [kg/m**3]" % dens_kg_m3
+    print " number density = %g [particles/Aa] " % (nmolecules/vol_Aa)
+    print "-------------------------------------"
+    return density
+    
+
+def gothroughfiles(path):
+    filenames = []
+    numbers = []
+    for name in os.listdir(path):
+        if (name[-4:] == ".txt"):
+            filenames.append(name)
+            numbers.append(int(name[-10:-4]))
+
+    time = sorted(numbers)
+    sortedfilenames = sorted(filenames, key = lambda x: x[:-4])
+    
+    return sortedfilenames,time
     
 def main():
-    path = "/home/goran/Goran/PythonScripting/statefiles/"
+    generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"
+    path_from_PWsystem = None
     filename = "dump.PW_npt_minimized.20000.txt"
+    #filename = "dump.water.191000.txt"
+    #filename = "dump.PW_centralfolw.94200.txt"
+    #filename = "dump.CO2.200000.txt"
+    #filename = "dump.CO2.0.txt"
     
-    t,Natoms,system_size, matrix, readstructure, entries = readfile(filename)
+    t,Natoms,system_size, matrix, readstructure, entries, types = readfile(filename)
 
-#    velocityprofile(t,Natoms,system_size,matrix,entries,1,showplot=True)
-    density(t,Natoms,system_size,matrix,entries,1,showplot=True)    
+    savefile_velocityprofile = False
+    showplot_velocityprofile = True #False
+    savefile_density = False
+    showplot_density = True #False
+    savefile_sysdens = False
+    showplot_sysdens = True
+    
+    dt = 0.1
+    factor = 10**(-3)     # [fsec to ps]
+    time = t*dt*factor    # [should get ps]
+    
+    masses = {'C' : 12.0107, 'O' : 15.9994, 'H' : 1.00794, 'Ca' : 40.078}
+        
+    velocityprofile(time,Natoms,system_size,matrix,entries,savefile_velocityprofile,showplot_velocityprofile)
+    density(time,Natoms,system_size,matrix,entries,savefile_density,showplot_density)
+
+    #density = density_system_CO2(time, Natoms,system_size,matrix,entries,masses,savefile_sysdens,showplot_sysdens)    
 
 
 class Atom:
