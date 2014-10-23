@@ -126,10 +126,6 @@ def readfile(filename):
         if (index >= 0):
             readstructure.append(index)
   
-    #Natoms = 5  # !!!! TEMPORARY while debugging
-    # now it's time to read in the datas:
-    #for i in range(Natoms):
-    #matrix = [ID, MOL, TYPE, XS, YS, ZS, VX, VY, VZ, FX, FY, FZ]
     matrix = {'id':ID,'mol':MOL,'type':TYPE,'xs':XS,'ys':YS,'zs':ZS,'vx':VX,'vy':VY,'vz':VZ,'fx':FX,'fy':FY,'fz':FZ}
     types = [] # list of atom types
 
@@ -204,18 +200,7 @@ def velocityprofile(time,Natoms,system_size,matrix,entries,save_fig=None,showplo
     zax = np.linspace(zlo,zhi,nbins)
 
     # now plotting:
-    '''
-    plt.figure()
-    plt.plot(vx,zax,'b--')
-    plt.hold(True)
-    plt.plot(vz,zax,'r--')
-    plt.plot(vy,zax,'y--')
-    plt.hold(False)
-    plt.title('velocity along the z-axis at timestep t=%g ps' % time)
-    plt.xlabel('v [Aangstrom/fsec]')
-    plt.ylabel('z [Aangstrom]')
-    plt.legend(['v_x(z)','v_z(z)','v_y(z)'],loc='lower left')
-    '''
+
     factor = 10**5  # conversion factor from [Aangstrom/fsec] to [m/s]
     fig1 = plt.figure()
     plt.plot(vx*factor,zax,'b-')
@@ -387,28 +372,175 @@ def density_system_CO2(time,Natoms,system_size,matrix,entries,masses,save_fig=No
     
 
 def gothroughfiles(path):
+    '''
+    Go through stystem state files in "path", if they are .txt files, the first 
+    character in the filename which is a number will be acknowledged as the 
+    timestep of the system state file, and the number will be read as:
+    somefilename<somenumber>.txt , when <somenumber> is the time that will be
+    read. 
+    '''
+    
     filenames = []
     numbers = []
     for name in os.listdir(path):
         if (name[-4:] == ".txt"):
+            char = 'string'
+            start = 0
+            for character in name:
+                # find the first character in the filename which is a number
+                try:
+                    char = int(character)
+                except:
+                    pass
+                if (type(char) == int):
+                    break
+                start += 1
+                
             filenames.append(name)
-            numbers.append(int(name[-10:-4]))
+            numbers.append(int(name[start:-4]))
 
     time = sorted(numbers)
     sortedfilenames = sorted(filenames, key = lambda x: x[:-4])
     
     return sortedfilenames,time
     
-def main():
-    generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"
-    path_from_PWsystem = None
-    filename = "dump.PW_npt_minimized.20000.txt"
-    #filename = "dump.water.191000.txt"
-    #filename = "dump.PW_centralfolw.94200.txt"
-    #filename = "dump.CO2.200000.txt"
-    #filename = "dump.CO2.0.txt"
+def get_velocityprofile(t,Natoms,system_size,matrix,entries,types):
+    '''
+    get_velocityprofile takes a timevalue t, system_size which is a list containing
+    the system size [xlo xhi ylo yhi zlo zhi], a library matrix element that contains
+    information about the atoms in the system. entries holds known entries in matrix
+    types contain known types of atoms in the system.
+    get_velocityprofile should return two arrays that desctibes the velocityprofile
+    of the system at a given timestep t.
+    '''
+
+    dx = 0.2     # remember that the system is scaled to be 1 wide, long and high.
+    x = 0.5       # middle of the system
+    oxygen = 4    # atom type that we are interested in knowing the velocity distribution about.
+    nbins = 15    # number of bins that we divide the system hight into
     
-    t,Natoms,system_size, matrix, readstructure, entries, types = readfile(filename)
+    vx = np.zeros((nbins,1))
+    vy = np.zeros((nbins,1))
+    vz = np.zeros((nbins,1))
+    natoms_in_bins = np.zeros(nbins)
+    
+    for i in range(Natoms):
+        if (matrix['type'][i] == oxygen): # !!! We get all the oxygen atoms, only water!
+            if ((matrix['xs'][i] < (x + dx)) and (matrix['xs'][i] > (x - dx))):
+                # then the values lie in the desired x-range
+                indx = int(round(matrix['zs'][i]*(nbins-1)))
+                natoms_in_bins[indx] += 1
+                vx[indx] += matrix['vx'][i] # add velocities of the oxygen atoms into the correct bin
+                vy[indx] += matrix['vy'][i]
+                vz[indx] += matrix['vz'][i]
+                #print matrix['vx'][i]
+                if (matrix['vx'][i] == matrix['vy'][i] and  matrix['vx'][i] == matrix['vz'][i]):
+                    print "vx = vy something is wrong. go to line 402!!"
+    
+    for i in range(nbins):
+        # average the velocities of the atoms present in the bins:
+        if (natoms_in_bins[i] != 0):
+            vx[i] = vx[i]/natoms_in_bins[i]
+            vy[i] = vy[i]/natoms_in_bins[i]
+            vz[i] = vz[i]/natoms_in_bins[i]
+    
+    # Velocities are given in [Aangstrom/fsec] from LAMMPS, but we leave this to the plotting function for now
+
+    '''
+    plt.figure()
+    plt.plot(np.linspace(0,nbins,nbins),vx,'r--')
+    plt.hold(True)
+    plt.plot(np.linspace(0,nbins,nbins),vy,'b--*')
+    plt.plot(np.linspace(0,nbins,nbins),vz,'y--d')
+    plt.hold(False)
+
+    plt.plot(np.linspace(0,nbins,nbins),vx)
+    plt.title('PLOTTIPLOTT')
+    plt.show(True)
+    '''
+    
+    return vx,vy,vz,nbins
+
+def writetofile(filename,toptext,contents,column1=None,column2=None,column3=None,column4=None):
+    '''
+    write information to output file "filename". 
+    '''
+    generate = True
+    if (type(toptext)!= str):
+        print "ERROR! type(toptext) = %s " % type(toptext)
+        print "when type(toptext) should be <str>"
+        print "Outputfile is not generated"
+        generate = False
+    if (type(contents)!= str):
+        print "ERROR! type(contents) = %s " % type(contents)
+        print "when type(contents) should be <str>"
+        print " outputfile is not created"
+        generate = False
+    if (column1 == None):
+        print "failed to give datas in column1"
+        print "outputfile is not created"
+        generate = False
+        
+    if (generate == True):
+        write_to_file = open(filename,'w')
+        toptext = '# ' + toptext + '\n'
+        contents = '# ' + contents + '\n'
+        write_to_file.write(toptext)
+        write_to_file.write(contents)
+        kk = 1
+        a = column1
+        b = c = d = []
+        string = 0 #
+        for j in range(len(column1)):
+            b.append(string)
+            c.append(string)
+            d.append(string)
+        if column2 is not None: 
+            kk +=1
+            b = column2
+        if column3 is not None: 
+            kk +=1
+            c = column3
+        if column4 is not None: 
+            kk +=1
+            d = column4
+
+            
+        for i in range(len(column1)):
+            #print i, len(column1), len(column2)
+            line = "%g   %g   %g   %g \n" % (a[i], b[i], c[i], d[i])
+            write_to_file.write(line)
+    
+        
+        write_to_file.close()
+        print "file %s is done." % filename
+    
+def main():
+    
+    generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"
+    path_from_PWsystem = "npt_run_and_energyminimization/statefiles/"
+    only_nve = True
+
+
+    path = os.path.join(generalpath,path_from_PWsystem)
+    print "--------------------------------------------------------"
+    print " PATH where files are found:"
+    print path
+    print "--------------------------------------------------------"    
+    
+    filenames, time = gothroughfiles(path)
+    
+    filestructure = "dump.PW_nve"
+    #filestructure = "dump.PW_npt"
+    length = len(filestructure)
+    if (only_nve == True):
+        filenames_to_use = []
+        for filename in filenames:
+            # if filename contains "nve" in the filename: use these filenames:
+            if (filename[0:length] == filestructure):
+                filenames_to_use.append(filename)
+            
+        filenames = filenames_to_use
 
     savefile_velocityprofile = False
     showplot_velocityprofile = True #False
@@ -417,14 +549,104 @@ def main():
     savefile_sysdens = False
     showplot_sysdens = True
     
+    vel_x = []
+    vel_y = []
+    vel_z = []
+    len_filenames = len(filenames)
+    times = np.zeros(len_filenames)
+    ii = 0
+    for filename in filenames:
+        print "processing file: %s . Number %g of total %g" % (filename,(ii+1),len_filenames)
+        filename = os.path.join(path,filename)
+        t,Natoms,system_size, matrix, readstructure, entries, types = readfile(filename)
+        vx,vy,vz,nbins = get_velocityprofile(t,Natoms,system_size,matrix,entries,types)
+        vel_x.append(vx[:])
+        vel_y.append(vy[:])
+        vel_z.append(vz[:])
+        '''
+        plt.plot(np.linspace(0,nbins,nbins),vz[:])
+        plt.show(True)
+        '''
+        times[ii] = t
+        ii += 1
+
+    # Now we have averaged over time the velocity profile of the system
+    # testplotting:
+ 
+    zlo = system_size[4]
+    zhi = system_size[5]
+    zax = np.linspace(zlo,zhi,nbins)
+    len_vel = len(vel_x)
+    len_vx = len(vel_x[0])
+    
+    avg_vel_x = np.zeros((len_vx,1))
+    avg_vel_y = np.zeros((len_vx,1))
+    avg_vel_z = np.zeros((len_vx,1))
+    max_val = 0
+    for i in range(len_vel):
+        for j in range(len(vel_x[i])):
+            velx = vel_x[i][j]
+            vely = vel_y[i][j]
+            velz = vel_z[i][j]
+            avg_vel_x[j] += velx
+            avg_vel_y[j] += vely
+            avg_vel_z[j] += velz
+            
+            if (velx > max_val):
+                max_val = velx
+            if (vely > max_val):
+                max_val = vely
+            if (velz > max_val):
+                max_val = velz
+            #print vel_z[i][j]
+ 
+
+    for j in range(len(avg_vel_x)):
+        avg_vel_x[j] = avg_vel_x[j]/len_vel
+        avg_vel_y[j] = avg_vel_y[j]/len_vel
+        avg_vel_z[j] = avg_vel_z[j]/len_vel
+
+ 
+    Title = 'Velocity profile through tube.\nAverage over %g number of timesteps' % len(time)
+    name = 'velocityprofile_npt.png'
+    legends = ['vx(z)','vy(z)','vz(z)']
+    xlabel = 'system width [Aangstrom]'
+    ylabel = 'velocity [Aangstrom/fsec]'
+    
+    fig = plt.figure()        
+    plt.plot(zax,avg_vel_x,'b-')
+    plt.hold(True)
+    plt.plot(zax,avg_vel_y,'r--')
+    plt.plot(zax,avg_vel_z,'y--d')
+    line = np.linspace(min(avg_vel_z),max_val,len_vx)
+    zlo_surf = 7.4   # [Aangstrom]
+    zhi_surf = 37.0  # [Aangstrom]
+    surf_lo = np.linspace(zlo_surf,zlo_surf,len_vx)
+    surf_hi = np.linspace(zhi_surf,zhi_surf,len_vx)
+    plt.plot(surf_lo,line,'k--')
+    plt.plot(surf_hi,line,'k--')
+    legends.append('surface')
+    plt.hold(False)
+    plt.title(Title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.legend(legends,loc='upper right')
+    plt.savefig(name,format='png')
+    plt.show(False)
+    plt.close(fig)
+
+    contents = 'zax[Aangstrom] vx(z) vy(z) vz(z)'
+    toptext = 'Velocity profile for water-portalndite system. Generated from %g timesteps. from files: %s ' % (len_vel, filestructure)
+    writetofile('velocityprofile_nve.txt',toptext,contents,avg_vel_x,avg_vel_y,avg_vel_z)
+    
     dt = 0.1
     factor = 10**(-3)     # [fsec to ps]
-    time = t*dt*factor    # [should get ps]
+    #time = t*dt*factor    # [should get ps]
     
     masses = {'C' : 12.0107, 'O' : 15.9994, 'H' : 1.00794, 'Ca' : 40.078}
         
-    velocityprofile(time,Natoms,system_size,matrix,entries,savefile_velocityprofile,showplot_velocityprofile)
-    density(time,Natoms,system_size,matrix,entries,savefile_density,showplot_density)
+    #velocityprofile(time[-1],Natoms,system_size,matrix,entries,savefile_velocityprofile,showplot_velocityprofile)
+    #density(time,Natoms,system_size,matrix,entries,savefile_density,showplot_density)
 
     #density = density_system_CO2(time, Natoms,system_size,matrix,entries,masses,savefile_sysdens,showplot_sysdens)    
 
@@ -487,6 +709,7 @@ class Atom:
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     import numpy as np
+    import os
     main()
        
        
