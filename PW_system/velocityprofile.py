@@ -30,6 +30,8 @@ def readfile(filename):
     '''
     Returns timestep, number of atoms, system sizes and
     a matrix that contains information about the atoms
+    Returns:
+    t,Natoms,system_size,matrix,readstructure, entries,types
     '''
     infile = open(filename,'r')
     infile.readline()
@@ -158,6 +160,8 @@ def velocityprofile(time,Natoms,system_size,matrix,entries,save_fig=None,showplo
     velocityprofile should divide the central part of the system into bins,
     spanning across the shaft/tube in its z-direction. Find what atoms that
     belong to each bin, and average their velocity.
+    returns:
+    nothing, it returns nothing! only plots a velocityprofile for the given timestep
     '''
 
     dx = 0.25     # remember that the system is scaled to be 1 wide, long and high.
@@ -244,6 +248,8 @@ def density(time,Natoms,system_size,matrix,entries,save_fig=None,showplot=False)
     Density is only mass per unit volume, so we can again count the number 
     of oxygen atoms present in some volum, multiply with the mass of a
     water molecule, and divide by the volume.
+    returns:
+    it returns nothing, just plots the density profile at the given timestep
     '''
     oxygen = 4       # index type of oxygen in water
     x = 0.5          # Center of system 
@@ -335,34 +341,38 @@ def density(time,Natoms,system_size,matrix,entries,save_fig=None,showplot=False)
     print density_water_tube
     
 def density_system_CO2(time,Natoms,system_size,matrix,entries,masses,save_fig=None,showplot=False):
+    '''
+    density_system_CO2 prints the density of a CO2 system.
+    Use readfile(filename) to get system information before using this function.
+    returns:
+                density
+    '''
     Na = 6.0221413*10**(23)                   # Avogadro constant [molecules/mol]
-    conversionfactor = 10**(-21)               # [A**3 -> cm**3]
+    conversionfactor = 10**(-24)               # [A**3 -> cm**3]
     
     size_x = (system_size[1] - system_size[0]) # [A] system length x-dir
     size_y = (system_size[3] - system_size[2]) # [A] system length y-dir
     size_z = (system_size[5] - system_size[4]) # [A] system length z-dir
     vol_Aa = size_x*size_y*size_z              # [A**3]
     vol_cm = vol_Aa*conversionfactor           # [cm**3]        
-    mass_CO2 = masses['C'] + 2*masses['O']     # Mass CO2 [au]
-    CO2_mass_g = mass_CO2/Na                   # mass of CO2 molecule [g]
+    mass_CO2 = masses['C'] + 2*masses['O']     # Mass CO2 [au] = [g/mol]    
     
     # count number of C particles in the system:
-    
     carbon = 1
     nmolecules = 0
     for i in range(Natoms):
         if (matrix['type'][i] == carbon):
             nmolecules += 1
             
-    tot_mass_CO2 = nmolecules*CO2_mass_g      # [g]
-    density = tot_mass_CO2/vol_cm             # [g/cm**3]
-    dens_kg_m3 = density*10**(-3)              # [kg/m**3]
+    conv = 0.60221413                         # Na/conversionfactor
+    tot_mass_CO2 = nmolecules*mass_CO2        # [particles*g/mol]
+    density = (tot_mass_CO2/vol_Aa)*conv      # [g/cm**3]
+    dens_kg_m3 = density*10**(3.0)            # [kg/m**3]
     
     #print size_x, size_y, size_z
     print "-------- Density of system ----------"
     print " # molecules = %g " % nmolecules
     print " mass CO2    = %g [g/mol]" % mass_CO2
-    print " mass CO2    = %g [g]" % CO2_mass_g 
     print " volume      = %g [cm**3]" % vol_cm 
     print " rho         = %g [g/cm**3]" % density
     print " rho         = %g [kg/m**3]" % dens_kg_m3
@@ -378,6 +388,8 @@ def gothroughfiles(path):
     timestep of the system state file, and the number will be read as:
     somefilename<somenumber>.txt , when <somenumber> is the time that will be
     read. 
+    Returns:
+            sortedfilenames, time
     '''
     
     filenames = []
@@ -412,6 +424,8 @@ def get_velocityprofile(t,Natoms,system_size,matrix,entries,types):
     types contain known types of atoms in the system.
     get_velocityprofile should return two arrays that desctibes the velocityprofile
     of the system at a given timestep t.
+    returns:
+            vx,vy,vz,nbins
     '''
 
     dx = 0.2     # remember that the system is scaled to be 1 wide, long and high.
@@ -517,138 +531,154 @@ def writetofile(filename,toptext,contents,column1=None,column2=None,column3=None
     
 def main():
     
-    generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"
-    path_from_PWsystem = "npt_run_and_energyminimization/statefiles/"
-    only_nve = True
-
-
-    path = os.path.join(generalpath,path_from_PWsystem)
-    print "--------------------------------------------------------"
-    print " PATH where files are found:"
-    print path
-    print "--------------------------------------------------------"    
-    
-    filenames, time = gothroughfiles(path)
-    
-    filestructure = "dump.PW_nve"
-    #filestructure = "dump.PW_npt"
-    length = len(filestructure)
-    if (only_nve == True):
-        filenames_to_use = []
-        for filename in filenames:
-            # if filename contains "nve" in the filename: use these filenames:
-            if (filename[0:length] == filestructure):
-                filenames_to_use.append(filename)
-            
-        filenames = filenames_to_use
-
-    savefile_velocityprofile = False
-    showplot_velocityprofile = True #False
-    savefile_density = False
-    showplot_density = True #False
-    savefile_sysdens = False
-    showplot_sysdens = True
-    
-    vel_x = []
-    vel_y = []
-    vel_z = []
-    len_filenames = len(filenames)
-    times = np.zeros(len_filenames)
-    ii = 0
-    for filename in filenames:
-        print "processing file: %s . Number %g of total %g" % (filename,(ii+1),len_filenames)
-        filename = os.path.join(path,filename)
-        t,Natoms,system_size, matrix, readstructure, entries, types = readfile(filename)
-        vx,vy,vz,nbins = get_velocityprofile(t,Natoms,system_size,matrix,entries,types)
-        vel_x.append(vx[:])
-        vel_y.append(vy[:])
-        vel_z.append(vz[:])
-        '''
-        plt.plot(np.linspace(0,nbins,nbins),vz[:])
-        plt.show(True)
-        '''
-        times[ii] = t
-        ii += 1
-
-    # Now we have averaged over time the velocity profile of the system
-    # testplotting:
- 
-    zlo = system_size[4]
-    zhi = system_size[5]
-    zax = np.linspace(zlo,zhi,nbins)
-    len_vel = len(vel_x)
-    len_vx = len(vel_x[0])
-    
-    avg_vel_x = np.zeros((len_vx,1))
-    avg_vel_y = np.zeros((len_vx,1))
-    avg_vel_z = np.zeros((len_vx,1))
-    max_val = 0
-    for i in range(len_vel):
-        for j in range(len(vel_x[i])):
-            velx = vel_x[i][j]
-            vely = vel_y[i][j]
-            velz = vel_z[i][j]
-            avg_vel_x[j] += velx
-            avg_vel_y[j] += vely
-            avg_vel_z[j] += velz
-            
-            if (velx > max_val):
-                max_val = velx
-            if (vely > max_val):
-                max_val = vely
-            if (velz > max_val):
-                max_val = velz
-            #print vel_z[i][j]
- 
-
-    for j in range(len(avg_vel_x)):
-        avg_vel_x[j] = avg_vel_x[j]/len_vel
-        avg_vel_y[j] = avg_vel_y[j]/len_vel
-        avg_vel_z[j] = avg_vel_z[j]/len_vel
-
- 
-    Title = 'Velocity profile through tube.\nAverage over %g number of timesteps' % len(time)
-    name = 'velocityprofile_npt.png'
-    legends = ['vx(z)','vy(z)','vz(z)']
-    xlabel = 'system width [Aangstrom]'
-    ylabel = 'velocity [Aangstrom/fsec]'
-    
-    fig = plt.figure()        
-    plt.plot(zax,avg_vel_x,'b-')
-    plt.hold(True)
-    plt.plot(zax,avg_vel_y,'r--')
-    plt.plot(zax,avg_vel_z,'y--d')
-    line = np.linspace(min(avg_vel_z),max_val,len_vx)
-    zlo_surf = 7.4   # [Aangstrom]
-    zhi_surf = 37.0  # [Aangstrom]
-    surf_lo = np.linspace(zlo_surf,zlo_surf,len_vx)
-    surf_hi = np.linspace(zhi_surf,zhi_surf,len_vx)
-    plt.plot(surf_lo,line,'k--')
-    plt.plot(surf_hi,line,'k--')
-    legends.append('surface')
-    plt.hold(False)
-    plt.title(Title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.legend(legends,loc='upper right')
-    plt.savefig(name,format='png')
-    plt.show(False)
-    plt.close(fig)
-
-    contents = 'zax[Aangstrom] vx(z) vy(z) vz(z)'
-    toptext = 'Velocity profile for water-portalndite system. Generated from %g timesteps. from files: %s ' % (len_vel, filestructure)
-    writetofile('velocityprofile_nve.txt',toptext,contents,avg_vel_x,avg_vel_y,avg_vel_z)
-    
-    dt = 0.1
-    factor = 10**(-3)     # [fsec to ps]
-    #time = t*dt*factor    # [should get ps]
-    
-    masses = {'C' : 12.0107, 'O' : 15.9994, 'H' : 1.00794, 'Ca' : 40.078}
+    system = "CO2"
+    #system = "water"
+    #system = "PW"   
+    if (system == "CO2"):
         
-    #velocityprofile(time[-1],Natoms,system_size,matrix,entries,savefile_velocityprofile,showplot_velocityprofile)
-    #density(time,Natoms,system_size,matrix,entries,savefile_density,showplot_density)
-
-    #density = density_system_CO2(time, Natoms,system_size,matrix,entries,masses,savefile_sysdens,showplot_sysdens)    
+        savefile = False
+        showplot = False   # there is no plotting funtion here!
+        
+        generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"
+        path_from_PW_system = "CarbonDioxide/statefiles/"
+        path_to_filename = os.path.join(generalpath,path_from_PW_system)
+        
+        dt = 0.1
+        factor = 10**(-3)      # [fsec to ps]
+        #time = t*dt*factor    # [should get ps]
+            
+        masses = {'C' : 12.0107, 'O' : 15.9994, 'H' : 1.00794, 'Ca' : 40.078}
+        filename = "dump.CO2_res.200000.txt"
+        #filename = "dump.CO2.0.txt"
+        thisfile = os.path.join(path_to_filename,filename)
+        time,Natoms,system_size,matrix,readstructure,entries,types = readfile(thisfile)
+        density = density_system_CO2(time,Natoms,system_size,matrix,entries,masses,savefile,showplot)  
+    
+    if (system == "PW"):
+        generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"
+        path_from_PWsystem = "npt_run_and_energyminimization/statefiles/"
+        only_nve = True
+    
+        path = os.path.join(generalpath,path_from_PWsystem)
+        print "--------------------------------------------------------"
+        print " PATH where files are found:"
+        print path
+        print "--------------------------------------------------------"    
+        
+        filenames, time = gothroughfiles(path)
+        
+        filestructure = "dump.PW_nve"
+        #filestructure = "dump.PW_npt"
+        length = len(filestructure)
+        if (only_nve == True):
+            filenames_to_use = []
+            for filename in filenames:
+                # if filename contains "nve" in the filename: use these filenames:
+                if (filename[0:length] == filestructure):
+                    filenames_to_use.append(filename)
+                
+            filenames = filenames_to_use
+    
+        savefile_velocityprofile = False
+        showplot_velocityprofile = True #False
+        savefile_density = False
+        showplot_density = True #False
+        savefile_sysdens = False
+        showplot_sysdens = True
+        
+        vel_x = []
+        vel_y = []
+        vel_z = []
+        len_filenames = len(filenames)
+        times = np.zeros(len_filenames)
+        ii = 0
+        for filename in filenames:
+            print "processing file: %s . Number %g of total %g" % (filename,(ii+1),len_filenames)
+            filename = os.path.join(path,filename)
+            t,Natoms,system_size, matrix, readstructure, entries, types = readfile(filename)
+            vx,vy,vz,nbins = get_velocityprofile(t,Natoms,system_size,matrix,entries,types)
+            vel_x.append(vx[:])
+            vel_y.append(vy[:])
+            vel_z.append(vz[:])
+            '''
+            plt.plot(np.linspace(0,nbins,nbins),vz[:])
+            plt.show(True)
+            '''
+            times[ii] = t
+            ii += 1
+    
+        # Now we have averaged over time the velocity profile of the system
+        # testplotting:
+     
+        zlo = system_size[4]
+        zhi = system_size[5]
+        zax = np.linspace(zlo,zhi,nbins)
+        len_vel = len(vel_x)
+        len_vx = len(vel_x[0])
+        
+        avg_vel_x = np.zeros((len_vx,1))
+        avg_vel_y = np.zeros((len_vx,1))
+        avg_vel_z = np.zeros((len_vx,1))
+        max_val = 0
+        for i in range(len_vel):
+            for j in range(len(vel_x[i])):
+                velx = vel_x[i][j]
+                vely = vel_y[i][j]
+                velz = vel_z[i][j]
+                avg_vel_x[j] += velx
+                avg_vel_y[j] += vely
+                avg_vel_z[j] += velz
+                
+                if (velx > max_val):
+                    max_val = velx
+                if (vely > max_val):
+                    max_val = vely
+                if (velz > max_val):
+                    max_val = velz
+                #print vel_z[i][j]
+     
+    
+        for j in range(len(avg_vel_x)):
+            avg_vel_x[j] = avg_vel_x[j]/len_vel
+            avg_vel_y[j] = avg_vel_y[j]/len_vel
+            avg_vel_z[j] = avg_vel_z[j]/len_vel
+    
+     
+        Title = 'Velocity profile through tube.\nAverage over %g number of timesteps' % len(time)
+        name = 'velocityprofile_npt.png'
+        legends = ['vx(z)','vy(z)','vz(z)']
+        xlabel = 'system width [Aangstrom]'
+        ylabel = 'velocity [Aangstrom/fsec]'
+        
+        fig = plt.figure()        
+        plt.plot(zax,avg_vel_x,'b-')
+        plt.hold(True)
+        plt.plot(zax,avg_vel_y,'r--')
+        plt.plot(zax,avg_vel_z,'y--d')
+        line = np.linspace(min(avg_vel_z),max_val,len_vx)
+        zlo_surf = 7.4   # [Aangstrom]
+        zhi_surf = 37.0  # [Aangstrom]
+        surf_lo = np.linspace(zlo_surf,zlo_surf,len_vx)
+        surf_hi = np.linspace(zhi_surf,zhi_surf,len_vx)
+        plt.plot(surf_lo,line,'k--')
+        plt.plot(surf_hi,line,'k--')
+        legends.append('surface')
+        plt.hold(False)
+        plt.title(Title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.legend(legends,loc='upper right')
+        plt.savefig(name,format='png')
+        plt.show(False)
+        plt.close(fig)
+    
+        
+        contents = 'zax[Aangstrom] vx(z) vy(z) vz(z)'
+        toptext = 'Velocity profile for water-portalndite system. Generated from %g timesteps. from files: %s ' % (len_vel, filestructure)
+        writetofile('velocityprofile_nve.txt',toptext,contents,avg_vel_x,avg_vel_y,avg_vel_z)
+            
+        #----------------- End Of PW system analyze -----------------------------
+        
 
 
 class Atom:
