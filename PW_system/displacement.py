@@ -244,7 +244,44 @@ def displacementprofile(t1, t2, matrix1, matrix2, Natoms, sytem_size, readstruct
     to any displacement.
     '''
 
+    #1 define area of boxes. x E [0.25, 0.75], y E [0,1], z E [0,1]
+    # number of boxes in each dim.
+
+    Nx = 20 # Number of boxes in x direction
+    Nz = 20 # Number of boxes in z direction
     
+    binsx1 = np.zeros((Nx,1)), binsz1 = np.zeros((Nz,1)) # contains Nx and Nz bins that contains a number of atoms in that region.
+    binsx2 = np.zeros((Nx,1)), binsz2 = np.zeros((Nz,1)) # contains Nx and Nz bins that contains a number of atoms in that region.
+
+    for Bin in range(Nx): # fill the arrays with empty bins that will contain the atoms.
+        binsx1[Bin] = []
+        binsx2[Bin] = []
+    for Bin in range(Nz):
+        binsz1[Bin] = []
+        binsz2[Bin] = []
+        
+    for i in range(Natoms): # run through all the atoms, and use their positions to place them in their bins.
+        #atoms[i] = Atom(matrix1['id'][i])
+        #atoms[i].set_all(matrix1['mol'][i],matrix1['type'][i],matrix1['xs'][i],matrix1['ys'][i],matrix1['zs'][i],matrix1['vx'][i],matrix1['vy'][i],matrix1['vz'][i],matrix1['fx'][i],matrix1['fy'][i],matrix1['fz'][i])
+        if (matrix1['type'][i] in types): # if the atom is one that we are following, go on:
+            if (matrix1['xs'] > xmin and matrix21['xs'] < xmax):
+                index_z = int(round(matrix1['zs'][i]*(Nz-1)) # hight in system
+                index_x = int(round(matrix1['xs'][i]*(Nx-1)) # x pos in system
+                binsz1[index_z].append(matrix1['id'][i])     # add atom id to the bin it's located within
+                binsx1[index_x].append(matrix1['id'][i])     # add atom id to the bin it's located within
+            
+        # do the same for the next timestep:
+        if (matrix2['type'][i] in types):
+            if (matrix2['xs'][i] > xmin and matrix2['xs'][i] < xmax):
+                index_z = int(round(matrix2['zs'][i]*(Nz-1))
+                index_x = int(round(matrix2['xs'][i]*(Nx-1)) 
+                binsz2[index_z].append(matrix2['id'][i])
+                binsx2[index_x].append(matrix2['id'][i])  
+    
+    # Now we have to go through the bins and calculate the msd for every bin.
+    
+            
+        
 
 def main():
     
@@ -260,7 +297,72 @@ def main():
     for name in filenames2:
         t,Natoms,system_size,matrix,readstructure,entries,types = readfile(name)
         
+        
+        
+class Atom:
     
+    def __init__(self,atom_index):
+        self.atom_index = atom_index
+        self.pos = [None,None,None]           # holds position of atom
+        self.inititial_pos = [None,None,None] # holds the initial position of the particle
+        self.vel = [None,None,None]           # holds velocities
+        self.forc = [None,None,None]          # holds forces on atom
+        self.mol = None                       # holds molecule id
+        self.TYPE = None                      # holds type id
+        
+    def set_all(self,MOL,TYPE,x,y,z,vx,vy,vz,fx,fy,fz):
+        self.TYPE = TYPE
+        self.mol = MOL
+        self.pos[0] = x
+        self.pos[1] = y
+        self.pos[2] = z
+        self.vel[0] = vx
+        self.vel[1] = vy
+        self.vel[2] = vz
+        self.forc[0] = fx
+        self.forc[1] = fy
+        self.forc[2] = fz
+        self.inititial_pos[0] = x
+        self.inititial_pos[1] = y
+        self.inititial_pos[2] = z
+        
+    def set_Type(self,TYPE):
+        self.TYPE = TYPE
+    
+    def set_molID(self,molecule_id):
+        self.mol = molecule_id
+    
+    def set_position(self,x,y,z):
+        self.pos[0] = x
+        self.pos[1] = y
+        self.pos[2] = z
+    
+    def set_velocity(self,vx,vy,vz):
+        self.vel[0] = vx
+        self.vel[1] = vy
+        self.vel[2] = vz
+    
+    def set_force(self,fx,fy,fz):
+        self.forc[0] = fx
+        self.forc[1] = fy
+        self.forc[2] = fz
+        
+    def get_ID(self):
+        return self.atom_index
+    
+    def get_position(self):
+        return self.pos
+    
+    def get_velocity(self):
+        return self.vel
+    
+    def get_square_displacement(self):
+        dx = self.pos[0] - self.initial_pos[0]
+        dy = self.pos[1] - self.initial_pos[1]
+        dz = self.pos[2] - self.initial_pos[2]
+        return (dx*dx + dy*dy + dz*dz)
+        
+
 if (__name__ == "__main__"):
     import numpy as np
     import os
