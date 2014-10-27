@@ -234,7 +234,7 @@ def readfile(filename):
     return t,Natoms,system_size,matrix,readstructure, entries,types
 
 
-def displacementprofile(t1, t2, matrix1 matrix2, Natoms,sytem_size, readstructure,entries,types):
+def displacementprofile(t1, t2, matrix1, matrix2, Natoms, sytem_size, readstructure, entries, types):
     '''
     displacementprofile() shuld take a system state at time t (t1), and a system state at time t+1 (t2).
     It creates bins in the x-y plane (along z-axis) and in the y-z plane (along x-axis) where it places the 
@@ -244,6 +244,7 @@ def displacementprofile(t1, t2, matrix1 matrix2, Natoms,sytem_size, readstructur
     to any displacement.
     '''
 
+    
 
 def main():
     
