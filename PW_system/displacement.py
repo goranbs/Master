@@ -232,55 +232,230 @@ def readfile(filename):
         print matrix[entries[j]]
     '''
     return t,Natoms,system_size,matrix,readstructure, entries,types
+    
+    
+def initialize(Natoms,matrix0,types,Nx,Nz,xmin,xmax):
+    '''
+    initialize(matrix = {}, types = [], Nx=#bins in x dir. Nz=#bins in z dir, xmin E [0,1], xmax E [0,1])\n
+    Where xmin < xmax\n
+    Takes the initial statefile information and bins the atoms
+    according to their position in space.
+    It returns an array of bins that contain the atoms located at the bins
+    position in the system.\n
+    Returns:\n
+    binsx, binsz\n
+    which are wo three dimentional matrices, where an atom j in bin i is accessed by:
+    binsx[i][j] = [<id>, <xs>, <ys>, <zs>]
+    '''
 
 
-def displacementprofile(t1, t2, matrix1, matrix2, Natoms, sytem_size, readstructure, entries, types):
+    binsx = []
+    binsz = []
+    
+    for Bin in range(Nx): # fill with empty bins
+        binsx.append([])
+    for Bin in range(Nz):
+        binsz.append([])
+    
+    for i in range(Natoms):
+        if (matrix0['type'][i] in types):
+            x = matrix0['xs'][i]
+            if ((x < xmin) and (x < xmax)):
+                index_z = int(round(matrix0['zs'][i]*(Nx-1))) # index of z bin in system
+                index_x = int(round(x*(Nz-1)))                # index of x bin in system
+                atom = [matrix0['id'][i],x,matrix0['ys'][i],matrix0['zs'][i]]
+
+                binsx[index_x].append(atom)
+                binsz[index_z].append(atom)
+    '''    
+    for i in range(Nx):
+        print "#------------------------------------------------------#"
+        print "Containernr: %g " % i
+        for j in range(len(binsz[i])):
+            print "atom: %g :: x=%g  y=%g  z=%g" % (binsz[i][j][0],binsz[i][j][1],binsz[i][j][2],binsz[i][j][3])
+
+    '''
+    return np.array(binsx),np.array(binsz)
+    
+
+def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz, xmin, xmax):
     '''
     displacementprofile() shuld take a system state at time t (t1), and a system state at time t+1 (t2).
     It creates bins in the x-y plane (along z-axis) and in the y-z plane (along x-axis) where it places the 
     atoms according to their location in space.
     Every atoms displacement from t1 to t2 is calculated only if it is still located in the bin it was in at
     time t1. If not. The atom gets a new initial position in the new bin, and it will therefore not contribute
-    to any displacement.
+    to any displacement.\n
+    t=time, osv.
     '''
 
-    #1 define area of boxes. x E [0.25, 0.75], y E [0,1], z E [0,1]
-    # number of boxes in each dim.
-
-    Nx = 20 # Number of boxes in x direction
-    Nz = 20 # Number of boxes in z direction
+    binsx = []
+    binsz = []
+    still_in_binx = []
+    still_in_binz = []
+    atoms_to_removex = []
+    atoms_to_removez = []
     
-    binsx1 = np.zeros((Nx,1)), binsz1 = np.zeros((Nz,1)) # contains Nx and Nz bins that contains a number of atoms in that region.
-    binsx2 = np.zeros((Nx,1)), binsz2 = np.zeros((Nz,1)) # contains Nx and Nz bins that contains a number of atoms in that region.
-
-    for Bin in range(Nx): # fill the arrays with empty bins that will contain the atoms.
-        binsx1[Bin] = []
-        binsx2[Bin] = []
+    for Bin in range(Nx): # fill with empty bins
+        binsx.append([])
+        still_in_binx.append([])
+        atoms_to_removex.append([])
     for Bin in range(Nz):
-        binsz1[Bin] = []
-        binsz2[Bin] = []
+        binsz.append([])
+        still_in_binz.append([])
+        atoms_to_removez.append([])
+    
+    for i in range(Natoms):
+        if (matrix['type'][i] in types):
+            x = matrix['xs'][i]
+            if ((x < xmin) and (x < xmax)):
+                index_z = int(round(matrix['zs'][i]*(Nx-1))) # index of z bin in system
+                index_x = int(round(x*(Nz-1)))                # index of x bin in system
+                atom = [matrix['id'][i],x,matrix['ys'][i],matrix['zs'][i]]
+
+                binsx[index_x].append(atom)
+                binsz[index_z].append(atom)
+
+    # Now the atoms in the next timestep is added to bins. We must further go
+    # through the bins, find the atoms that are still in the bin and calculate
+    # the displacement. If an atom has moved to another bin, then  we have to 
+    # delete that atom from that bin, and add it to the new bin that it is
+    # located within.
+
+    
+    msd_x = np.zeros((Nx,1))
+    msd_z = np.zeros((Nz,1))
+    for j in range(Nx):
+        for k in range(len(initial_binsx[j])): # all atoms in initial bin j
+            a = initial_binsx[j][k][0]         # atom indexes in bin at last timestep
+            count = 0
+            for l in range(len(binsx[j])):     # all atoms in new bin j
+                b = binsx[j][l][0]             # atom indexes in bin at this timestep.
+                if (a == b):                   # If it is the same atom: 
+                    dx = binsx[j][l][1] - initial_binsx[j][k][1]
+                    dy = binsx[j][l][2] - initial_binsx[j][k][2]
+                    dz = binsx[j][l][3] - initial_binsx[j][k][3]
+                    msd_x[j] += dx*dx + dz*dz + dy*dy
+                    still_in_binx[j].append(b)
+                    count += 1 # number of atoms that contribute to the msd
+                    
+                    
+            if (count != 0):
+                msd_x[j] = msd_x[j]/count # mean square displacement in bin j.
+
+    for j in range(Nz):
+        for k in range(len(initial_binsz[j])): # all atoms in initial bin j
+            a = initial_binsz[j][k][0]
+            count = 0
+            for l in range(len(binsz[j])):     # all atoms in new bin j
+                if (a == binsz[j][l][0]):      # If it is the same atom: 
+                    dx = binsz[j][l][1] - initial_binsz[j][k][1]
+                    dy = binsz[j][l][2] - initial_binsz[j][k][2]
+                    dz = binsz[j][l][3] - initial_binsz[j][k][3]
+                    msd_z[j] += dx*dx + dz*dz + dy*dy
+                    still_in_binz[j].append(b)
+                    count += 1 # number of atoms that contribute to the msd
+
+            if (count != 0):
+                msd_z[j] = msd_z[j]/count # mean square displacement in bin j.
+    
+    # Moving atoms to their correct bin, if they are not already located there!
+    # and also make a list of atoms to be removed from bins they were located in before
+    for i in range(Nx):
+        shit = False
+        if (i == (Nx-1)):
+            shit = True # we are at the last bin
+        for j in range(len(initial_binsx[i])):
+            if (initial_binsx[i][j][0] not in still_in_binx[i]):
+                atomtofind = initial_binsx[i][j][0]
+                foundatom = False
+                # then it has moved to another box/bin.
+                # 1) find the new bin and append the atom info to this
+                # search in the closest bins!
+                for m in range(Nx/2): # go through alternating (i+1, i-1, i+2, i-2,...) bins:
+                    alpha = 1
+                    if (m%2 == 0 and i > 0):
+                        alpha = -1
+                    if (shit):
+                        alpha = -1
+                    index = i + alpha
+                    for k in range(len(binsx[index])):
+                        if (binsx[index][k][0] == atomtofind):
+                            x = binsx[index][k][1]
+                            index_x = int(round(x*(Nx-1)))
+                            np.append(initial_binsx[index_x],binsx[index_x][k])
+                            #initial_binsx[index_x].append(binsx[index][k])
+                            #add = initial_binsx[i][j][0]
+                            # 2) add indexes of atoms to be removed from the original bins
+                            atoms_to_removex[i].append(j)
+                            foundatom = True
+                            '''
+                            print "##--------------------------------------------------------------------##"
+                            print "##-- Adding/Removing || alpha= %g || i = %g || mod = %g || shit= %g --##" % (alpha, i, m%2, shit)
+                            print "Moved   : %g from bin %g to %g" % (add,i,index_x)
+                            '''
+                        if (foundatom == True):
+                            break # if we have found the atom, then break the loop!
+                    if (foundatom == True):
+                        break     # if we have found the atom, then break the loop!
+    
+    for i in range(Nz):
+        shit = False
+        if (i == (Nz-1)):
+            shit = True # we are at the last bin
+        for j in range(len(initial_binsz[i])):
+            if (initial_binsz[i][j][0] not in still_in_binz[i]):
+                atomtofind = initial_binsz[i][j][0]
+                foundatom = False
+                # then it has moved to another box/bin.
+                # 1) find the new bin and append the atom info to this
+                # search in the closest bins!
+                for m in range(Nz/2): # go through alternating (i+1, i-1, i+2, i-2,...) bins:
+                    alpha = 1
+                    if (m%2 == 0 and i > 0):
+                        alpha = -1
+                    if (shit):
+                        alpha = -1
+                    index = i + alpha
+                    for k in range(len(binsz[index])):
+                        if (binsz[index][k][0] == atomtofind):
+                            z = binsz[index][k][3]         # the z-value!
+                            index_z = int(round(z*(Nx-1))) # index of z bin in system
+                            np.append(initial_binsz[index_z],binsz[index_z][k])
+                            #initial_binsz[index_z].append(binsz[index_z][k])
+                            #add = initial_binsx[i][j][0]
+                            # 2) add indexes of atoms to be removed from the original bins
+                            atoms_to_removez[i].append(j)
+                            foundatom = True
+                            '''
+                            print "##--------------------------------------------------------------------##"
+                            print "##-- Adding/Removing || alpha= %g || i = %g || mod = %g || shit= %g --##" % (alpha, i, m%2, shit)
+                            print "Moved   : %g from bin %g to %g" % (add,i,index_z)
+                            '''
+                        if (foundatom == True):
+                            break # if we have found the atom, then break the loop!
+                    if (foundatom == True):
+                        break     # if we have found the atom, then break the loop!    
+    
+    print initial_binsx[1][:]
+    print type(initial_binsx)
+    print type(initial_binsx[1][1])
+    print atoms_to_removex[1]
+    for i in range(Nx):
+        new_array = np.delete(initial_binsx[i],atoms_to_removex[i],0)
+        initial_binsx[i] = new_array
+    #print initial_binsx
+  
+    for i in range(Nz):
+        new_array = np.delete(initial_binsz[i],atoms_to_removez[i],0)
+        initial_binsz[i] = new_array
         
-    for i in range(Natoms): # run through all the atoms, and use their positions to place them in their bins.
-        #atoms[i] = Atom(matrix1['id'][i])
-        #atoms[i].set_all(matrix1['mol'][i],matrix1['type'][i],matrix1['xs'][i],matrix1['ys'][i],matrix1['zs'][i],matrix1['vx'][i],matrix1['vy'][i],matrix1['vz'][i],matrix1['fx'][i],matrix1['fy'][i],matrix1['fz'][i])
-        if (matrix1['type'][i] in types): # if the atom is one that we are following, go on:
-            if (matrix1['xs'] > xmin and matrix21['xs'] < xmax):
-                index_z = int(round(matrix1['zs'][i]*(Nz-1)) # hight in system
-                index_x = int(round(matrix1['xs'][i]*(Nx-1)) # x pos in system
-                binsz1[index_z].append(matrix1['id'][i])     # add atom id to the bin it's located within
-                binsx1[index_x].append(matrix1['id'][i])     # add atom id to the bin it's located within
-            
-        # do the same for the next timestep:
-        if (matrix2['type'][i] in types):
-            if (matrix2['xs'][i] > xmin and matrix2['xs'][i] < xmax):
-                index_z = int(round(matrix2['zs'][i]*(Nz-1))
-                index_x = int(round(matrix2['xs'][i]*(Nx-1)) 
-                binsz2[index_z].append(matrix2['id'][i])
-                binsx2[index_x].append(matrix2['id'][i])  
+    print "#------------- Time %g ---------------#" % t
+    #print msd_x
+    #print "---------------------------------------"
+    #print msd_z
     
-    # Now we have to go through the bins and calculate the msd for every bin.
-    
-            
+    return initial_binsx, initial_binsz  # return the updated initial bins
         
 
 def main():
@@ -290,12 +465,33 @@ def main():
     filenames,time = gothroughfiles(path) # get filenames in location "path"
     start = 300
     stop = -1
-    filenames2 = filenames[start:stop]
-    length = len(filenames)
-    length2 = len(filenames2)
-    print "before: %g   after: %g " % (length, length2)
-    for name in filenames2:
-        t,Natoms,system_size,matrix,readstructure,entries,types = readfile(name)
+    filenames = filenames[start:stop]
+    #length = len(filenames)
+    #length2 = len(filenames)
+    #print "before: %g   after: %g " % (length, length2)
+    
+    name = os.path.join(path,filenames[0])
+
+    t,Natoms,system_size,matrix,readstructure,entries,types = readfile(name)
+
+    xmin = 0.25
+    xmax = 0.75    
+    Nx = Nz = 20
+    Types = [4] # oxygen
+    binsx, binsz = initialize(Natoms,matrix,Types,Nx,Nz,xmin,xmax)
+    '''    
+    dispx = [], dispz = [], timearray = np.zeros(len(filenames))
+
+    for i in range(Nx): # for all bins, create a timearray
+        dispx.append(timearray)
+    for j in range(Nz):
+        dispz.append(timearray)
+    '''
+    for name in filenames[1:]:
+        filename = os.path.join(path,name)
+        t,Natoms,system_size,matrix,readstructure,entries,types = readfile(filename)
+        binsx,binsz = displacement(t,binsx,binsz,matrix,Natoms,types,Nx,Nz,xmin,xmax)
+        
         
         
         
