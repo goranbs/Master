@@ -70,7 +70,7 @@ def writetofile(filename,toptext,contents,column1=None,column2=None,column3=None
         print "file %s is done." % filename
         
         
-def gothroughfiles(path):
+def gothroughfiles(path,arg=None):
     '''
     Go through stystem state files in "path", if they are .txt files, the first 
     character in the filename which is a number will be acknowledged as the 
@@ -84,22 +84,40 @@ def gothroughfiles(path):
     filenames = []
     numbers = []
     for name in os.listdir(path):
-        if (name[-4:] == ".txt"):
-            char = 'string'
-            start = 0
-            for character in name:
-                # find the first character in the filename which is a number
-                try:
-                    char = int(character)
-                except:
-                    pass
-                if (type(char) == int):
-                    break
-                start += 1
+        if arg is not None:
+            if (arg in name):
+                if (name[-4:] == ".txt"):
+                    char = 'string'
+                    start = 0
+                    for character in name:
+                        # find the first character in the filename which is a number
+                        try:
+                            char = int(character)
+                        except:
+                            pass
+                        if (type(char) == int):
+                            break
+                        start += 1
                 
-            filenames.append(name)
-            numbers.append(int(name[start:-4]))
-
+                    filenames.append(name)
+                    numbers.append(int(name[start:-4]))
+        else:
+            if (name[-4:] == ".txt"):
+                    char = 'string'
+                    start = 0
+                    for character in name:
+                        # find the first character in the filename which is a number
+                        try:
+                            char = int(character)
+                        except:
+                            pass
+                        if (type(char) == int):
+                            break
+                        start += 1
+                
+                    filenames.append(name)
+                    numbers.append(int(name[start:-4]))
+                    
     time = sorted(numbers)
     sortedfilenames = sorted(filenames, key = lambda x: x[:-4])
     
@@ -236,18 +254,15 @@ def readfile(filename):
     
 def initialize(Natoms,matrix0,types,Nx,Nz,xmin,xmax):
     '''
-    initialize(matrix = {}, types = [], Nx=#bins in x dir. Nz=#bins in z dir, xmin E [0,1], xmax E [0,1])\n
+    initialize(Natoms, matrix = {}, types = [], Nx=#bins in x dir. Nz=#bins in z dir, xmin E [0,1], xmax E [0,1])\n
     Where xmin < xmax\n
-    Takes the initial statefile information and bins the atoms
-    according to their position in space.
-    It returns an array of bins that contain the atoms located at the bins
-    position in the system.\n
-    Returns:\n
+    Takes the initial statefile information and bins the atoms according to their position in space.
+    It returns an array of bins that contain the atoms located at the bins position in the system.\n
+    Returns two numpy arrays:\n
     binsx, binsz\n
-    which are wo three dimentional matrices, where an atom j in bin i is accessed by:
+    which are three dimentional matrices, where an atom j in bin i is accessed by:
     binsx[i][j] = [<id>, <xs>, <ys>, <zs>]
     '''
-
 
     binsx = []
     binsz = []
@@ -258,58 +273,51 @@ def initialize(Natoms,matrix0,types,Nx,Nz,xmin,xmax):
         binsz.append([])
     
     for i in range(Natoms):
-        if (matrix0['type'][i] in types):
+        if (matrix0['type'][i] in types):                     # only atoms in type are traced
             x = matrix0['xs'][i]
-            if ((x < xmin) and (x < xmax)):
+            if ((xmin < x) and (x < xmax)):                   # tracking only atoms inside nanopore
                 index_z = int(round(matrix0['zs'][i]*(Nx-1))) # index of z bin in system
                 index_x = int(round(x*(Nz-1)))                # index of x bin in system
                 atom = [matrix0['id'][i],x,matrix0['ys'][i],matrix0['zs'][i]]
 
                 binsx[index_x].append(atom)
                 binsz[index_z].append(atom)
-    '''    
-    for i in range(Nx):
-        print "#------------------------------------------------------#"
-        print "Containernr: %g " % i
-        for j in range(len(binsz[i])):
-            print "atom: %g :: x=%g  y=%g  z=%g" % (binsz[i][j][0],binsz[i][j][1],binsz[i][j][2],binsz[i][j][3])
 
-    '''
     return np.array(binsx),np.array(binsz)
     
 
 def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz, xmin, xmax):
     '''
-    displacementprofile() shuld take a system state at time t (t1), and a system state at time t+1 (t2).
+    displacementprofile(time, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz, xmin, xmax)\n 
+    Takes the system state at the starting time t0, and a system state at time t.
     It creates bins in the x-y plane (along z-axis) and in the y-z plane (along x-axis) where it places the 
     atoms according to their location in space.
     Every atoms displacement from t1 to t2 is calculated only if it is still located in the bin it was in at
     time t1. If not. The atom gets a new initial position in the new bin, and it will therefore not contribute
-    to any displacement.\n
-    t=time, osv.
+    to any displacement.
     '''
 
     binsx = []
     binsz = []
-    still_in_binx = []
-    still_in_binz = []
-    atoms_to_removex = []
-    atoms_to_removez = []
+    #still_in_binx = []
+    #still_in_binz = []
+    #atoms_to_removex = []
+    #atoms_to_removez = []
     
     for Bin in range(Nx): # fill with empty bins
         binsx.append([])
-        still_in_binx.append([])
-        atoms_to_removex.append([])
+        #still_in_binx.append([])
+        #atoms_to_removex.append([])
     for Bin in range(Nz):
         binsz.append([])
-        still_in_binz.append([])
-        atoms_to_removez.append([])
+        #still_in_binz.append([])
+        #atoms_to_removez.append([])
     
     for i in range(Natoms):
-        if (matrix['type'][i] in types):
+        if (matrix['type'][i] in types):                      # only atoms in type are traced
             x = matrix['xs'][i]
-            if ((x < xmin) and (x < xmax)):
-                index_z = int(round(matrix['zs'][i]*(Nx-1))) # index of z bin in system
+            if ((xmin < x) and (x < xmax)):                   # tracking only atoms inside nanopore
+                index_z = int(round(matrix['zs'][i]*(Nx-1)))  # index of z bin in system
                 index_x = int(round(x*(Nz-1)))                # index of x bin in system
                 atom = [matrix['id'][i],x,matrix['ys'][i],matrix['zs'][i]]
 
@@ -318,13 +326,11 @@ def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz,
 
     # Now the atoms in the next timestep is added to bins. We must further go
     # through the bins, find the atoms that are still in the bin and calculate
-    # the displacement. If an atom has moved to another bin, then  we have to 
-    # delete that atom from that bin, and add it to the new bin that it is
-    # located within.
-
+    # the displacement.
     
     msd_x = np.zeros((Nx,1))
     msd_z = np.zeros((Nz,1))
+    contributing = 0
     for j in range(Nx):
         for k in range(len(initial_binsx[j])): # all atoms in initial bin j
             a = initial_binsx[j][k][0]         # atom indexes in bin at last timestep
@@ -336,13 +342,15 @@ def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz,
                     dy = binsx[j][l][2] - initial_binsx[j][k][2]
                     dz = binsx[j][l][3] - initial_binsx[j][k][3]
                     msd_x[j] += dx*dx + dz*dz + dy*dy
-                    still_in_binx[j].append(b)
+                    #still_in_binx[j].append(b)
                     count += 1 # number of atoms that contribute to the msd
-                    
+            contributing += count        
                     
             if (count != 0):
                 msd_x[j] = msd_x[j]/count # mean square displacement in bin j.
 
+    contributing = contributing/Nx # average number of contributing particles
+    
     for j in range(Nz):
         for k in range(len(initial_binsz[j])): # all atoms in initial bin j
             a = initial_binsz[j][k][0]
@@ -353,210 +361,167 @@ def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz,
                     dy = binsz[j][l][2] - initial_binsz[j][k][2]
                     dz = binsz[j][l][3] - initial_binsz[j][k][3]
                     msd_z[j] += dx*dx + dz*dz + dy*dy
-                    still_in_binz[j].append(b)
+                    #still_in_binz[j].append(b)
                     count += 1 # number of atoms that contribute to the msd
 
             if (count != 0):
                 msd_z[j] = msd_z[j]/count # mean square displacement in bin j.
     
-    # Moving atoms to their correct bin, if they are not already located there!
-    # and also make a list of atoms to be removed from bins they were located in before
-    for i in range(Nx):
-        shit = False
-        if (i == (Nx-1)):
-            shit = True # we are at the last bin
-        for j in range(len(initial_binsx[i])):
-            if (initial_binsx[i][j][0] not in still_in_binx[i]):
-                atomtofind = initial_binsx[i][j][0]
-                foundatom = False
-                # then it has moved to another box/bin.
-                # 1) find the new bin and append the atom info to this
-                # search in the closest bins!
-                for m in range(Nx/2): # go through alternating (i+1, i-1, i+2, i-2,...) bins:
-                    alpha = 1
-                    if (m%2 == 0 and i > 0):
-                        alpha = -1
-                    if (shit):
-                        alpha = -1
-                    index = i + alpha
-                    for k in range(len(binsx[index])):
-                        if (binsx[index][k][0] == atomtofind):
-                            x = binsx[index][k][1]
-                            index_x = int(round(x*(Nx-1)))
-                            np.append(initial_binsx[index_x],binsx[index_x][k])
-                            #initial_binsx[index_x].append(binsx[index][k])
-                            #add = initial_binsx[i][j][0]
-                            # 2) add indexes of atoms to be removed from the original bins
-                            atoms_to_removex[i].append(j)
-                            foundatom = True
-                            '''
-                            print "##--------------------------------------------------------------------##"
-                            print "##-- Adding/Removing || alpha= %g || i = %g || mod = %g || shit= %g --##" % (alpha, i, m%2, shit)
-                            print "Moved   : %g from bin %g to %g" % (add,i,index_x)
-                            '''
-                        if (foundatom == True):
-                            break # if we have found the atom, then break the loop!
-                    if (foundatom == True):
-                        break     # if we have found the atom, then break the loop!
-    
-    for i in range(Nz):
-        shit = False
-        if (i == (Nz-1)):
-            shit = True # we are at the last bin
-        for j in range(len(initial_binsz[i])):
-            if (initial_binsz[i][j][0] not in still_in_binz[i]):
-                atomtofind = initial_binsz[i][j][0]
-                foundatom = False
-                # then it has moved to another box/bin.
-                # 1) find the new bin and append the atom info to this
-                # search in the closest bins!
-                for m in range(Nz/2): # go through alternating (i+1, i-1, i+2, i-2,...) bins:
-                    alpha = 1
-                    if (m%2 == 0 and i > 0):
-                        alpha = -1
-                    if (shit):
-                        alpha = -1
-                    index = i + alpha
-                    for k in range(len(binsz[index])):
-                        if (binsz[index][k][0] == atomtofind):
-                            z = binsz[index][k][3]         # the z-value!
-                            index_z = int(round(z*(Nx-1))) # index of z bin in system
-                            np.append(initial_binsz[index_z],binsz[index_z][k])
-                            #initial_binsz[index_z].append(binsz[index_z][k])
-                            #add = initial_binsx[i][j][0]
-                            # 2) add indexes of atoms to be removed from the original bins
-                            atoms_to_removez[i].append(j)
-                            foundatom = True
-                            '''
-                            print "##--------------------------------------------------------------------##"
-                            print "##-- Adding/Removing || alpha= %g || i = %g || mod = %g || shit= %g --##" % (alpha, i, m%2, shit)
-                            print "Moved   : %g from bin %g to %g" % (add,i,index_z)
-                            '''
-                        if (foundatom == True):
-                            break # if we have found the atom, then break the loop!
-                    if (foundatom == True):
-                        break     # if we have found the atom, then break the loop!    
-    
-    print initial_binsx[1][:]
-    print type(initial_binsx)
-    print type(initial_binsx[1][1])
-    print atoms_to_removex[1]
-    for i in range(Nx):
-        new_array = np.delete(initial_binsx[i],atoms_to_removex[i],0)
-        initial_binsx[i] = new_array
-    #print initial_binsx
-  
-    for i in range(Nz):
-        new_array = np.delete(initial_binsz[i],atoms_to_removez[i],0)
-        initial_binsz[i] = new_array
-        
-    print "#------------- Time %g ---------------#" % t
-    #print msd_x
-    #print "---------------------------------------"
-    #print msd_z
-    
-    return initial_binsx, initial_binsz  # return the updated initial bins
+
+    print "average number of contributing particles = %g " % contributing
+    print "----------------------------------------------"
+    return initial_binsx, initial_binsz, msd_x, msd_z  # return the updated initial bins
         
 
 def main():
     
     path = "/home/goran/lammps-28Jun14/examples/water_portlandite_system/npt_run_and_energyminimization/statefiles"
     
-    filenames,time = gothroughfiles(path) # get filenames in location "path"
-    start = 300
-    stop = -1
-    filenames = filenames[start:stop]
-    #length = len(filenames)
-    #length2 = len(filenames)
-    #print "before: %g   after: %g " % (length, length2)
+    arg = 'nve'  # use only filnames containing nve!
+    filenames,time = gothroughfiles(path,arg) # get filenames in location "path"
     
     name = os.path.join(path,filenames[0])
 
     t,Natoms,system_size,matrix,readstructure,entries,types = readfile(name)
 
+    lorock = 7.2   # height of lower portlandite part
+    hirock = 36.7  # height of upper portlandite part
     xmin = 0.25
     xmax = 0.75    
-    Nx = Nz = 20
-    Types = [4] # oxygen
+    Nx = Nz = 15
+    Types = [4]    # oxygen
     binsx, binsz = initialize(Natoms,matrix,Types,Nx,Nz,xmin,xmax)
-    '''    
-    dispx = [], dispz = [], timearray = np.zeros(len(filenames))
-
-    for i in range(Nx): # for all bins, create a timearray
-        dispx.append(timearray)
-    for j in range(Nz):
-        dispz.append(timearray)
-    '''
-    for name in filenames[1:]:
+    
+    msdx = []
+    msdz = []
+    time = []
+    conversionfactor = 10**(-4.0)
+    kk = 0
+    nfiles = len(filenames) -1
+    for name in filenames[2:100]:
+        kk += 1
+        print "Processing %s . file nr %g / %g" % (name,kk,nfiles)
         filename = os.path.join(path,name)
         t,Natoms,system_size,matrix,readstructure,entries,types = readfile(filename)
-        binsx,binsz = displacement(t,binsx,binsz,matrix,Natoms,types,Nx,Nz,xmin,xmax)
-        
-        
-        
-        
-class Atom:
+        binsx,binsz,msd_x,msd_z = displacement(t,binsx,binsz,matrix,Natoms,Types,Nx,Nz,xmin,xmax)
+        msdx.append(msd_x), msdz.append(msd_z), time.append(t)
     
-    def __init__(self,atom_index):
-        self.atom_index = atom_index
-        self.pos = [None,None,None]           # holds position of atom
-        self.inititial_pos = [None,None,None] # holds the initial position of the particle
-        self.vel = [None,None,None]           # holds velocities
-        self.forc = [None,None,None]          # holds forces on atom
-        self.mol = None                       # holds molecule id
-        self.TYPE = None                      # holds type id
-        
-    def set_all(self,MOL,TYPE,x,y,z,vx,vy,vz,fx,fy,fz):
-        self.TYPE = TYPE
-        self.mol = MOL
-        self.pos[0] = x
-        self.pos[1] = y
-        self.pos[2] = z
-        self.vel[0] = vx
-        self.vel[1] = vy
-        self.vel[2] = vz
-        self.forc[0] = fx
-        self.forc[1] = fy
-        self.forc[2] = fz
-        self.inititial_pos[0] = x
-        self.inititial_pos[1] = y
-        self.inititial_pos[2] = z
-        
-    def set_Type(self,TYPE):
-        self.TYPE = TYPE
+    xlo = system_size[0]
+    xhi = system_size[1]
+    zlo = system_size[4]
+    zhi = system_size[5]
+    lx = (xhi-xlo)          # length of system in x dir.
+    xstart = lx*xmin        # starting pos of portlandite in x dir
+    xstop = lx*xmax         # ending pos in x dir
+    dx = (xstop-xstart)/Nx 
+    dz = (zhi-zlo)/Nz
+    binposx = np.zeros((Nx,1))
+    binposz = np.zeros((Nz,1))
+    msdx_time = np.zeros((Nx,len(time)))
+    msdz_time = np.zeros((Nz,len(time)))
+    Dx_time = np.zeros((Nx,len(time)))
+    Dz_time = np.zeros((Nz,len(time)))
+    lower_rock = np.linspace(lorock,lorock,Nx)
+    upper_rock = np.linspace(hirock,hirock,Nx)
+    bins = np.linspace(1,Nx,Nx)  # for now
     
-    def set_molID(self,molecule_id):
-        self.mol = molecule_id
+    # --------- Averaging the displacement in the bins ---------#    
+    mean_sdx = np.zeros((Nx,1))
+    mean_sdz = np.zeros((Nx,1))
+    length_msdx = len(msdx)
+    length_msdz = len(msdz)    
+    for i in range(length_msdx):
+        time[i] = time[i]*conversionfactor
+        for j in range(Nx):
+            mean_sdx[j] += msdx[i][j]
+            msdx_time[j][i] = msdx[i][j]
+            if (time[i] > 0):
+                Dx_time[j][i] = mean_sdx[j]/(6*time[i])
+                
+    for i in range(length_msdz):
+        for j in range(Nz):
+            mean_sdz[j] += msdz[i][j]
+            msdz_time[j][i] = msdz[i][j]
+            if (time[i] > 0):
+                Dz_time[j][i] = mean_sdz[j]/(6*time[i])
     
-    def set_position(self,x,y,z):
-        self.pos[0] = x
-        self.pos[1] = y
-        self.pos[2] = z
+    for j in range(Nx):
+        mean_sdx[j] = mean_sdx[j]/length_msdx
+        binposx[j] = dx*(j+0.5) + xstart
+    for j in range(Nz):
+        mean_sdz[j] = mean_sdz[j]/length_msdz
+        binposz[j] = dz*(j+0.5)
     
-    def set_velocity(self,vx,vy,vz):
-        self.vel[0] = vx
-        self.vel[1] = vy
-        self.vel[2] = vz
+    time = np.array(time)
+
+    #---------------------------------- plotting ---------------------------#
+    fig = plt.figure()
+    plt.hold(True)
+    #plt.plot(binposx,mean_sdx,'b-*')
+    for i in range(length_msdx):
+#        plt.plot(binposx,msdx[i])
+        plt.plot(bins,msdx[i])
+    plt.hold(False)
+    plt.title('Mean square displacement of particles as function of\ndistance into the gap/nano-tube.')
+    plt.xlabel('x [Angstrom]'),plt.ylabel('msd [A^2]')
+
+    fig2 = plt.figure()
+    plt.hold(True)
+    #plt.plot(binposz,mean_sdz,'b-*')
+    #lspace = np.linspace(min(mean_sdz),max(mean_sdz),Nx)
+    #plt.plot(lower_rock,lspace,'k--')
+    #plt.plot(upper_rock,lspace,'k--')
+    for i in range(length_msdz):
+#        plt.plot(binposz,msdz[i])
+        plt.plot(bins,msdz[i])
+    plt.hold(False)
+    plt.title('Mean square displacement of particles as function of\ndistance from the walls')
+    plt.xlabel('z [Angstrom]'),plt.ylabel('msd [A^2]')
+
+    fig3 = plt.figure()
+    plt.hold(True)
+    legends = []
+    for j in range(Nx):
+        legend = "bin %g" % (j+1)
+        plt.plot(time[:],msdx_time[j][:],'-')
+        legends.append(legend)
+    plt.hold(False)
+    plt.title('Displacement as funciton of time for x')
+    plt.xlabel('time [ps]'),plt.ylabel('msd [A^2]')
+    plt.legend(legends,loc='upper left')    
     
-    def set_force(self,fx,fy,fz):
-        self.forc[0] = fx
-        self.forc[1] = fy
-        self.forc[2] = fz
-        
-    def get_ID(self):
-        return self.atom_index
+    fig4 = plt.figure()
+    plt.hold(True)
+    legends = []
+    for j in range(Nz):
+        legend = "bin %g" % (j+1)   
+        plt.plot(time[:],msdz_time[j][:],'-')
+        legends.append(legend)
+    plt.hold(False)
+    plt.title('Displacement as funciton of time for z')
+    plt.xlabel('time [ps]'),plt.ylabel('msd [A^2]')
+    plt.legend(legends,loc='upper left')
     
-    def get_position(self):
-        return self.pos
+    fig5 = plt.figure()
+    plt.hold(True)    
+    for j in range(Nx):
+        plt.plot(time,Dx_time[j][:],'-')
+    plt.hold(False)
+    plt.title('Diffution for bins along the x-axis.\nThat is, as a funciton debth into the nanopore')
+    plt.xlabel('time [ps]'),plt.ylabel('D [A^2/s]')
+    plt.legend(legends,loc='upper left')
     
-    def get_velocity(self):
-        return self.vel
+    fig5 = plt.figure()
+    plt.hold(True)    
+    for j in range(Nz):
+        plt.plot(time,Dz_time[j][:],'-')
+    plt.hold(False)
+    plt.title('Diffusion for bins in z-direction.\nThat is, parallell to the rock surface')
+    plt.xlabel('time [ps]'),plt.ylabel('D [A^2/s]')
+    plt.legend(legends,loc='upper left')
     
-    def get_square_displacement(self):
-        dx = self.pos[0] - self.initial_pos[0]
-        dy = self.pos[1] - self.initial_pos[1]
-        dz = self.pos[2] - self.initial_pos[2]
-        return (dx*dx + dy*dy + dz*dz)
+    plt.show(True)
+
         
 
 if (__name__ == "__main__"):
