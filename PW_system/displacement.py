@@ -252,7 +252,7 @@ def readfile(filename):
     return t,Natoms,system_size,matrix,readstructure, entries,types
     
     
-def initialize(Natoms,matrix0,types,Nx,Nz,xmin,xmax):
+def initialize(Natoms,matrix0,types,Nx,Nz,xmin,xmax,zmin,zmax):
     '''
     initialize(Natoms, matrix = {}, types = [], Nx=#bins in x dir. Nz=#bins in z dir, xmin E [0,1], xmax E [0,1])\n
     Where xmin < xmax\n
@@ -266,7 +266,10 @@ def initialize(Natoms,matrix0,types,Nx,Nz,xmin,xmax):
 
     binsx = []
     binsz = []
-    
+    natoms_x = np.zeros((Nx,1))
+    natoms_z = np.zeros((Nx,1))
+    boxsize_x = (xmax-xmin)/float(Nx)
+    boxsize_z = (zmax-zmin)/float(Nz)
     for Bin in range(Nx): # fill with empty bins
         binsx.append([])
     for Bin in range(Nz):
@@ -276,17 +279,23 @@ def initialize(Natoms,matrix0,types,Nx,Nz,xmin,xmax):
         if (matrix0['type'][i] in types):                     # only atoms in type are traced
             x = matrix0['xs'][i]
             if ((xmin < x) and (x < xmax)):                   # tracking only atoms inside nanopore
-                index_z = int(round(matrix0['zs'][i]*(Nx-1))) # index of z bin in system
-                index_x = int(round(x*(Nz-1)))                # index of x bin in system
+                index_z = int(round(matrix0['zs'][i]*(Nz-1))) # index of z bin in system
+                index_x = int(round(x*(Nx-1)))                # index of x bin in system
                 atom = [matrix0['id'][i],x,matrix0['ys'][i],matrix0['zs'][i]]
-
+                natoms_x[index_x] += 1
+                natoms_z[index_z] += 1
                 binsx[index_x].append(atom)
                 binsz[index_z].append(atom)
 
+    print "##################################################################"
+    print natoms_x
+    print "##################################################################"
+    print natoms_z
+    print "##################################################################"
     return np.array(binsx),np.array(binsz)
     
 
-def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz, xmin, xmax):
+def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz, xmin, xmax, zmin,zmax):
     '''
     displacementprofile(time, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz, xmin, xmax)\n 
     Takes the system state at the starting time t0, and a system state at time t.
@@ -299,6 +308,9 @@ def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz,
 
     binsx = []
     binsz = []
+    boxsize_x = (xmax-xmin)/float(Nx)
+    boxsize_z = (zmax-zmin)/float(Nz)
+    
     #still_in_binx = []
     #still_in_binz = []
     #atoms_to_removex = []
@@ -317,8 +329,8 @@ def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz,
         if (matrix['type'][i] in types):                      # only atoms in type are traced
             x = matrix['xs'][i]
             if ((xmin < x) and (x < xmax)):                   # tracking only atoms inside nanopore
-                index_z = int(round(matrix['zs'][i]*(Nx-1)))  # index of z bin in system
-                index_x = int(round(x*(Nz-1)))                # index of x bin in system
+                index_z = int(round(matrix['zs'][i]*(Nz-1)))  # index of z bin in system
+                index_x = int(round(x*(Nx-1)))                # index of x bin in system
                 atom = [matrix['id'][i],x,matrix['ys'][i],matrix['zs'][i]]
 
                 binsx[index_x].append(atom)
@@ -330,7 +342,8 @@ def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz,
     
     msd_x = np.zeros((Nx,1))
     msd_z = np.zeros((Nz,1))
-    contributing = 0
+    contributing_x = 0
+    contributing_z = 0
     for j in range(Nx):
         for k in range(len(initial_binsx[j])): # all atoms in initial bin j
             a = initial_binsx[j][k][0]         # atom indexes in bin at last timestep
@@ -344,12 +357,12 @@ def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz,
                     msd_x[j] += dx*dx + dz*dz + dy*dy
                     #still_in_binx[j].append(b)
                     count += 1 # number of atoms that contribute to the msd
-            contributing += count        
+            contributing_x += count        
                     
             if (count != 0):
                 msd_x[j] = msd_x[j]/count # mean square displacement in bin j.
 
-    contributing = contributing/Nx # average number of contributing particles
+    contributing_x = contributing_x/Nx # average number of contributing particles
     
     for j in range(Nz):
         for k in range(len(initial_binsz[j])): # all atoms in initial bin j
@@ -363,12 +376,12 @@ def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz,
                     msd_z[j] += dx*dx + dz*dz + dy*dy
                     #still_in_binz[j].append(b)
                     count += 1 # number of atoms that contribute to the msd
-
+            contributing_z += count
             if (count != 0):
                 msd_z[j] = msd_z[j]/count # mean square displacement in bin j.
     
 
-    print "average number of contributing particles = %g " % contributing
+    print "avg # of contributing particles = %g , %g" % (contributing_x, contributing_z/Nz)
     print "----------------------------------------------"
     return initial_binsx, initial_binsz, msd_x, msd_z  # return the updated initial bins
         
@@ -387,10 +400,12 @@ def main():
     lorock = 7.2   # height of lower portlandite part
     hirock = 36.7  # height of upper portlandite part
     xmin = 0.25
-    xmax = 0.75    
+    xmax = 0.75
+    zmin = 0.0
+    zmax = 1.0    
     Nx = Nz = 15
     Types = [4]    # oxygen
-    binsx, binsz = initialize(Natoms,matrix,Types,Nx,Nz,xmin,xmax)
+    binsx, binsz = initialize(Natoms,matrix,Types,Nx,Nz,xmin,xmax,zmin,zmax)
     
     msdx = []
     msdz = []
@@ -398,12 +413,12 @@ def main():
     conversionfactor = 10**(-4.0)
     kk = 0
     nfiles = len(filenames) -1
-    for name in filenames[2:100]:
+    for name in filenames[2:]:
         kk += 1
         print "Processing %s . file nr %g / %g" % (name,kk,nfiles)
         filename = os.path.join(path,name)
         t,Natoms,system_size,matrix,readstructure,entries,types = readfile(filename)
-        binsx,binsz,msd_x,msd_z = displacement(t,binsx,binsz,matrix,Natoms,Types,Nx,Nz,xmin,xmax)
+        binsx,binsz,msd_x,msd_z = displacement(t,binsx,binsz,matrix,Natoms,Types,Nx,Nz,xmin,xmax,zmin,zmax)
         msdx.append(msd_x), msdz.append(msd_z), time.append(t)
     
     xlo = system_size[0]
@@ -481,7 +496,7 @@ def main():
     fig3 = plt.figure()
     plt.hold(True)
     legends = []
-    for j in range(Nx):
+    for j in range(int(round(Nx/2.0)+1)):
         legend = "bin %g" % (j+1)
         plt.plot(time[:],msdx_time[j][:],'-')
         legends.append(legend)
@@ -493,7 +508,7 @@ def main():
     fig4 = plt.figure()
     plt.hold(True)
     legends = []
-    for j in range(Nz):
+    for j in range(int(round(Nz/2.0)+1)):
         legend = "bin %g" % (j+1)   
         plt.plot(time[:],msdz_time[j][:],'-')
         legends.append(legend)
@@ -504,7 +519,7 @@ def main():
     
     fig5 = plt.figure()
     plt.hold(True)    
-    for j in range(Nx):
+    for j in range(int(round(Nx/2.0)+1)):
         plt.plot(time,Dx_time[j][:],'-')
     plt.hold(False)
     plt.title('Diffution for bins along the x-axis.\nThat is, as a funciton debth into the nanopore')
@@ -513,7 +528,7 @@ def main():
     
     fig5 = plt.figure()
     plt.hold(True)    
-    for j in range(Nz):
+    for j in range(int(round(Nz/2.0)+1)):
         plt.plot(time,Dz_time[j][:],'-')
     plt.hold(False)
     plt.title('Diffusion for bins in z-direction.\nThat is, parallell to the rock surface')
