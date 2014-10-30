@@ -252,26 +252,24 @@ def readfile(filename):
     return t,Natoms,system_size,matrix,readstructure, entries,types
     
     
-def initialize(Natoms,matrix0,types,Nx,Nz,xmin,xmax,zmin,zmax):
+def initialize(Natoms,matrix0,types,Nz,xmin,xmax,z0,z1):
     '''
-    initialize(Natoms, matrix = {}, types = [], Nx=#bins in x dir. Nz=#bins in z dir, xmin E [0,1], xmax E [0,1])\n
+    initialize(Natoms, matrix = {}, types = [], Nz=#bins in z dir, xmin E [0,1], xmax E [0,1]), z0,z1 is the z position of the surfaces\n
     Where xmin < xmax\n
     Takes the initial statefile information and bins the atoms according to their position in space.
     It returns an array of bins that contain the atoms located at the bins position in the system.\n
     Returns two numpy arrays:\n
     binsx, binsz\n
     which are three dimentional matrices, where an atom j in bin i is accessed by:
-    binsx[i][j] = [<id>, <xs>, <ys>, <zs>]
+    binsz[i][j] = [<id>, <xs>, <ys>, <zs>]
     '''
-
-    binsx = []
     binsz = []
-    natoms_x = np.zeros((Nx,1))
-    natoms_z = np.zeros((Nx,1))
-    boxsize_x = (xmax-xmin)/float(Nx)
-    boxsize_z = (zmax-zmin)/float(Nz)
-    for Bin in range(Nx): # fill with empty bins
-        binsx.append([])
+    natoms_z = np.zeros((Nz,1))
+    d_port = (z1-z0)                       # crack opening
+    half_d_port = d_port/2.0               # half crack opening
+    boxsize_z = (half_d_port)/float(Nz)    # boxsize for boxes from surface to center of crack.
+    center_of_port = half_d_port + z0      # center of system
+
     for Bin in range(Nz):
         binsz.append([])
     
@@ -279,23 +277,31 @@ def initialize(Natoms,matrix0,types,Nx,Nz,xmin,xmax,zmin,zmax):
         if (matrix0['type'][i] in types):                     # only atoms in type are traced
             x = matrix0['xs'][i]
             if ((xmin < x) and (x < xmax)):                   # tracking only atoms inside nanopore
-                index_z = int(round(matrix0['zs'][i]*(Nz-1))) # index of z bin in system
-                index_x = int(round(x*(Nx-1)))                # index of x bin in system
-                atom = [matrix0['id'][i],x,matrix0['ys'][i],matrix0['zs'][i]]
-                natoms_x[index_x] += 1
-                natoms_z[index_z] += 1
-                binsx[index_x].append(atom)
+                z = matrix0['zs'][i]
+                if (z < center_of_port):
+                    dz = (z-z0)  # distance from lower
+                else:
+                    dz = (z1-z)  # distance from upper
+                if (dz < 0):
+                    index_z = 0
+                    print "Shit! index_z=%g, dz=%g, z=%g : center_of_port=%g, boxsize=%g" % (index_z,dz,z,center_of_port,boxsize_z)
+                else:
+                    index_z = int(np.floor(dz/boxsize_z))  # bin index for the i'th atom
+                if (index_z >= Nz):
+                    print "Shit! index_z=%g, dz=%g, z=%g : center_of_port=%g, boxsize=%g" % (index_z,dz,z,center_of_port,boxsize_z)
+                    index_z = Nz-1
+
+                atom = [matrix0['id'][i],x,matrix0['ys'][i],z]
+                natoms_z[index_z] += 1 # count the number of atoms that are appended in each
                 binsz[index_z].append(atom)
 
     print "##################################################################"
-    print natoms_x
-    print "##################################################################"
     print natoms_z
     print "##################################################################"
-    return np.array(binsx),np.array(binsz)
+    return np.array(binsz)
     
 
-def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz, xmin, xmax, zmin,zmax):
+def displacement(t, initial_binsz, matrix, Natoms, types, Nz, xmin, xmax, z0,z1):
     '''
     displacementprofile(time, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz, xmin, xmax)\n 
     Takes the system state at the starting time t0, and a system state at time t.
@@ -306,84 +312,62 @@ def displacement(t, initial_binsx, initial_binsz, matrix, Natoms, types, Nx, Nz,
     to any displacement.
     '''
 
-    binsx = []
     binsz = []
-    boxsize_x = (xmax-xmin)/float(Nx)
-    boxsize_z = (zmax-zmin)/float(Nz)
-    
-    #still_in_binx = []
-    #still_in_binz = []
-    #atoms_to_removex = []
-    #atoms_to_removez = []
-    
-    for Bin in range(Nx): # fill with empty bins
-        binsx.append([])
-        #still_in_binx.append([])
-        #atoms_to_removex.append([])
+    d_port = (z1-z0)                       # crack opening
+    half_d_port = d_port/2.0               # half crack opening
+    boxsize_z = (half_d_port)/float(Nz)    # boxsize for boxes from surface to center of crack.
+    center_of_port = half_d_port + z0
+
     for Bin in range(Nz):
         binsz.append([])
-        #still_in_binz.append([])
-        #atoms_to_removez.append([])
     
     for i in range(Natoms):
         if (matrix['type'][i] in types):                      # only atoms in type are traced
             x = matrix['xs'][i]
             if ((xmin < x) and (x < xmax)):                   # tracking only atoms inside nanopore
-                index_z = int(round(matrix['zs'][i]*(Nz-1)))  # index of z bin in system
-                index_x = int(round(x*(Nx-1)))                # index of x bin in system
-                atom = [matrix['id'][i],x,matrix['ys'][i],matrix['zs'][i]]
+                z = matrix['zs'][i]
+                if (z < center_of_port):
+                    dz = (z-z0)      # distance from closest crack surface
+                else:
+                    dz = (z1-z)      # distance from closest crack surface
+                if (dz < 0):
+                    index_z = 0
+                else:
+                    index_z = int(np.floor(dz/boxsize_z))  # bin index for atom
+                if (index_z >= Nz):
+                    #print "Shit! index_z=%g, dz=%g, z=%g : center_of_port=%g, boxsize=%g" % (index_z,dz,z,center_of_port,boxsize_z)
+                    index_z = Nz-1
+                    
+                atom = [matrix['id'][i],x,matrix['ys'][i],z]
 
-                binsx[index_x].append(atom)
                 binsz[index_z].append(atom)
 
     # Now the atoms in the next timestep is added to bins. We must further go
     # through the bins, find the atoms that are still in the bin and calculate
     # the displacement.
     
-    msd_x = np.zeros((Nx,1))
     msd_z = np.zeros((Nz,1))
-    contributing_x = 0
     contributing_z = 0
-    for j in range(Nx):
-        for k in range(len(initial_binsx[j])): # all atoms in initial bin j
-            a = initial_binsx[j][k][0]         # atom indexes in bin at last timestep
-            count = 0
-            for l in range(len(binsx[j])):     # all atoms in new bin j
-                b = binsx[j][l][0]             # atom indexes in bin at this timestep.
-                if (a == b):                   # If it is the same atom: 
-                    dx = binsx[j][l][1] - initial_binsx[j][k][1]
-                    dy = binsx[j][l][2] - initial_binsx[j][k][2]
-                    dz = binsx[j][l][3] - initial_binsx[j][k][3]
-                    msd_x[j] += dx*dx + dz*dz + dy*dy
-                    #still_in_binx[j].append(b)
-                    count += 1 # number of atoms that contribute to the msd
-            contributing_x += count        
-                    
-            if (count != 0):
-                msd_x[j] = msd_x[j]/count # mean square displacement in bin j.
-
-    contributing_x = contributing_x/Nx # average number of contributing particles
     
     for j in range(Nz):
         for k in range(len(initial_binsz[j])): # all atoms in initial bin j
-            a = initial_binsz[j][k][0]
+            a = initial_binsz[j][k][0]         # atom_ID
             count = 0
             for l in range(len(binsz[j])):     # all atoms in new bin j
-                if (a == binsz[j][l][0]):      # If it is the same atom: 
+                if (a == binsz[j][l][0]):      # If the atom is still in bin j: 
                     dx = binsz[j][l][1] - initial_binsz[j][k][1]
                     dy = binsz[j][l][2] - initial_binsz[j][k][2]
                     dz = binsz[j][l][3] - initial_binsz[j][k][3]
                     msd_z[j] += dx*dx + dz*dz + dy*dy
-                    #still_in_binz[j].append(b)
                     count += 1 # number of atoms that contribute to the msd
             contributing_z += count
             if (count != 0):
                 msd_z[j] = msd_z[j]/count # mean square displacement in bin j.
     
 
-    print "avg # of contributing particles = %g , %g" % (contributing_x, contributing_z/Nz)
+    print "avg # of contributing particles = %g" % (contributing_z/Nz)
     print "----------------------------------------------"
-    return initial_binsx, initial_binsz, msd_x, msd_z  # return the updated initial bins
+    return initial_binsz, msd_z  # return the updated initial bins
         
 
 def main():
@@ -397,17 +381,25 @@ def main():
 
     t,Natoms,system_size,matrix,readstructure,entries,types = readfile(name)
 
-    lorock = 7.2   # height of lower portlandite part
-    hirock = 36.7  # height of upper portlandite part
-    xmin = 0.25
-    xmax = 0.75
-    zmin = 0.0
-    zmax = 1.0    
-    Nx = Nz = 15
-    Types = [4]    # oxygen
-    binsx, binsz = initialize(Natoms,matrix,Types,Nx,Nz,xmin,xmax,zmin,zmax)
+    portlandite_thickness = 11.3  # Angstrom
+    lorock = 7.0         # height of lower portlandite part
+    hirock = 37.8        # height of upper portlandite part
+    zlo = system_size[4]
+    zhi = system_size[5]
+    zsize = (zhi-zlo)
+    #print zlo, zhi,zsize
+    z0 = portlandite_thickness/zsize
+    z1 = (zsize - portlandite_thickness)/zsize
+    xmin = 0.28
+    xmax = 0.72    
+    Nz = 5
+    d_port = (z1-z0)                       # crack opening
+    half_d_port = d_port/2.0               # half crack opening
+    boxsize_z = (half_d_port)/float(Nz)    # boxsize for boxes from surface to center of crack.
+    center_of_port = half_d_port + z0
+    Types = [4]          # oxygen
+    binsz = initialize(Natoms,matrix,Types,Nz,xmin,xmax,z0,z1)
     
-    msdx = []
     msdz = []
     time = []
     conversionfactor = 10**(-4.0)
@@ -418,9 +410,108 @@ def main():
         print "Processing %s . file nr %g / %g" % (name,kk,nfiles)
         filename = os.path.join(path,name)
         t,Natoms,system_size,matrix,readstructure,entries,types = readfile(filename)
-        binsx,binsz,msd_x,msd_z = displacement(t,binsx,binsz,matrix,Natoms,Types,Nx,Nz,xmin,xmax,zmin,zmax)
-        msdx.append(msd_x), msdz.append(msd_z), time.append(t)
+        binsz,msd_z = displacement(t,binsz,matrix,Natoms,Types,Nz,xmin,xmax,z0,z1)
+        msdz.append(msd_z), time.append(t)
     
+    
+    
+    # ----------- Plotting n'shit ----------------------------
+    
+    save = True    # save figures
+    Formats = ['png','jpg','jpeg']
+    fig1_name = 'msd_evolution_binnr_' + arg +'.png'
+    fig2_name = 'msd_evolution_dist_' + arg +'.png'
+    fig3_name = 'msd_time_' + arg +'.png'
+    fig4_name = 'Diffusion_bins' + arg +'.png'
+    
+    ntimesteps = len(msdz)  
+    
+    fig = plt.figure()
+    fig1_name = 'msd_evolution_binnr_' + arg
+    bins = np.linspace(1,Nz,Nz) # bins
+    dist = np.linspace(zsize*(boxsize_z/2.0),zsize*(Nz*boxsize_z/2.0),Nz)  # midpoints of boxes/bins
+    plt.hold(True)
+    for i in range(ntimesteps):
+        plt.plot(bins,msdz[i],'-*')
+    plt.hold(False)
+    plt.xlabel('bin [number]'),plt.ylabel('msd [A^2/ps]')
+    plt.title('Mean square displacement evolution\nAs a function of  distance from the rock surface')
+    if (save == True):
+        for Format in Formats:
+            plt.savefig(fig1_name,format=Format)
+    
+    fig2 = plt.figure()
+    plt.hold(True)
+    for i in range(ntimesteps):
+        plt.plot(dist,msdz[i],'-*')
+    plt.hold(False)
+    plt.xlabel('z [Angstrom]'),plt.ylabel('msd [A^2/ps]')
+    plt.title('Mean square displacement evolution\nAs a function of  distance from the rock surface')
+    if (save == True):
+        for Format in Formats:
+            plt.savefig(fig2_name,format=Format)
+        
+    
+    bin_msdz = np.zeros((Nz,ntimesteps))
+    Dz = np.zeros((Nz,ntimesteps))
+    Dz_si = np.zeros((Nz,ntimesteps))
+    Aaps_to_si_units = 10**(-8.0)
+    tid = np.zeros((ntimesteps,1))
+    for i in range(ntimesteps):
+        for j in range(Nz):
+            value = msdz[i][j]
+            bin_msdz[j][i] = value
+            tid[i] = time[i]*conversionfactor
+            Dz[j][i] = value/(6.0*tid[i])
+            Dz_si[j][i] = Dz[j][i]*Aaps_to_si_units 
+            
+
+    legends = []
+    Title1 = 'Mean square displacement for different distances\nfrom the surface wall of the portlandite'
+    Title2 = 'Diffusion coefficient for different distances\nfrom the surface wall of the portlandite. [Aa^2/ps] = %g [m^2/s]' % Aaps_to_si_units
+    xlabel = 'time [ps]'
+    ylabel1 = 'msd []'
+    ylabel2 = 'D [A^2/ps]'
+    location = 'upper left'
+    
+    linestyle = ['-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':']
+    markers = ['*','o','d','x','v','^','<','>','1','2','3','4','8','s','p','+','*','o','d','x','v','^','<','>','1','2','3','4','8','s','p','+']
+    
+    fig3 = plt.figure()
+    plt.hold(True)
+    for j in range(Nz):
+        string = linestyle[j] + markers[j]
+        legend = 'bin %g' % j
+        legends.append(legend)
+        plt.plot(tid,bin_msdz[j],string)
+    plt.hold(False)
+    plt.title(Title1)
+    plt.xlabel(xlabel), plt.ylabel(ylabel1), plt.legend(legends,loc=location)
+    if (save == True):
+        for Format in Formats:
+            plt.savefig(fig3_name,format=Format)
+        
+    fig4 = plt.figure()
+    plt.hold(True)
+    for j in range(Nz):
+        string = linestyle[j] + markers[j]        
+        plt.plot(tid,Dz[j],string)
+    plt.hold(False)
+    plt.title(Title2)
+    plt.xlabel(xlabel), plt.ylabel(ylabel2), plt.legend(legends,loc=location)
+    if (save == True):
+        for Format in Formats:
+            plt.savefig(fig4_name,format=Format)
+        
+    
+    #-- Calculate the diffusion coefficient for the bins, and plot them as function of dist from surface--
+    straight_line = 1 # degree of polynomial
+    
+    p,v = np.polyfit(tid,bin_msdz[0],straight_line)
+    # p = ndarray, polynomial coefficients 
+    plt.show(True)
+
+    '''
     xlo = system_size[0]
     xhi = system_size[1]
     zlo = system_size[4]
@@ -536,7 +627,7 @@ def main():
     plt.legend(legends,loc='upper left')
     
     plt.show(True)
-
+    '''
         
 
 if (__name__ == "__main__"):
