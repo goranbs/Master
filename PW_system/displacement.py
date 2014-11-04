@@ -295,8 +295,9 @@ def initialize(Natoms,matrix0,types,Nz,xmin,xmax,z0,z1):
                 natoms_z[index_z] += 1 # count the number of atoms that are appended in each
                 binsz[index_z].append(atom)
 
-    print "##################################################################"
-    print natoms_z
+    print "##################### Initial distribution #######################"
+    for i in range(Nz):
+        print "Binnr: %g #atoms= %g" % ((i+1),natoms_z[i])
     print "##################################################################"
     return np.array(binsz)
     
@@ -346,7 +347,7 @@ def displacement(t, initial_binsz, matrix, Natoms, types, Nz, xmin, xmax, z0,z1)
     # through the bins, find the atoms that are still in the bin and calculate
     # the displacement.
     
-    msd_z = np.zeros((Nz,1))
+    msd = np.zeros((Nz,1)); msd_z = np.zeros((Nz,1)); msd_r = np.zeros((Nz,1))
     contributing_z = 0
     
     for j in range(Nz):
@@ -358,16 +359,20 @@ def displacement(t, initial_binsz, matrix, Natoms, types, Nz, xmin, xmax, z0,z1)
                     dx = binsz[j][l][1] - initial_binsz[j][k][1]
                     dy = binsz[j][l][2] - initial_binsz[j][k][2]
                     dz = binsz[j][l][3] - initial_binsz[j][k][3]
-                    msd_z[j] += dx*dx + dz*dz + dy*dy
+                    msd[j] += dx*dx + dz*dz + dy*dy               # total disp
+                    msd_z[j] += dz*dz                             # disp in z direction
+                    msd_r[j] += dx*dx + dy*dy                     # disp in the xy-plane
                     count += 1 # number of atoms that contribute to the msd
             contributing_z += count
             if (count != 0):
-                msd_z[j] = msd_z[j]/count # mean square displacement in bin j.
+                msd[j] = msd[j]/count      # msd in bin j.
+                msd_z[j] = msd_z[j]/count
+                msd_r[j] = msd_r[j]/count
     
 
     print "avg # of contributing particles = %g" % (contributing_z/Nz)
     print "----------------------------------------------"
-    return initial_binsz, msd_z  # return the updated initial bins
+    return initial_binsz, msd, msd_z, msd_r
         
 
 def main():
@@ -382,8 +387,8 @@ def main():
     t,Natoms,system_size,matrix,readstructure,entries,types = readfile(name)
 
     portlandite_thickness = 11.3  # Angstrom
-    lorock = 7.0         # height of lower portlandite part
-    hirock = 37.8        # height of upper portlandite part
+    lorock = 7.0                  # height of lower portlandite part
+    hirock = 37.8                 # height of upper portlandite part
     zlo = system_size[4]
     zhi = system_size[5]
     zsize = (zhi-zlo)
@@ -400,8 +405,7 @@ def main():
     Types = [4]          # oxygen
     binsz = initialize(Natoms,matrix,Types,Nz,xmin,xmax,z0,z1)
     
-    msdz = []
-    time = []
+    msd = []; msdz = []; msdr = []; time = []
     conversionfactor = 10**(-4.0)
     kk = 0
     nfiles = len(filenames) -1
@@ -410,8 +414,8 @@ def main():
         print "Processing %s . file nr %g / %g" % (name,kk,nfiles)
         filename = os.path.join(path,name)
         t,Natoms,system_size,matrix,readstructure,entries,types = readfile(filename)
-        binsz,msd_z = displacement(t,binsz,matrix,Natoms,Types,Nz,xmin,xmax,z0,z1)
-        msdz.append(msd_z), time.append(t)
+        binsz,msd_tot,msd_z,msd_r = displacement(t,binsz,matrix,Natoms,Types,Nz,xmin,xmax,z0,z1)
+        msd.append(msd_tot), msdz.append(msd_z), msdr.append(msd_r), time.append(t)
     
     
     
@@ -424,18 +428,18 @@ def main():
     fig3_name = 'msd_time_' + arg +'.png'
     fig4_name = 'Diffusion_bins' + arg +'.png'
     
-    ntimesteps = len(msdz)  
+    ntimesteps = len(msd)  
     
     fig = plt.figure()
-    fig1_name = 'msd_evolution_binnr_' + arg
+    fig1_name = 'msd_evolution_' + arg
     bins = np.linspace(1,Nz,Nz) # bins
     dist = np.linspace(zsize*(boxsize_z/2.0),zsize*(Nz*boxsize_z/2.0),Nz)  # midpoints of boxes/bins
     plt.hold(True)
     for i in range(ntimesteps):
-        plt.plot(bins,msdz[i],'-*')
+        plt.plot(bins,msd[i],'-*')
     plt.hold(False)
     plt.xlabel('bin [number]'),plt.ylabel('msd [A^2/ps]')
-    plt.title('Mean square displacement evolution\nAs a function of  distance from the rock surface')
+    plt.title('Mean square displacement evolution in time\nas a function of distance from the rock surface')
     if (save == True):
         for Format in Formats:
             plt.savefig(fig1_name,format=Format)
@@ -443,32 +447,60 @@ def main():
     fig2 = plt.figure()
     plt.hold(True)
     for i in range(ntimesteps):
-        plt.plot(dist,msdz[i],'-*')
+        plt.plot(dist,msd[i],'-*')
     plt.hold(False)
     plt.xlabel('z [Angstrom]'),plt.ylabel('msd [A^2/ps]')
-    plt.title('Mean square displacement evolution\nAs a function of  distance from the rock surface')
+    plt.title('Mean square displacement evolution in time \nas a function of  distance from the rock surface')
     if (save == True):
         for Format in Formats:
             plt.savefig(fig2_name,format=Format)
+            
+    fg = plt.figure()
+    fig1_name = 'msd_evolution_z' + arg
+    bins = np.linspace(1,Nz,Nz) # bins
+    dist = np.linspace(zsize*(boxsize_z/2.0),zsize*(Nz*boxsize_z/2.0),Nz)  # midpoints of boxes/bins
+    plt.hold(True)
+    for i in range(ntimesteps):
+        plt.plot(bins,msdz[i],'-*')
+    plt.hold(False)
+    plt.xlabel('bin [number]'),plt.ylabel('msd [A^2/ps]')
+    plt.title('Mean square displacement normal to the surface\nas a function of distance from the rock surface')
+    if (save == True):
+        for Format in Formats:
+            plt.savefig(fig1_name,format=Format)
+
+    fg2 = plt.figure()
+    fig1_name = 'msd_evolution_r_' + arg
+    bins = np.linspace(1,Nz,Nz) # bins
+    dist = np.linspace(zsize*(boxsize_z/2.0),zsize*(Nz*boxsize_z/2.0),Nz)  # midpoints of boxes/bins
+    plt.hold(True)
+    for i in range(ntimesteps):
+        plt.plot(bins,msdr[i],'-*')
+    plt.hold(False)
+    plt.xlabel('bin [number]'),plt.ylabel('msd [A^2/ps]')
+    plt.title('Mean square displacement parallell to the surface\nas a function of distance from the rock surface')
+    if (save == True):
+        for Format in Formats:
+            plt.savefig(fig1_name,format=Format)
         
     
-    bin_msdz = np.zeros((Nz,ntimesteps))
+    bin_msd = np.zeros((Nz,ntimesteps))
     Dz = np.zeros((Nz,ntimesteps))
     Dz_si = np.zeros((Nz,ntimesteps))
     Aaps_to_si_units = 10**(-8.0)
-    tid = np.zeros((ntimesteps,1))
+    tid = []
     for i in range(ntimesteps):
+        tid.append(time[i]*conversionfactor)        
         for j in range(Nz):
-            value = msdz[i][j]
-            bin_msdz[j][i] = value
-            tid[i] = time[i]*conversionfactor
+            value = msd[i][j]
+            bin_msd[j][i] = value
             Dz[j][i] = value/(6.0*tid[i])
             Dz_si[j][i] = Dz[j][i]*Aaps_to_si_units 
             
 
     legends = []
-    Title1 = 'Mean square displacement for different distances\nfrom the surface wall of the portlandite'
-    Title2 = 'Diffusion coefficient for different distances\nfrom the surface wall of the portlandite. [Aa^2/ps] = %g [m^2/s]' % Aaps_to_si_units
+    Title1 = 'Mean square displacement for different distances from the\n surface wall of the portlandite'
+    Title2 = 'Diffusion coefficient for different distances from the surface\n [Aa^2/ps] = %g [m^2/s] ' % Aaps_to_si_units
     xlabel = 'time [ps]'
     ylabel1 = 'msd []'
     ylabel2 = 'D [A^2/ps]'
@@ -477,13 +509,26 @@ def main():
     linestyle = ['-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':']
     markers = ['*','o','d','x','v','^','<','>','1','2','3','4','8','s','p','+','*','o','d','x','v','^','<','>','1','2','3','4','8','s','p','+']
     
+    degree = 1 # degree of polynomial
+    
+
+    D = []; D_line = []; start = int(len(tid)/4.0)
     fig3 = plt.figure()
     plt.hold(True)
+    legends = []
     for j in range(Nz):
+        line = "--"
+        p = np.polyfit(tid[start:],bin_msd[j][start:],degree)
+        f = np.polyval(p,tid[start:])
+        D.append(p[0])
+        D_line.append(f)
         string = linestyle[j] + markers[j]
-        legend = 'bin %g' % j
+        legend = 'bin %g' % (j+1)
+        legend2 = "D_{%g}=%g" % ((j+1),D[j])
         legends.append(legend)
-        plt.plot(tid,bin_msdz[j],string)
+        legends.append(legend2)
+        plt.plot(tid,bin_msd[j],string)
+        plt.plot(tid[start:],f,line)
     plt.hold(False)
     plt.title(Title1)
     plt.xlabel(xlabel), plt.ylabel(ylabel1), plt.legend(legends,loc=location)
@@ -491,11 +536,16 @@ def main():
         for Format in Formats:
             plt.savefig(fig3_name,format=Format)
         
+
+    
     fig4 = plt.figure()
     plt.hold(True)
+    legends = []
     for j in range(Nz):
-        string = linestyle[j] + markers[j]        
+        string = "-" + markers[j]
         plt.plot(tid,Dz[j],string)
+        legend1 = 'D_{j=%g}=%g' % (j+1,D[j])
+        legends.append(legend1)
     plt.hold(False)
     plt.title(Title2)
     plt.xlabel(xlabel), plt.ylabel(ylabel2), plt.legend(legends,loc=location)
@@ -503,131 +553,9 @@ def main():
         for Format in Formats:
             plt.savefig(fig4_name,format=Format)
         
-    
-    #-- Calculate the diffusion coefficient for the bins, and plot them as function of dist from surface--
-    straight_line = 1 # degree of polynomial
-    
-    p,v = np.polyfit(tid,bin_msdz[0],straight_line)
-    # p = ndarray, polynomial coefficients 
+        
     plt.show(True)
 
-    '''
-    xlo = system_size[0]
-    xhi = system_size[1]
-    zlo = system_size[4]
-    zhi = system_size[5]
-    lx = (xhi-xlo)          # length of system in x dir.
-    xstart = lx*xmin        # starting pos of portlandite in x dir
-    xstop = lx*xmax         # ending pos in x dir
-    dx = (xstop-xstart)/Nx 
-    dz = (zhi-zlo)/Nz
-    binposx = np.zeros((Nx,1))
-    binposz = np.zeros((Nz,1))
-    msdx_time = np.zeros((Nx,len(time)))
-    msdz_time = np.zeros((Nz,len(time)))
-    Dx_time = np.zeros((Nx,len(time)))
-    Dz_time = np.zeros((Nz,len(time)))
-    lower_rock = np.linspace(lorock,lorock,Nx)
-    upper_rock = np.linspace(hirock,hirock,Nx)
-    bins = np.linspace(1,Nx,Nx)  # for now
-    
-    # --------- Averaging the displacement in the bins ---------#    
-    mean_sdx = np.zeros((Nx,1))
-    mean_sdz = np.zeros((Nx,1))
-    length_msdx = len(msdx)
-    length_msdz = len(msdz)    
-    for i in range(length_msdx):
-        time[i] = time[i]*conversionfactor
-        for j in range(Nx):
-            mean_sdx[j] += msdx[i][j]
-            msdx_time[j][i] = msdx[i][j]
-            if (time[i] > 0):
-                Dx_time[j][i] = mean_sdx[j]/(6*time[i])
-                
-    for i in range(length_msdz):
-        for j in range(Nz):
-            mean_sdz[j] += msdz[i][j]
-            msdz_time[j][i] = msdz[i][j]
-            if (time[i] > 0):
-                Dz_time[j][i] = mean_sdz[j]/(6*time[i])
-    
-    for j in range(Nx):
-        mean_sdx[j] = mean_sdx[j]/length_msdx
-        binposx[j] = dx*(j+0.5) + xstart
-    for j in range(Nz):
-        mean_sdz[j] = mean_sdz[j]/length_msdz
-        binposz[j] = dz*(j+0.5)
-    
-    time = np.array(time)
-
-    #---------------------------------- plotting ---------------------------#
-    fig = plt.figure()
-    plt.hold(True)
-    #plt.plot(binposx,mean_sdx,'b-*')
-    for i in range(length_msdx):
-#        plt.plot(binposx,msdx[i])
-        plt.plot(bins,msdx[i])
-    plt.hold(False)
-    plt.title('Mean square displacement of particles as function of\ndistance into the gap/nano-tube.')
-    plt.xlabel('x [Angstrom]'),plt.ylabel('msd [A^2]')
-
-    fig2 = plt.figure()
-    plt.hold(True)
-    #plt.plot(binposz,mean_sdz,'b-*')
-    #lspace = np.linspace(min(mean_sdz),max(mean_sdz),Nx)
-    #plt.plot(lower_rock,lspace,'k--')
-    #plt.plot(upper_rock,lspace,'k--')
-    for i in range(length_msdz):
-#        plt.plot(binposz,msdz[i])
-        plt.plot(bins,msdz[i])
-    plt.hold(False)
-    plt.title('Mean square displacement of particles as function of\ndistance from the walls')
-    plt.xlabel('z [Angstrom]'),plt.ylabel('msd [A^2]')
-
-    fig3 = plt.figure()
-    plt.hold(True)
-    legends = []
-    for j in range(int(round(Nx/2.0)+1)):
-        legend = "bin %g" % (j+1)
-        plt.plot(time[:],msdx_time[j][:],'-')
-        legends.append(legend)
-    plt.hold(False)
-    plt.title('Displacement as funciton of time for x')
-    plt.xlabel('time [ps]'),plt.ylabel('msd [A^2]')
-    plt.legend(legends,loc='upper left')    
-    
-    fig4 = plt.figure()
-    plt.hold(True)
-    legends = []
-    for j in range(int(round(Nz/2.0)+1)):
-        legend = "bin %g" % (j+1)   
-        plt.plot(time[:],msdz_time[j][:],'-')
-        legends.append(legend)
-    plt.hold(False)
-    plt.title('Displacement as funciton of time for z')
-    plt.xlabel('time [ps]'),plt.ylabel('msd [A^2]')
-    plt.legend(legends,loc='upper left')
-    
-    fig5 = plt.figure()
-    plt.hold(True)    
-    for j in range(int(round(Nx/2.0)+1)):
-        plt.plot(time,Dx_time[j][:],'-')
-    plt.hold(False)
-    plt.title('Diffution for bins along the x-axis.\nThat is, as a funciton debth into the nanopore')
-    plt.xlabel('time [ps]'),plt.ylabel('D [A^2/s]')
-    plt.legend(legends,loc='upper left')
-    
-    fig5 = plt.figure()
-    plt.hold(True)    
-    for j in range(int(round(Nz/2.0)+1)):
-        plt.plot(time,Dz_time[j][:],'-')
-    plt.hold(False)
-    plt.title('Diffusion for bins in z-direction.\nThat is, parallell to the rock surface')
-    plt.xlabel('time [ps]'),plt.ylabel('D [A^2/s]')
-    plt.legend(legends,loc='upper left')
-    
-    plt.show(True)
-    '''
         
 
 if (__name__ == "__main__"):
