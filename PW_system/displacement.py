@@ -375,11 +375,38 @@ def displacement(t, initial_binsz, matrix, Natoms, types, Nz, xmin, xmax, z0,z1)
     return initial_binsz, msd, msd_z, msd_r
         
 
-def main():
+def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
+    '''
+    Goes through LAMMPS output files stored in "path", and selects the contains "arg". If "arg" is\n
+    not given, then all files in the directory given by "path" that are .txt files are read.\n
+    The value of "date" should be given to specify namecontent of the output plots
+    '''    
     
-    path = "/home/goran/lammps-28Jun14/examples/water_portlandite_system/npt_run_and_energyminimization/statefiles"
+    save = saveplots
+    if (Formats is None):
+        Formats = ['png']
+    if (arg is not None):
+        name = arg + '_' + date
+    else:
+        name = date
     
-    arg = 'nve'  # use only filnames containing nve!
+    fig1_name = 'msd_evolution_binnr_' + name                # msd bin
+    fig2_name = 'msd_evolution_dist_' + name                 # msd dist
+    fig3_name = 'msdz_binnr_' + name                         # msdz bin
+    fig4_name = 'msdr_binnr' + name                          # msdr bin
+    fig5_name = 'msd_time_' + name                           # msd as function of time
+    fig6_name = 'Diffusion_time_' + name                     # Diffusion development
+    fig7_name = 'Diffusion_dist_' + name                     # Diffusion constant
+    
+    xlabel = 'time [ps]'
+    ylabel1 = 'msd []'
+    ylabel2 = 'D [A^2/ps]'
+    location = 'upper left'
+    
+    linestyle = ['-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':']
+    markers = ['*','o','d','x','v','^','<','>','1','2','3','4','8','s','p','+','*','o','d','x','v','^','<','>','1','2','3','4','8','s','p','+']
+    
+    
     filenames,time = gothroughfiles(path,arg) # get filenames in location "path"
     
     name = os.path.join(path,filenames[0])
@@ -402,7 +429,7 @@ def main():
     half_d_port = d_port/2.0               # half crack opening
     boxsize_z = (half_d_port)/float(Nz)    # boxsize for boxes from surface to center of crack.
     center_of_port = half_d_port + z0
-    Types = [4]          # oxygen
+    Types = [4]                            # oxygen
     binsz = initialize(Natoms,matrix,Types,Nz,xmin,xmax,z0,z1)
     
     msd = []; msdz = []; msdr = []; time = []
@@ -418,22 +445,16 @@ def main():
         msd.append(msd_tot), msdz.append(msd_z), msdr.append(msd_r), time.append(t)
     
     
-    
-    # ----------- Plotting n'shit ----------------------------
-    
-    save = True    # save figures
-    Formats = ['png','jpg','jpeg']
-    fig1_name = 'msd_evolution_binnr_' + arg +'.png'
-    fig2_name = 'msd_evolution_dist_' + arg +'.png'
-    fig3_name = 'msd_time_' + arg +'.png'
-    fig4_name = 'Diffusion_bins' + arg +'.png'
+    # ----------- Plotting n'shit ----------------------------    
     
     ntimesteps = len(msd)  
-    
-    fig = plt.figure()
-    fig1_name = 'msd_evolution_' + arg
+    legends = []
+
+    #------------------------------------- FIGURE 1 -----------------------------------------------
+    # MSD evolution in time as a funtion of distance from the surface.
+
+    fig1 = plt.figure()
     bins = np.linspace(1,Nz,Nz) # bins
-    dist = np.linspace(zsize*(boxsize_z/2.0),zsize*(Nz*boxsize_z/2.0),Nz)  # midpoints of boxes/bins
     plt.hold(True)
     for i in range(ntimesteps):
         plt.plot(bins,msd[i],'-*')
@@ -442,8 +463,15 @@ def main():
     plt.title('Mean square displacement evolution in time\nas a function of distance from the rock surface')
     if (save == True):
         for Format in Formats:
-            plt.savefig(fig1_name,format=Format)
+            fig_name = fig1_name + '.' + Format
+            plt.savefig(fig_name,format=Format)
     
+    #------------------------------------- FIGURE 2 -----------------------------------------------
+    # MSD evolution in time as a funtion of distance from the surface.
+    strt = zsize*(boxsize_z/2.0)
+    end = Nz*zsize*boxsize_z - strt
+    dist = np.linspace(strt,end,Nz)  # midpoints of boxes/bins
+
     fig2 = plt.figure()
     plt.hold(True)
     for i in range(ntimesteps):
@@ -453,9 +481,13 @@ def main():
     plt.title('Mean square displacement evolution in time \nas a function of  distance from the rock surface')
     if (save == True):
         for Format in Formats:
+            fig2_name = fig2_name + '.' + Format
             plt.savefig(fig2_name,format=Format)
-            
-    fg = plt.figure()
+    
+    #------------------------------------- FIGURE 3 -----------------------------------------------
+    # MSD using the z component. As function of bins to the surface for the different times.
+    
+    fig3 = plt.figure()
     fig1_name = 'msd_evolution_z' + arg
     bins = np.linspace(1,Nz,Nz) # bins
     dist = np.linspace(zsize*(boxsize_z/2.0),zsize*(Nz*boxsize_z/2.0),Nz)  # midpoints of boxes/bins
@@ -464,12 +496,15 @@ def main():
         plt.plot(bins,msdz[i],'-*')
     plt.hold(False)
     plt.xlabel('bin [number]'),plt.ylabel('msd [A^2/ps]')
-    plt.title('Mean square displacement normal to the surface\nas a function of distance from the rock surface')
+    plt.title('Mean square displacement normal to the surface\nas a function of distance from the surface')
     if (save == True):
         for Format in Formats:
-            plt.savefig(fig1_name,format=Format)
+            fig3_name = fig3_name + '.' + Format
+            plt.savefig(fig3_name,format=Format)
 
-    fg2 = plt.figure()
+    #------------------------------------- FIGURE 4 -----------------------------------------------
+    # MSD using the x,y component. As function of bins to the surface for the different times.            
+    fig4 = plt.figure()
     fig1_name = 'msd_evolution_r_' + arg
     bins = np.linspace(1,Nz,Nz) # bins
     dist = np.linspace(zsize*(boxsize_z/2.0),zsize*(Nz*boxsize_z/2.0),Nz)  # midpoints of boxes/bins
@@ -478,42 +513,41 @@ def main():
         plt.plot(bins,msdr[i],'-*')
     plt.hold(False)
     plt.xlabel('bin [number]'),plt.ylabel('msd [A^2/ps]')
-    plt.title('Mean square displacement parallell to the surface\nas a function of distance from the rock surface')
+    plt.title('Mean square displacement parallell to the surface\nas a function of distance from the surface')
     if (save == True):
         for Format in Formats:
-            plt.savefig(fig1_name,format=Format)
+            fig_name = fig4_name + '.' + Format
+            plt.savefig(fig_name,format=Format)
         
     
-    bin_msd = np.zeros((Nz,ntimesteps))
-    Dz = np.zeros((Nz,ntimesteps))
-    Dz_si = np.zeros((Nz,ntimesteps))
+    bin_msd = np.zeros((Nz,ntimesteps));bin_msdz = np.zeros((Nz,ntimesteps));bin_msdr = np.zeros((Nz,ntimesteps))
+
+    Dz = np.zeros((Nz,ntimesteps))      # aangstrom^2/picoseconds
+    Dz_si = np.zeros((Nz,ntimesteps))    # SI units
     Aaps_to_si_units = 10**(-8.0)
     tid = []
     for i in range(ntimesteps):
         tid.append(time[i]*conversionfactor)        
         for j in range(Nz):
             value = msd[i][j]
+            value_z = msdz[i][j]
+            value_r = msdr[i][j]
             bin_msd[j][i] = value
+            bin_msdz[j][i] = value_z
+            bin_msdr[j][i] = value_r
             Dz[j][i] = value/(6.0*tid[i])
             Dz_si[j][i] = Dz[j][i]*Aaps_to_si_units 
-            
+    
 
-    legends = []
+    #------------------------------------- FIGURE 5 -----------------------------------------------
+    # MSD as function of time. Also, we are calculating the diffusion coefficients
     Title1 = 'Mean square displacement for different distances from the\n surface wall of the portlandite'
     Title2 = 'Diffusion coefficient for different distances from the surface\n [Aa^2/ps] = %g [m^2/s] ' % Aaps_to_si_units
-    xlabel = 'time [ps]'
-    ylabel1 = 'msd []'
-    ylabel2 = 'D [A^2/ps]'
-    location = 'upper left'
-    
-    linestyle = ['-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':']
-    markers = ['*','o','d','x','v','^','<','>','1','2','3','4','8','s','p','+','*','o','d','x','v','^','<','>','1','2','3','4','8','s','p','+']
-    
+   
     degree = 1 # degree of polynomial
-    
-
     D = []; D_line = []; start = int(len(tid)/4.0)
-    fig3 = plt.figure()
+    Dz_ = []; Dr_ = []
+    fig5 = plt.figure()
     plt.hold(True)
     legends = []
     for j in range(Nz):
@@ -522,6 +556,16 @@ def main():
         f = np.polyval(p,tid[start:])
         D.append(p[0])
         D_line.append(f)
+
+        pz = np.polyfit(tid[start:],bin_msdz[j][start:],degree)
+        #fz = np.polyval(p2,tid[start:])
+
+        pr = np.polyfit(tid[start:],bin_msdr[j][start:],degree)
+        #fr = np.polyval(p2,tid[start:])
+          
+        Dz_.append(pz[0])
+        Dr_.append(pr[0])
+        
         string = linestyle[j] + markers[j]
         legend = 'bin %g' % (j+1)
         legend2 = "D_{%g}=%g" % ((j+1),D[j])
@@ -534,11 +578,13 @@ def main():
     plt.xlabel(xlabel), plt.ylabel(ylabel1), plt.legend(legends,loc=location)
     if (save == True):
         for Format in Formats:
-            plt.savefig(fig3_name,format=Format)
-        
+            fig_name = fig5_name + '.' + Format
+            plt.savefig(fig_name,format=Format)
 
-    
-    fig4 = plt.figure()
+    #------------------------------------- FIGURE 6 -----------------------------------------------
+    # Diffution coefficient as a function of time for the different bins.
+ 
+    fig6 = plt.figure()
     plt.hold(True)
     legends = []
     for j in range(Nz):
@@ -551,12 +597,38 @@ def main():
     plt.xlabel(xlabel), plt.ylabel(ylabel2), plt.legend(legends,loc=location)
     if (save == True):
         for Format in Formats:
-            plt.savefig(fig4_name,format=Format)
-        
-        
-    plt.show(True)
+            fig_name = fig6_name + '.' + Format            
+            plt.savefig(fig_name,format=Format)
 
-        
+    #------------------------------------- FIGURE 7 -----------------------------------------------
+    # Approximation of the diffusion coefficient as a function of distance to the surface.
+
+    fig7 = plt.figure()
+    plt.plot(dist,D,'--*')
+    plt.hold(True)
+    plt.plot(dist,Dz_,'--d')
+    plt.plot(dist,Dr_,'--x')
+    plt.hold(False)
+    plt.title('Diffusion constant as function of distance from the surface')
+    plt.xlabel('d [Å]'), plt.ylabel(ylabel2), plt.legend(['D(d)','Dz(d)','Dr(d)'],loc='upper left')
+    if (save == True):
+        for Format in Formats:
+            fig_name = fig7_name + '.' + Format
+            plt.savefig(fig_name, format=Format)
+            
+    plt.show(showplots)
+    plt.close('all')
+
+
+def main():
+    path = "/home/goran/lammps-28Jun14/examples/water_portlandite_system/npt_run_and_energyminimization/statefiles"
+    arg = 'nve'  # use only filnames containing nve!
+    date = '04-11-2014'
+    showplots = False
+    saveplots = True
+    Formats = ['png'] #Formats = ['png','jpg','jpeg']
+    diffusion(path,date,Formats,arg,showplots,saveplots)     
+    
 
 if (__name__ == "__main__"):
     import numpy as np
