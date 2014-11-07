@@ -1,10 +1,10 @@
 #!/bin/sh
 ###################################################################
-#
-# BACKUP script of lammps-generated files for masterproject
-#
-# Masterproject in molecular dynamics for Goeran Brekke Svaland
-#
+#                                                                 #
+# BACKUP script of lammps-generated files for masterproject       #
+#                                                                 #
+# Masterproject in molecular dynamics for Goeran Brekke Svaland   #
+#                                                                 #
 ###################################################################
 
 # What to back up
