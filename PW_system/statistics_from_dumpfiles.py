@@ -38,13 +38,6 @@ def gothroughfiles(path,arg=None):
     return sortedfilenames
 
 
-def plotEnergy(energyfiles,tc):
-    '''
-    plots the energy of the system as a funciton of time.\n
-    Takes LAMMPS outputfiles that contains columns of timestep and energy\n
-    tc = time conversion factor
-    '''
-
 def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=True):
     '''
     path is the full path to filename. Where the filename is a scalar info -file.
@@ -272,15 +265,41 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
     lEkin = len(Ekin)
     if ((lEkin == lt) and (lEkin == len(Epot))):
         Etot = []
+        start = int(lEkin/4.0)
+        meanEk = np.mean(Ekin[start:])
+        meanEp = np.mean(Epot[start:])
+        stdEk = np.std(Ekin[start:])
+        stdEp = np.std(Epot[start:])
         for i in range(lEkin):
             Etot.append((Ekin[i] + Epot[i]))
+            
+        meanEt = np.mean(Etot[start:])
+        stdEt = np.std(Etot[start:])
         
+        plt.figure()
+        plt.plot(t,Ekin,'r--')
+        plt.title(r'Kinetic energy. $ E_k = %g $ \pm $ %g $[Kcal/mol]$' % (meanEk, stdEk))
+        plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'Energy $[Kcal/mole]$')
+        plt.legend([r'$E_k$'],loc='lower right')
+        if (saveplot):
+            fig_name = 'KineticEnergy_%s.png' % filename
+            print "saving %s" % fig_name
+        
+        plt.figure()
+        plt.plot(t,Ekin,'r--')
+        plt.title(r'Potential energy. $ E_p = %g $ \pm $ %g $[Kcal/mol]$' % (meanEp, stdEp))
+        plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'Energy $[Kcal/mole]$')
+        plt.legend([r'$E_p$'],loc='lower right')
+        if (saveplot):
+            fig_name = 'PotentialEnergy_%s.png' % filename
+            print "saving %s" % fig_name
+            
         plt.figure()
         plt.plot(t,Ekin,'r--')
         plt.hold(True)
         plt.plot(t,Epot,'b--')
         plt.plot(t,Etot,'y-')
-        plt.title('Energy in the system')
+        plt.title(r'Energy in the system. $E_{tot} = $ %g $ \pm $ %g $[Kcal/mol]$' % (stdEt,stdEt))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Energy [Kcal/mole]')
         plt.legend(['Ekin','Epot','Etot'],loc='lower right')
         plt.hold(False)
@@ -649,21 +668,21 @@ def main():
     #wp_path = "Abel_runs/carbondioxide"
     #wp_path = "water_portlandite_system/npt_run_and_energyminimization/dump"
     #wp_path = "npt_run_and_energyminimization/dump/"
-    arg = "Adump"
+    #arg = "Adump"
     arg = None
     
-    timeunits='ps'
+    timeunits='ps'        # desired output units of time
     ftop = 1000           # [fsec] in [ps]
     tfac = 10             # timesteps in one fsec
     psfactor = ftop*tfac  # convert to [ps] 
     tc = 1.0/psfactor     # time conversionfactor
-    saveplot = True
-    showplot = False
-    Format = 'png'    
+    saveplot = True       # save all plots
+    showplot = False      # show all plots
+    Format = 'png'        # output format figures
     
-    yes_plotScalarInfo = False       # Scalar info files present
-    yes_plotRDF        = False       # RDF files present
-    yes_plotDensity    = False       # Density files present
+    yes_plotScalarInfo = True       # Scalar info files present
+    yes_plotRDF        = True       # RDF files present
+    yes_plotDensity    = True       # Density files present
     yes_plotEnergy     = True       # Energy files present
     
     ###########################################################################
