@@ -150,7 +150,6 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
     #########################################################################
     #                             Plotting
 
-    from matplotlib import rc
     rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
     ## for Palatino and other serif fonts use:
     #rc('font',**{'family':'serif','serif':['Palatino']})
@@ -369,15 +368,307 @@ def plotRDF(path,filename,tc,timeunits,Format,saveplot,showplot):
         
     plt.show(showplot)
     plt.close('all')
-    
-    
-def main():
-    #generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"    
+ 
 
+def plotDensity(path,files,tc,timeunits,Format,saveplot,showplot):
+    '''
+    Takes densityprofile output files generated with LAMMPS to display the 
+    density profile through the system.
+    
+    Here we expect the input files to describe the density profile of water,
+    the oxygen atoms and the hydrogen atoms in the system. These datasets
+    are given in three different files. files = [waterDens,oxDens,HyDens].
+    We also expect the files to have the same structure and sizes.
+    '''
+    
+    water = os.path.join(path,files[0])
+    oxygen = os.path.join(path,files[1])
+    hydrogen = os.path.join(path,files[2])
+    
+    print "###############################################################"
+    print "water file:    %s " % files[0]
+    print "oxygen file:   %s " % files[1]
+    print "hydrogen file: %s " % files[2]
+
+    waterdens = open(water,'r')  # the water file [h2o]    
+    oxdens = open(oxygen,'r')  # the oxygen file
+    hydens = open(hydrogen,'r')  # the hydrogen file
+    
+    n = 4  # it is convinient to know these numbers from the data file :-)
+    N = 54
+    waterdens.readline(), oxdens.readline(), hydens.readline()  # comment
+    waterdens.readline(), oxdens.readline(), hydens.readline()  # Timestep Number-of-bins
+    waterdens.readline(), oxdens.readline(), hydens.readline()  # Bin Coord density/number density/mass
+
+    t1 = np.zeros((n,1))             # time [ps]
+    BIN = np.zeros((n,N))            # bin number [1:N+1]
+    Coord = np.zeros((n,N))          # coord [Å]
+    Ncount_w = np.zeros((n,N))       # water number of particles counted in the bin
+    Ndens_w = np.zeros((n,N))        # water number density                         [particles/Å**3]
+    Mdens_w = np.zeros((n,N))        # water mass density                           [(g/mol)/Å**3]
+    Ncount_o = np.zeros((n,N))       # oxygen number of particles counted in the bin
+    Ndens_o = np.zeros((n,N))        # oxygen number density                        [particles/Å**3]
+    Mdens_o = np.zeros((n,N))        # oxygen mass density                          [(g/mol)/Å**3]
+    Ncount_h = np.zeros((n,N))       # hydrogen number of particles counted in the bin
+    Ndens_h = np.zeros((n,N))        # hydrogen number density                      [particles/Å**3]
+    Mdens_h = np.zeros((n,N))        # hydrogen mass density                        [(g/mol)/Å**3]
+
+    for i in range(n):
+        line_w = waterdens.readline()
+        line_o = oxdens.readline()
+        line_h = hydens.readline()
+        time, nrows = line_w.split()  # is the timestep for all three files, also same numer of rows/columns
+        t1[i,0] = (int(time)*tc)
+        nrows = int(nrows)
+        kk = 0
+        for row in range(nrows):
+            line_w = waterdens.readline()
+            line_o = oxdens.readline()
+            line_h = hydens.readline()
+            # spce (water molecule, is out first. we use BIN and Coord only from this split()
+            binnumber,coord,ncount_w,ndens_w,mdens_w = line_w.split()
+            BIN[i,kk] = (int(binnumber))
+            Coord[i,kk] = (float(coord))
+            Ncount_w[i,kk] = (float(ncount_w))
+            Ndens_w[i,kk]  = (float(ndens_w))
+            Mdens_w[i,kk] = (float(mdens_w))
+            # oxygen is up next
+            binnumbero,coordo,ncount_o,ndens_o,mdens_o = line_o.split()
+            Ncount_o[i,kk] = (float(ncount_o))
+            Ndens_o[i,kk]  = (float(ndens_o))
+            Mdens_o[i,kk] = (float(mdens_o))
+            # last put is hydrogen
+            binnumberh,coordh,ncount_h,ndens_h,mdens_h = line_h.split()
+            Ncount_h[i,kk] = (float(ncount_h))
+            Ndens_h[i,kk]  = (float(ndens_h))
+            Mdens_h[i,kk] = (float(mdens_h))
+            kk += 1
+
+    m_wp = wp = m_op = op = m_hp = hp = 0
+    start = int((len(Mdens_w[3]))/4.0)
+    stop = int(3.0*start)
+    counter = 0
+    for i in range((stop-start)):
+        kk = start + i
+        a = Mdens_w[3,kk]
+        b = Mdens_o[3,kk]
+        c = Mdens_h[3,kk]
+        #print " %.5f    %.5f    %.5f " % (a,b,c)
+        m_wp += a
+        m_op += b
+        m_hp += c
+        wp += a*a
+        op += b*b
+        hp += c*c
+        counter += 1
+    m_wp = m_wp/counter; m_op = m_op/counter; m_hp = m_hp/counter
+    std_wp = np.sqrt(wp/counter - m_wp*m_wp) 
+    std_op = np.sqrt(op/counter - m_op*m_op)
+    std_hp = np.sqrt(hp/counter - m_hp*m_hp)    
+
+    rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+    ## for Palatino and other serif fonts use:
+    #rc('font',**{'family':'serif','serif':['Palatino']})
+    rc('text', usetex=True) 
+    
+    print "###############################################################"
+    print "# ------------------ Densities across the pore -------------- #"
+    print "# density in the pore center. water:    %.3f $ \pm $ %.4f  #" % (m_wp,std_wp)
+    print "# density in the pore center. oxygen:   %.3f $ \pm $ %.4f  #" % (m_op,std_op)
+    print "# density in the pore center. hydrogen: %.3f $ \pm $ %.4f  #" % (m_hp,std_hp)
+    print "###############################################################"
+    
+    # time for some plotting 
+    
+    plt.figure()
+    plt.hold(True)
+    w_line = 'b-'
+    h_line = 'y-'
+    o_line = 'r-'
+    legends = []
+    min_W = 10     # default startvalue
+    max_W = 0      # default startvalue 
+    zlo = 7.4      # position of lower surface
+    zhi = 37.0     # position of higher surface
+    for i in range(n):
+        if (i == 0):
+            add = '*'
+        if (i == 1):
+            add = '-'
+        if (i == 2):
+            add = 'x'
+    
+        plt.plot(Coord[0,:],Mdens_w[i,:],(w_line+add))
+        plt.plot(Coord[0,:],Mdens_o[i,:],(o_line+add))
+        plt.plot(Coord[0,:],Mdens_h[i,:],(h_line+add))
+        water = r'$\rho _w $ '+ str(t1[i,0]) + timeunits
+        oxygen = r'$\rho_o $ '+ str(t1[i,0]) + timeunits
+        hydrogen = r'$\rho_h $ '+ str(t1[i,0]) + timeunits
+        legends.append(water)
+        legends.append(oxygen)
+        legends.append(hydrogen)
+    min_w = min(Mdens_w[i,:])
+    max_w = max(Mdens_w[i,:])
+    if (min_w < min_W):
+        min_W = min_w
+    if (max_w > max_W):
+        max_W = max_w
+
+    line = np.linspace(min_W,max_W,len(BIN[0,:]))
+    Zlo = np.linspace(zlo,zlo,len(BIN[0,:]))
+    Zhi = np.linspace(zhi,zhi,len(BIN[0,:]))
+    plt.plot(Zlo,line,'k--')
+    plt.plot(Zhi,line,'k--')
+    legends.append('surface')
+    plt.hold(False)
+    plt.axis([0, 60, min_W, max_W])
+    plt.title(r'Density distribution across the pore\newline Average density of water inside the pore $\rho _w = $ %.2f $ \pm $ %.3f $ [g/cm^3] $' % (m_wp,std_wp))
+    plt.xlabel('z [Aangstrom]')
+    plt.ylabel(r'Density $[g/cm^3]$')
+    plt.legend(legends,loc='upper right')
+    if (saveplot):
+            fig_name = "DensityDist_" + files[0] + "." + Format
+            plt.savefig(fig_name, format=Format)
+    
+    plt.show(showplot)
+    plt.close('all')
+
+def plotEnergy(path, files, tc, timeunits, Format, saveplot, showplot):
+    '''
+    Plots the energy as a function of time. It could be necessary to take multiple files as
+    argument. But this is not requirered.\n
+    An energyfile contains the timestep in the first column, and then could contain columns
+    of kinetic, potential, bond, angle, vdw (van der Waal) or coulumb potential energy.
+    '''
+    Etot = []; t = []
+    Ekin = []; Epot = []; Ebond = []; Eangle = []; Evdw = []; Ecoul = []
+    gen = 0
+    for afile in files:
+        pathtofile = os.path.join(path, afile)
+        efile = open(pathtofile,'r')
+        efile.readline()           # read the first line
+        columns = efile.readline() # read description
+        columns = columns.split()            # split on whitespaces
+        columns.pop(0)             # remove the hash from the list!
+        for line in efile:
+            line = line.split() # slit on whitespaces
+            index = 0
+            for header in columns:
+                if (("TimeStep") in header):
+                    if (gen == 0):
+                        # only use the timesteps from the first file!
+                        t.append(float(line[index])*tc)
+                if (("kin" or "Kin") in header):
+                    Ekin.append(float(line[index]))
+                if (("pot" or "Pot") in header):
+                    Epot.append(float(line[index]))
+                if (("coul" or "Coul")in header):
+                    Ecoul.append(float(line(index)))
+                if (("bond" or "Bond")in header):
+                    Ebond.append(float(line(index)))
+                if (("angle" or "Angel")in header):
+                    Eangle.append(float(line(index)))
+                if (("vdw" or "VDW")in header):
+                    Evdw.append(float(line(index)))
+                
+                index += 1
+        gen += 1
+    #############################################################
+    # Time for some plotting!
+    ll = len(t)
+    if (ll <= 1):
+        print " ################################################ "
+        print " # The first file %s contain <= 1 timesteps!" % files[0]
+        print " # This will give you trouble!!! :-)            # "
+    for i in range(ll):
+        Etot.append((Ekin[i] + Epot[i]))
+
+    start = int(ll/3.0)
+    meanEt = np.mean(Etot[start:])
+    meanEk = np.mean(Ekin[start:])
+    meanEp = np.mean(Epot[start:])
+    stdEt = np.std(Etot[start:])
+    stdEk = np.std(Ekin[start:])
+    stdEp = np.std(Epot[start:])
+    
+    rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+    ## for Palatino and other serif fonts use:
+    #rc('font',**{'family':'serif','serif':['Palatino']})
+    rc('text', usetex=True) 
+    
+    plt.figure()
+    plt.plot(t,Ekin)
+    plt.title(r'Kinetic energy. $ E_k = $ %.1f $ \pm $ %.2f $[Kcal/mol]$' % (meanEk,stdEk))
+    plt.xlabel('Time [%s]' % timeunits),plt.ylabel('Energy [Kcal/mole]');plt.legend([r'$E_{k}(t)$'],loc='lower right')
+    if (saveplot):    
+        fig_name = 'KineticEnergy_' + files[0] + '.' + Format
+        plt.savefig(fig_name, format = Format)
+    
+    plt.figure()
+    plt.plot(t,Epot)
+    plt.title(r'Potential energy. $ E_p = $ %.1f $ \pm $ %.2f $ [Kcal/mol] $' % (meanEp,stdEp))
+    plt.xlabel('Time [%s]' % timeunits),plt.ylabel('Energy [Kcal/mole]');plt.legend([r'$E_{p}(t)$'],loc='upper right')
+    if (saveplot):    
+        fig_name = 'PotentialEnergy_' + files[0] + '.' + Format
+        plt.savefig(fig_name, format = Format)
+    
+    plt.figure()
+    plt.hold(True)
+    plt.plot(t,Etot,'b-')
+    plt.plot(t,Ekin,'r-')
+    plt.plot(t,Epot,'g-')
+    plt.hold(False)
+    plt.title(r'The energy of the system as a function of time\newline $E_{tot} = $ %g $ \pm $ %g $ [Kcal/mol] $' % (meanEt,stdEt))
+    plt.xlabel('Time [%s]' % timeunits),plt.ylabel('Energy [Kcal/mole]');plt.legend([r'$E_{tot}(t)$',r'$E_{k}(t)$',r'$E_{p}(t)$'],loc='center right')
+    if (saveplot):    
+        fig_name = 'Energy_' + files[0] + '.' + Format
+        plt.savefig(fig_name, format = Format)
+    
+    plt.show(showplot)    
+    plt.close('all')
+
+def main():
+    '''
+    ###########################################################################\n
+    #                   These values needs to be set                          #\n
+    #                                                                         #\n
+    #  generalpath = path to local area containing datafile hierarchy         #\n
+    #  wp_path     = path from generalpath to data files                      #\n
+    #  timeunits   = desiered timeunits (string shown on output figures)      #\n
+    #  tc          = time conversion factor from timestep used to timeunits   #\n
+    #  saveplot ?  = True/False                                               #\n
+    #  showplot ?  = True/False                                               #\n
+    #  Format      = 'png'/'jpg'/'jpeg'...                                    #\n
+    ###########################################################################\n
+    '''
+    
+    #generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"    
+    
     generalpath = "/home/goran/lammps-28Jun14/examples/"
-    wp_path = "Abel_runs/carbondioxide"
+    wp_path = "Abel_runs/PW_system/flat_system"
+    #wp_path = "Abel_runs/carbondioxide"
+    #wp_path = "water_portlandite_system/npt_run_and_energyminimization/dump"
     #wp_path = "npt_run_and_energyminimization/dump/"
     arg = "Adump"
+    arg = None
+    
+    timeunits='ps'
+    ftop = 1000           # [fsec] in [ps]
+    tfac = 10             # timesteps in one fsec
+    psfactor = ftop*tfac  # convert to [ps] 
+    tc = 1.0/psfactor     # time conversionfactor
+    saveplot = True
+    showplot = False
+    Format = 'png'    
+    
+    yes_plotScalarInfo = False       # Scalar info files present
+    yes_plotRDF        = False       # RDF files present
+    yes_plotDensity    = False       # Density files present
+    yes_plotEnergy     = True       # Energy files present
+    
+    ###########################################################################
+    ###########################################################################
+    
     path = os.path.join(generalpath,wp_path)
     filenames = gothroughfiles(path,arg)
     
@@ -402,31 +693,63 @@ def main():
             ScalarInfo_files.append(name)
         if (("Energy" or "energy") in name):
             Energy_files.append(name)
-    
 
-    timeunits='ps'
-    ftop = 1000           # [fsec] in [ps]
-    tfac = 100            # timesteps in one fsec
-    psfactor = ftop*tfac  # convert to [ps] 
-    tc = 1.0/psfactor     # time conversionfactor
-    
-    
-    saveplot = True
-    showplot = False
-    Format = 'png'
+    print "#####################################"    
+    print "Energy files found:"
+    for efile in Energy_files:
+        print "    %s" % efile
+    print "ScalarInfo files found:"
+    for scifile in ScalarInfo_files:
+        print "    %s" % scifile
+    print "RDF files found:"
+    for rdfile in RDF_files:
+        print "    %s" % rdfile
+    print "Density files found:"
+    for densfile in dens_files:
+        print "    %s" % densfile
 
-    for filename in ScalarInfo_files:
-        print filename
-        plotScalarInfo(path,filename,tc,timeunits,Format,saveplot,showplot)
+    if (yes_plotScalarInfo):
+        print "#####################################"
+        print "plotScalarInfo..."
+        for filename in ScalarInfo_files:
+            print filename
+            plotScalarInfo(path,filename,tc,timeunits,Format,saveplot,showplot)
     
+    if (yes_plotRDF):
+        print "#####################################"
+        print "plotRDF..."
+        for filename in RDF_files:
+            print filename
+            plotRDF(path,filename,tc,timeunits,Format,saveplot,showplot)
+
+
+    densfiles = []
+    for afile in dens_files:
+        if (("water" or "Water" or "Wdens") in afile):
+            densfiles.append(afile)
+    for afile in dens_files:
+        if (("ow" or "Ow" or "oxygen" or "Oxygen") in afile):
+            densfiles.append(afile)
+    for afile in dens_files:
+        if (("hw" or "Hw" or "hydrogen" or "Hydrogen") in afile):
+            densfiles.append(afile)
     
-    for filename in RDF_files:
-        print filename
-        plotRDF(path,filename,tc,timeunits,Format,saveplot,showplot)
+    if (yes_plotDensity):
+        print "#####################################"
+        print "plotDensity..."
+        plotDensity(path,densfiles,tc,timeunits,Format,saveplot,showplot)
+    
+    if (yes_plotEnergy):
+        print "#####################################"
+        print "plotEnergy..."
+        plotEnergy(path,Energy_files,tc,timeunits,Format,saveplot,showplot)
+
+
 
 if (__name__ == "__main__"):
     import numpy as np
     import matplotlib.pyplot as plt
+    from matplotlib import rc
     import os
     main()
 
