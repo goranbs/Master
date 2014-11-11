@@ -354,7 +354,7 @@ def density_system_CO2(time,Natoms,system_size,matrix,entries,masses,save_fig=No
     size_y = (system_size[3] - system_size[2]) # [A] system length y-dir
     size_z = (system_size[5] - system_size[4]) # [A] system length z-dir
     vol_Aa = size_x*size_y*size_z              # [A**3]
-    vol_cm = vol_Aa*conversionfactor           # [cm**3]        
+    #vol_cm = vol_Aa*conversionfactor           # [cm**3]        
     mass_CO2 = masses['C'] + 2*masses['O']     # Mass CO2 [au] = [g/mol]    
     
     # count number of C particles in the system:
@@ -364,11 +364,12 @@ def density_system_CO2(time,Natoms,system_size,matrix,entries,masses,save_fig=No
         if (matrix['type'][i] == carbon):
             nmolecules += 1
             
-    conv = 0.60221413                         # Na/conversionfactor
+    conv = 0.60221413                         # Na/conversionfactor [particles/mol]
     tot_mass_CO2 = nmolecules*mass_CO2        # [particles*g/mol]
     density = (tot_mass_CO2/vol_Aa)*conv      # [g/cm**3]
-    dens_kg_m3 = density*10**(3.0)            # [kg/m**3]
+    #dens_kg_m3 = density*10**(3.0)            # [kg/m**3]
     
+    '''
     #print size_x, size_y, size_z
     print "-------- Density of system ----------"
     print " # molecules = %g " % nmolecules
@@ -378,10 +379,11 @@ def density_system_CO2(time,Natoms,system_size,matrix,entries,masses,save_fig=No
     print " rho         = %g [kg/m**3]" % dens_kg_m3
     print " number density = %g [particles/Aa] " % (nmolecules/vol_Aa)
     print "-------------------------------------"
+    '''
     return density
     
 
-def gothroughfiles(path):
+def gothroughfiles(path,arg=None):
     '''
     Go through stystem state files in "path", if they are .txt files, the first 
     character in the filename which is a number will be acknowledged as the 
@@ -394,23 +396,31 @@ def gothroughfiles(path):
     
     filenames = []
     numbers = []
-    for name in os.listdir(path):
-        if (name[-4:] == ".txt"):
-            char = 'string'
-            start = 0
-            for character in name:
-                # find the first character in the filename which is a number
-                try:
-                    char = int(character)
-                except:
-                    pass
-                if (type(char) == int):
-                    break
-                start += 1
+    if (arg is not None):
+        for name in os.listdir(path):
+            print name
+            if (arg in name):
+                if (name[-4:] == ".txt"):
+                    char = 'string'
+                    start = 0
+                    for character in name:
+                        # find the first character in the filename which is a number
+                        try:
+                            char = int(character)
+                        except:
+                            pass
+                    if (type(char) == int):
+                        break
+                    start += 1
                 
-            filenames.append(name)
-            numbers.append(int(name[start:-4]))
+                    filenames.append(name)
+                    numbers.append(int(name[start:-4]))
 
+    else:
+        for name in os.listdir(path):
+            if (name[-4:] == ".txt"):
+                    filenames.append(name)
+                    
     time = sorted(numbers)
     sortedfilenames = sorted(filenames, key = lambda x: x[:-4])
     
@@ -539,20 +549,28 @@ def main():
         savefile = False
         showplot = False   # there is no plotting funtion here!
         
+        '''
         generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"
         path_from_PW_system = "CarbonDioxide/statefiles/"
-        path_to_filename = os.path.join(generalpath,path_from_PW_system)
-        
-        dt = 0.1
-        factor = 10**(-3)      # [fsec to ps]
-        #time = t*dt*factor    # [should get ps]
+        '''
+        generalpath = "/home/goran/lammps-28Jun14/examples/Abel_runs/carbondioxide"
             
         masses = {'C' : 12.0107, 'O' : 15.9994, 'H' : 1.00794, 'Ca' : 40.078}
         filename = "dump.CO2_res.200000.txt"
-        #filename = "dump.CO2.0.txt"
-        thisfile = os.path.join(path_to_filename,filename)
-        time,Natoms,system_size,matrix,readstructure,entries,types = readfile(thisfile)
-        density = density_system_CO2(time,Natoms,system_size,matrix,entries,masses,savefile,showplot)  
+        
+        dens = []; t = []; tc = 1.0/(10000)
+        filenames = gothroughfiles(generalpath,arg='CO2.')  
+        print filenames[1]
+        for name in filenames[:20]:    
+            thisfile = os.path.join(generalpath,name)
+            time,Natoms,system_size,matrix,readstructure,entries,types = readfile(thisfile)
+            density = density_system_CO2(time,Natoms,system_size,matrix,entries,masses,savefile,showplot)
+            dens.append(density), t.append(float(time)*tc)
+        
+        plt.figure()
+        plt.plot(t,dens)
+        plt.xlabel('time [ps]'), plt.ylabel('density [g/cm^3]'), plt.legend(['rho(t)'],loc='upper left')
+        plt.show(True)
     
     if (system == "PW"):
         generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"
