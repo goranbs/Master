@@ -104,10 +104,10 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
     std_wOH = np.std(w_OH)
     mean_pOH = np.mean(p_OH)
     std_pOH = np.std(p_OH)
-    mean_wROG = np.mean(w_ROG)
-    std_wROG = np.std(w_ROG)
-    mean_pROG = np.mean(p_ROG)
-    std_pROG = np.std(p_ROG)
+    #mean_wROG = np.mean(w_ROG)
+    #std_wROG = np.std(w_ROG)
+    #mean_pROG = np.mean(p_ROG)
+    #td_pROG = np.std(p_ROG)
     
     lt = len(t)
     lenvx = len(vx)
@@ -155,7 +155,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         plt.plot(t,Tp,'y--')
         plt.plot(t,Tw,'r--')
         plt.hold(False)
-        plt.title(r'Temperature in the system\newline $T_{system} = $ %g $ \pm $ %g K \newline $T_{portlandite} = $ %g $ \pm $ %.2f K \newline  $T_{water} = $ %g $ \pm $ %g K' % (mean_Ts, std_Ts,mean_Tp, std_Tp,mean_Tw, std_Tw) )
+        plt.title(r'Temperature in the system\newline $T_{system} = %g \pm %g K $\newline $T_{portlandite} = %g \pm %.2f K $\newline  $T_{water} = %g \pm %g K $' % (mean_Ts, std_Ts,mean_Tp, std_Tp,mean_Tw, std_Tw) )
         plt.legend([r'$ T_{system}(t)$ ',r'T_{portlandite}(t)$',r'$T_{water}(t)$'],loc='lower right')
         plt.xlabel('Time [%s]' % timeunits)
         plt.ylabel('Temperature [K]')
@@ -166,8 +166,8 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
             
     else:
         plt.figure()
-        plt.plot(t,Ts,'b-')
-        plt.title('Temperature in the system. $ T_{system} = $ %g $ \pm $ %g K' % (mean_Ts, std_Ts))
+        plt.plot(t,Ts,'b-d')
+        plt.title('Temperature in the system. $ T_{system} = %g \pm %g K $' % (mean_Ts, std_Ts))
         plt.xlabel('Time [%s]'  % timeunits), plt.ylabel('Temperature [K]'), plt.legend(['T(t)'])
         if (saveplot):
             fig_name = 'Temperature_%s.png' % filename
@@ -180,8 +180,8 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
     #print "len(P) = %g " % len(P)
     if (lt == len(P)):
         plt.figure()
-        plt.plot(t,P,'b-')
-        plt.title(r'Pressure in the system\newline $P = $ %g $ \pm $ %g atm' % (mean_P,std_P))
+        plt.plot(t,P,'b-d')
+        plt.title(r'Pressure in the system\newline $P = %g \pm %g atm $' % (mean_P,std_P))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Pressure [atm]'), plt.legend(['P(t)'],loc='lower right')
         if (saveplot):
             fig_name = 'Press_%s.png' % filename
@@ -191,22 +191,22 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
     #print "len(w_OH) = %g " % len(w_OH)        
     if (lt == len(w_OH)):
         plt.figure()
-        plt.plot(t,w_OH,'b-')
-        plt.title(r'Bond lenght for OH in water\newline $d_{wOH} = $ %g $ \pm $ %g Aa' % (mean_wOH,std_wOH))
+        plt.plot(t,w_OH,'b-d')
+        plt.title(r'Bond lenght for OH in water\newline $d_{wOH} = %g \pm %g Aa $' % (mean_wOH,std_wOH))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'$d_{wOH}$ [Aa]'), plt.legend([r'$d_{wOH}(t)$'],loc='lower right')
         if (saveplot):
-            fig_name = 'Press_%s.png' % filename
+            fig_name = 'Bondlength_w_%s.png' % filename
             print "saving %s " % fig_name
             plt.savefig(fig_name,format=Format)
 
     #print "len(p_OH) = %g " % len(p_OH)        
     if (lt == len(p_OH)):
         plt.figure()
-        plt.plot(t,p_OH,'b-')
-        plt.title(r'Bond lenght for OH in portlandite\newline $d_{pOH} = $ %g $ \pm $ %g Aa' % (mean_pOH,std_pOH))
+        plt.plot(t,p_OH,'b-d')
+        plt.title(r'Bond lenght for OH in portlandite\newline $d_{pOH} = %g \pm %g Aa $' % (mean_pOH,std_pOH))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'$d_{wOH}$ [Aa]'), plt.legend([r'$d_{pOH}(t)$'],loc='lower right')
         if (saveplot):
-            fig_name = 'Press_%s.png' % filename
+            fig_name = 'Bondlength_p_%s.png' % filename
             print "saving %s " % fig_name
             plt.savefig(fig_name,format=Format)
             
@@ -218,7 +218,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         plt.plot(t[start:-1],vy[start:-1],'y--')
         plt.plot(t[start:-1],vz[start:-1],'m--')
         plt.hold(False)
-        plt.title(r'Velocityprofile \newline $v_{rms} = $ %g $ \pm $ %g Aa/%s \newline $v_x = $%g $ \pm $ %g Aa/%s \newline $v_y = $%g $ \pm $ %g Aa/%s \newline $v_z = $%g $ \pm $ %g Aa/%s' % (mean_v,std_v,timeunits,mean_vx,std_vx,timeunits, mean_vy,std_vy,timeunits, mean_vz,std_vz, timeunits))
+        plt.title(r'Velocityprofile \newline $v_{rms} = %g \pm %g Aa/%s $ \newline $v_x = %g \pm %g Aa/%s $\newline $v_y = %g \pm %g Aa/%s $\newline $v_z = %g \pm %g Aa/%s $' % (mean_v,std_v,timeunits,mean_vx,std_vx,timeunits, mean_vy,std_vy,timeunits, mean_vz,std_vz, timeunits))
         plt.xlabel('Time [%s]' % timeunits)
         plt.ylabel('Velocity [Aangstrom/%s]' % timeunits)
         plt.legend(['v','vx','vy','vz'],loc='lower right')
@@ -254,9 +254,9 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         plt.hold(True)
         plt.plot(tt,Diffusion,'r--')
         plt.hold(False)
-        plt.title(r'Self diffusion of water in the system.\newline Diffusion constant $D=$ %.2f $ \pm $ %.3f $ Aa^2/%s $' % (mean_D,std_D,timeunits))
+        plt.title(r'Self diffusion of water in the system.\newline Diffusion constant $D= %.2f \pm %.3f Aa^2/%s $' % (mean_D,std_D,timeunits))
         plt.xlabel('Time [%s]' % timeunits)
-        plt.ylabel(r'D [${Aangsrom}^2$/%s]' % timeunits)
+        plt.ylabel(r'D [${Aangsrom}^2/%s $]' % timeunits)
         if (saveplot):
             fig_name = 'Diffusion_%s.png' % filename
             print "saving %s " % fig_name
@@ -278,7 +278,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         
         plt.figure()
         plt.plot(t,Ekin,'r--')
-        plt.title(r'Kinetic energy. $ E_k = %g $ \pm $ %g $[Kcal/mol]$' % (meanEk, stdEk))
+        plt.title(r'Kinetic energy. $ E_k = %g \pm %g [Kcal/mol]$' % (meanEk, stdEk))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'Energy $[Kcal/mole]$')
         plt.legend([r'$E_k$'],loc='lower right')
         if (saveplot):
@@ -287,7 +287,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         
         plt.figure()
         plt.plot(t,Ekin,'r--')
-        plt.title(r'Potential energy. $ E_p = %g $ \pm $ %g $[Kcal/mol]$' % (meanEp, stdEp))
+        plt.title(r'Potential energy. $ E_p = %g \pm %g [Kcal/mol]$' % (meanEp, stdEp))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'Energy $[Kcal/mole]$')
         plt.legend([r'$E_p$'],loc='lower right')
         if (saveplot):
@@ -299,7 +299,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         plt.hold(True)
         plt.plot(t,Epot,'b--')
         plt.plot(t,Etot,'y-')
-        plt.title(r'Energy in the system. $E_{tot} = $ %g $ \pm $ %g $[Kcal/mol]$' % (stdEt,stdEt))
+        plt.title(r'Energy in the system. $E_{tot} = %g \pm %g [Kcal/mol]$' % (meanEt,stdEt))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Energy [Kcal/mole]')
         plt.legend(['Ekin','Epot','Etot'],loc='lower right')
         plt.hold(False)
@@ -325,7 +325,15 @@ def plotRDF(path,filename,tc,timeunits,Format,saveplot,showplot):
     Choose the format of the output plots as Format = 'png','jpg','jpeg'...\n
     '''
     RDF_file = os.path.join(path,filename)
+    string = "substance"
+    if ((("Water") in filename) or (("water") in filename)):
+        #print "True water", filename
+        string = "water"
 
+    if ((("Port") in filename) or (("port") in filename)):
+        #print "True portlandite", filename
+        string = "portlandite"
+        
     ofile = open(RDF_file,'r') # open the filename in read mode
     ofile.readline()           # read unimportant first line of the file
     ofile.readline()           # and second
@@ -369,7 +377,7 @@ def plotRDF(path,filename,tc,timeunits,Format,saveplot,showplot):
         legend = 't=%.1f %s' % (t[j],timeunits)
         legends.append(legend)
     plt.hold(False)
-    plt.title('Radial Distribution Function')
+    plt.title('Radial Distribution Function for %s' % string)
     plt.xlabel('distance [Aa]'), plt.ylabel('average number of particles'), plt.legend(legends,loc='upper left')
     if (saveplot):
         fig_name = 'RDF_%s.png' % filename
@@ -378,7 +386,7 @@ def plotRDF(path,filename,tc,timeunits,Format,saveplot,showplot):
     
     plt.figure()
     plt.plot(BinCoord[-1],RDF[-1])
-    plt.title('Radial Distribution Function')
+    plt.title('Radial Distribution Function for %s' % string)
     plt.xlabel('distance [Aa]'), plt.ylabel('average number of particles'), plt.legend(['RDF(t=%g)' % t[-1]],loc='upper left')
     if (saveplot):
         fig_name = 'RDF_%g%s_%s.png' % (t[-1],timeunits,filename)
@@ -413,12 +421,31 @@ def plotDensity(path,files,tc,timeunits,Format,saveplot,showplot):
     oxdens = open(oxygen,'r')  # the oxygen file
     hydens = open(hydrogen,'r')  # the hydrogen file
     
-    n = 4  # it is convinient to know these numbers from the data file :-)
-    N = 54
     waterdens.readline(), oxdens.readline(), hydens.readline()  # comment
     waterdens.readline(), oxdens.readline(), hydens.readline()  # Timestep Number-of-bins
-    waterdens.readline(), oxdens.readline(), hydens.readline()  # Bin Coord density/number density/mass
+    Wlabels = waterdens.readline()
+    Olabels = oxdens.readline()
+    Hlabels = hydens.readline()  # Bin Coord density/number density/mass
+    
+    Wlabels = Wlabels.split(); Wlabels.pop(0) # split on whitespaces and pop first element
+    Olabels = Olabels.split(); Olabels.pop(0) # split on whitespaces and pop first element
+    Hlabels = Hlabels.split(); Hlabels.pop(0) # split on whitespaces and pop first element
+    
+    n = 4  # convinient to know the number of sample values in the datafile
+    
+    Nlabels = len(Wlabels)    
+    if (Nlabels != len(Olabels)):
+        print "Error! Number of columns in Dens_ow is %g and Dens_water has %g" % (len(Olabels),n)
+    if (Nlabels != len(Hlabels)):
+        print "Error! Number of columns in Dens_hw is %g and Dens_water has %g" % (len(Hlabels),n)        
 
+    gobacktothispoint = waterdens.tell()  # we want to remember this point in the filestructure
+    firstvals = waterdens.readline()
+    firstvals = firstvals.split(); N = int(firstvals[1])
+    waterdens.seek(gobacktothispoint)    # now go back to this point in the filestructure!
+    
+    print "Samplevalues = %g. Number of rows = %g. Number of columns = %g" % (n,N, Ncolumns)
+    
     t1 = np.zeros((n,1))             # time [ps]
     BIN = np.zeros((n,N))            # bin number [1:N+1]
     Coord = np.zeros((n,N))          # coord [Å]
@@ -431,7 +458,10 @@ def plotDensity(path,files,tc,timeunits,Format,saveplot,showplot):
     Ncount_h = np.zeros((n,N))       # hydrogen number of particles counted in the bin
     Ndens_h = np.zeros((n,N))        # hydrogen number density                      [particles/Å**3]
     Mdens_h = np.zeros((n,N))        # hydrogen mass density                        [(g/mol)/Å**3]
-
+    wvx = np.zeros((n,N))             # water velocity in x-dir
+    wvy = np.zeros((n,N))             # water velocity in y-dir
+    wvz = np.zeros((n,N))             # water velocity in z-dir
+    
     for i in range(n):
         line_w = waterdens.readline()
         line_o = oxdens.readline()
@@ -445,19 +475,22 @@ def plotDensity(path,files,tc,timeunits,Format,saveplot,showplot):
             line_o = oxdens.readline()
             line_h = hydens.readline()
             # spce (water molecule, is out first. we use BIN and Coord only from this split()
-            binnumber,coord,ncount_w,ndens_w,mdens_w = line_w.split()
+            binnumber,coord,ncount_w,ndens_w,mdens_w,vx,vy,vz = line_w.split()
             BIN[i,kk] = (int(binnumber))
             Coord[i,kk] = (float(coord))
             Ncount_w[i,kk] = (float(ncount_w))
             Ndens_w[i,kk]  = (float(ndens_w))
             Mdens_w[i,kk] = (float(mdens_w))
+            wvx[i,kk] = float(vx)
+            wvy[i,kk] = float(vy)
+            wvz[i,kk] = float(vz)
             # oxygen is up next
-            binnumbero,coordo,ncount_o,ndens_o,mdens_o = line_o.split()
+            binnumbero,coordo,ncount_o,ndens_o,mdens_o,ovx,ovy,ovz = line_o.split()
             Ncount_o[i,kk] = (float(ncount_o))
             Ndens_o[i,kk]  = (float(ndens_o))
             Mdens_o[i,kk] = (float(mdens_o))
             # last put is hydrogen
-            binnumberh,coordh,ncount_h,ndens_h,mdens_h = line_h.split()
+            binnumberh,coordh,ncount_h,ndens_h,mdens_h,hvx,hvy,hvz = line_h.split()
             Ncount_h[i,kk] = (float(ncount_h))
             Ndens_h[i,kk]  = (float(ndens_h))
             Mdens_h[i,kk] = (float(mdens_h))
@@ -645,6 +678,57 @@ def plotEnergy(path, files, tc, timeunits, Format, saveplot, showplot):
     
     plt.show(showplot)    
     plt.close('all')
+    
+def plotAutoCorr(path,Acorr_files,tc,timeunits,Format,saveplot,showplot):
+    '''
+    Plot the auto correlation function
+    '''
+    for name in Acorr_files:
+        filename = os.path.join(path,name)
+        ofile = open(filename,'r')
+        ofile.readline()
+        labels = ofile.readline()
+        labels = labels.split()
+        labels.pop(0)
+        
+        time = []; acorr = []
+        ncorr = len(labels)-1 # number of correlation functions
+        for i in range(ncorr):
+            acorr.append([])
+        
+        for line in ofile:
+            line = line.split()
+            time.append(float(line[0]))
+            for j in range(ncorr):
+                acorr[j].append(abs(float(line[j+1])))
+        
+        #######################################################
+        #                 PLOTTING                            "
+        
+        plt.figure()
+        plt.hold(True)
+        legends = []
+        for i in range(ncorr):
+            linestyle = 'b-*'
+            if (i==1):
+                linestyle = 'y-'
+            else:
+                linestyle = '-'
+            plt.plot(time,acorr[i],linestyle)
+            legend = 'AutoCorr%g' % i
+            legends.append(legend)
+        plt.hold(False)
+        plt.xlabel("Time steps"), plt.ylabel('acorr'), plt.legend(legends,loc='upper right')
+        if (saveplot):
+            fig_name = 'AutoCorrelation_%s.png' % name
+            plt.savefig(fig_name,format=Format)
+            
+        plt.figure()
+        plt.plot(time,acorr[1])
+        
+        plt.show(showplot)
+        
+                
 
 def main():
     '''
@@ -676,14 +760,15 @@ def main():
     tfac = 10             # timesteps in one fsec
     psfactor = ftop*tfac  # convert to [ps] 
     tc = 1.0/psfactor     # time conversionfactor
-    saveplot = True       # save all plots
-    showplot = False      # show all plots
+    saveplot = False       # save all plots
+    showplot = True      # show all plots
     Format = 'png'        # output format figures
     
     yes_plotScalarInfo = True       # Scalar info files present
-    yes_plotRDF        = True       # RDF files present
-    yes_plotDensity    = True       # Density files present
-    yes_plotEnergy     = True       # Energy files present
+    yes_plotRDF        = False       # RDF files present
+    yes_plotDensity    = False       # Density files present
+    yes_plotEnergy     = False       # Energy files present
+    yes_plotAutoCorr   = False        # Auto Correlation function
     
     ###########################################################################
     ###########################################################################
@@ -702,6 +787,7 @@ def main():
     RDF_files = []
     ScalarInfo_files = []
     Energy_files = []
+    Acorr_files = []
     
     for name in filenames:
         if ("Dens" in name):
@@ -710,8 +796,10 @@ def main():
             RDF_files.append(name)
         if ("ScalarInfo" in name):
             ScalarInfo_files.append(name)
-        if (("Energy" or "energy") in name):
+        if ((("Energy") in name) or ("energy" in name)):
             Energy_files.append(name)
+        if (("acorr") in name or ("Acorr") in name):
+            Acorr_files.append(name)
 
     print "#####################################"    
     print "Energy files found:"
@@ -726,6 +814,9 @@ def main():
     print "Density files found:"
     for densfile in dens_files:
         print "    %s" % densfile
+    print "Auto correlation files found:"
+    for acorrfile in Acorr_files:
+        print "    %s" % acorrfile
 
     if (yes_plotScalarInfo):
         print "#####################################"
@@ -762,6 +853,11 @@ def main():
         print "#####################################"
         print "plotEnergy..."
         plotEnergy(path,Energy_files,tc,timeunits,Format,saveplot,showplot)
+
+    if(yes_plotAutoCorr):
+        print "#####################################"
+        print "plotAutoCorr..."
+        plotAutoCorr(path,Acorr_files,tc,timeunits,Format,saveplot,showplot)
 
 
 
