@@ -184,7 +184,10 @@ def fourNearest(Natoms,matrix,Type,output_filename,end_title_of_plot,showplot=Tr
     
     center = np.linspace(minQk+dx,maxQk-dx, nbins)
     plt.hold(True)
-    plt.plot(center,hist,'b-')
+    line = np.linspace(0,max(hist),3)
+    Qk_avg = np.linspace(Qk,Qk,3)
+    plt.plot(center,hist,'b-',linewidth='3')
+    plt.plot(Qk_avg,line,'y--',linewidth='5')
     plt.hist(Qk_,nbins,normed=True,color='red')
     Title = r'Tetrahedral order parameter $ Q_k = %.2f \pm %.3f $ %s' % (Qk,std_Qk,end_title_of_plot)
     plt.title(Title)
