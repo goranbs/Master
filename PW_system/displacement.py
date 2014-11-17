@@ -381,6 +381,10 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     not given, then all files in the directory given by "path" that are .txt files are read.\n
     The value of "date" should be given to specify namecontent of the output plots
     '''    
+    rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+    ## for Palatino and other serif fonts use:
+    #rc('font',**{'family':'serif','serif':['Palatino']})
+    rc('text', usetex=True) 
     
     save = saveplots
     if (Formats is None):
@@ -400,7 +404,7 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     
     xlabel = 'time [ps]'
     ylabel1 = 'msd []'
-    ylabel2 = 'D [A^2/ps]'
+    ylabel2 = r'D $[A^2/ps]$'
     location = 'upper left'
     
     linestyle = ['-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':','-','--','-.',':']
@@ -459,7 +463,7 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     for i in range(ntimesteps):
         plt.plot(bins,msd[i],'-*')
     plt.hold(False)
-    plt.xlabel('bin [number]'),plt.ylabel('msd [A^2/ps]')
+    plt.xlabel('bin [number]'),plt.ylabel(r'msd $[A^2/ps]$')
     plt.title('Mean square displacement evolution in time\nas a function of distance from the rock surface')
     if (save == True):
         for Format in Formats:
@@ -477,7 +481,7 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     for i in range(ntimesteps):
         plt.plot(dist,msd[i],'-*')
     plt.hold(False)
-    plt.xlabel('z [Angstrom]'),plt.ylabel('msd [A^2/ps]')
+    plt.xlabel('z [Angstrom]'),plt.ylabel(r'msd $[A^2/ps]$')
     plt.title('Mean square displacement evolution in time \nas a function of  distance from the rock surface')
     if (save == True):
         for Format in Formats:
@@ -495,7 +499,7 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     for i in range(ntimesteps):
         plt.plot(bins,msdz[i],'-*')
     plt.hold(False)
-    plt.xlabel('bin [number]'),plt.ylabel('msd [A^2/ps]')
+    plt.xlabel('bin [number]'),plt.ylabel(r'msd $[A^2/ps]$')
     plt.title('Mean square displacement normal to the surface\nas a function of distance from the surface')
     if (save == True):
         for Format in Formats:
@@ -512,7 +516,7 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     for i in range(ntimesteps):
         plt.plot(bins,msdr[i],'-*')
     plt.hold(False)
-    plt.xlabel('bin [number]'),plt.ylabel('msd [A^2/ps]')
+    plt.xlabel('bin [number]'),plt.ylabel(r'msd $[A^2/ps]$')
     plt.title('Mean square displacement parallell to the surface\nas a function of distance from the surface')
     if (save == True):
         for Format in Formats:
@@ -567,8 +571,8 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
         Dr_.append(pr[0])
         
         string = linestyle[j] + markers[j]
-        legend = 'bin %g' % (j+1)
-        legend2 = "D_{%g}=%g" % ((j+1),D[j])
+        legend = r'$bin %g$' % (j+1)
+        legend2 = r"$D_{%g}=%g$" % ((j+1),D[j])
         legends.append(legend)
         legends.append(legend2)
         plt.plot(tid,bin_msd[j],string)
@@ -590,7 +594,7 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     for j in range(Nz):
         string = "-" + markers[j]
         plt.plot(tid,Dz[j],string)
-        legend1 = 'D_{j=%g}=%g' % (j+1,D[j])
+        legend1 = r'$D_{j=%g}=%g$' % (j+1,D[j])
         legends.append(legend1)
     plt.hold(False)
     plt.title(Title2)
@@ -610,7 +614,7 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     plt.plot(dist,Dr_,'--x')
     plt.hold(False)
     plt.title('Diffusion constant as function of distance from the surface')
-    plt.xlabel('d [Å]'), plt.ylabel(ylabel2), plt.legend(['D(d)','Dz(d)','Dr(d)'],loc='upper left')
+    plt.xlabel(r'd $[A]$'), plt.ylabel(ylabel2), plt.legend(['D(d)','Dz(d)','Dr(d)'],loc='upper left')
     if (save == True):
         for Format in Formats:
             fig_name = fig7_name + '.' + Format
@@ -621,9 +625,12 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
 
 
 def main():
-    path = "/home/goran/lammps-28Jun14/examples/water_portlandite_system/npt_run_and_energyminimization/statefiles"
-    arg = 'nve'  # use only filnames containing nve!
-    date = '04-11-2014'
+    #path = "/home/goran/lammps-28Jun14/examples/water_portlandite_system/npt_run_and_energyminimization/statefiles"
+    path = "/home/goran/lammps-28Jun14/examples/Abel_runs/PW_system/flat_system/nvt_run"
+    #arg = 'nve'  # use only filnames containing nve!
+    arg = 'nvt'
+    #date = '04-11-2014'
+    date = '13-11-2014'
     showplots = False
     saveplots = True
     Formats = ['png'] #Formats = ['png','jpg','jpeg']
@@ -634,4 +641,5 @@ if (__name__ == "__main__"):
     import numpy as np
     import os
     import matplotlib.pyplot as plt
+    from matplotlib import rc
     main()
