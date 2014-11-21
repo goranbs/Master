@@ -209,15 +209,15 @@ def main():
     
     #path = "/home/goran/lammps-28Jun14/examples/water/water_from_298K/dump" 
     #filename = "water.210000.txt"
-    path = "/home/goran/lammps-28Jun14/examples/water_portlandite_system/water/statefiles"
-    filename = "dump.bulkwater_nvt.2300000.txt"
-    #path = "/home/goran/lammps-28Jun14/examples/water_portlandite_system/water/dump_pure_water"
-    #filename = "dump.water.0.txt"
+    #path = "/home/goran/lammps-28Jun14/examples/water_portlandite_system/water/statefiles"
+    #filename = "dump.bulkwater_nvt.2300000.txt"
+    path = "/home/goran/lammps-28Jun14/examples/water_portlandite_system/water/dump_pure_water"
+    filename = "dump.water.0.txt"
     Type = 1  # oxygen
     showplot = True
     saveplot = True
-    output_filename = 'TetrahedralOrderParam_bulkwater.png'
-    end_title_of_plot   = 'for bulk water at 300K'
+    output_filename = 'TetrahedralOrderParam_initial_stat.png'
+    end_title_of_plot   = 'for initial state water'
     
     filetoread = os.path.join(path,filename)
     #print filetoread
