@@ -58,7 +58,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         
     t = []
     Ts = []; Tp = []; Tw = []; P = []; D = []; p_OH = []; w_OH = []; p_ROG = []; w_ROG = []
-    vx = []; vy = []; vz = []; Ekin = []; Epot = []
+    vx = []; vy = []; vz = []; Ekin = []; Epot = []; msd = []
     
     ofile = open(ScalarInfoFile,'r')
     ofile.readline() # the first line is a header, and should be skipped
@@ -95,6 +95,8 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
                 Ekin.append(float(ll[index]))
             if ("Epot" in i):
                 Epot.append(float(ll[index]))
+            if ("MSD" in i):
+                msd.append(float(ll[index]))
                 
             index += 1
             
@@ -227,11 +229,19 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
             print "saving %s " % fig_name
             plt.savefig(fig_name,format=Format)
     
-    if (lt == len(D)):
+    if (lt == len(msd)):
+        start = int(3*lt/4.0)
+        deg = 1
+        p,v = np.polyfit(t[start:],msd[start:],deg, full=False,cov=True)
+        std_D = np.sqrt(v[0,0])
+        f = np.polyval(p,t)
         plt.figure()
-        plt.plot(t,D,'b-')
-        plt.title('Mean displacement of the water in the system')
-        plt.legend(['D(t)'],loc='upper left')
+        plt.plot(t,msd,'b-')
+        plt.hold(True)
+        plt.plot(t,f,'r--')
+        plt.title('Mean square displacement of the water in the system')
+        #plt.legend(['msd(t)',r'b + ax = %.2f(%.3f) + %.2f(%.3f)x ' % (p[1],np.sqrt(v[1,1]),p[0],std_D) ],loc='upper left')
+        plt.legend(['msd(t)',r'D = %.2f(%.3f)' % (p[0]/6.0,std_D) ],loc='upper left')
         plt.xlabel('t [%s]' % timeunits)
         plt.ylabel('Displacement [Aangsrom]')
         if (saveplot):
@@ -239,18 +249,19 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
             print "saving %s " % fig_name
             plt.savefig(fig_name,format=Format)
     
-        Coeff_D = np.array(D)/(6*np.array(t))
-        mean_D = np.mean(Coeff_D[int(lt/2.0):-1])
-        std_D = np.std(Coeff_D[int(lt/2.0):-1])
-
-        tt = np.array(t[int(lt/2.0):-1])
+        Coeff_D = np.array(msd)/(6*np.array(t))
+        mean_D = np.mean(Coeff_D[start:])
+        std_D = np.std(Coeff_D[start:])
+        
+        tt = np.array(t[start:])
         Diffusion = np.zeros([len(tt),1])
         Diffusion.fill(mean_D) 
         yerror = np.zeros([len(tt),1])
         yerror.fill(std_D)
         
         plt.figure()
-        plt.plot(t[int(lt/10.0):-1],Coeff_D[int(lt/10.0):-1],'b-')
+        #plt.plot(t[int(lt/10.0):-1],Coeff_D[int(lt/10.0):-1],'b-')
+        plt.plot(t,Coeff_D,'b-')
         plt.hold(True)
         plt.plot(tt,Diffusion,'r--')
         plt.hold(False)
@@ -748,7 +759,8 @@ def main():
     #generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"    
     
     generalpath = "/home/goran/lammps-28Jun14/examples/"
-    wp_path = "Abel_runs/PW_system/flat_system"
+    wp_path = "Abel_runs/PW_system/preparation"
+    #wp_path = "Abel_runs/PW_system/flat_system"
     #wp_path = "Abel_runs/carbondioxide"
     #wp_path = "water_portlandite_system/npt_run_and_energyminimization/dump"
     #wp_path = "npt_run_and_energyminimization/dump/"
