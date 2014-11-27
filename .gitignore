@@ -12,3 +12,10 @@
 *.TIFF
 *.tif*
 *.pdf
+*.aux
+*~
+*.out
+*.log
+*.tex.backup
+*.pyc
+*checkpoint.ipynb

@@ -1,0 +1,122 @@
+\documentclass[twoside,english]{uiofysmaster}
+
+%\bibliography{references}
+
+\usepackage{ifxetex}
+\ifxetex
+  \usepackage{fontspec}
+  \newfontfamily\listingsfontfamily[Scale=0.85]{Droid Sans Mono}
+  \renewcommand{\listingsfont}{\listingsfontfamily}
+\fi
+
+\usepackage{pdfpages}
+\pagenumbering{roman}
+\begin{document}
+\includepdf{front-page.pdf}
+\cleardoublepage
+\begin{abstract}
+This is an abstract text. Which will be written close to deadline... 15.May
+\end{abstract}
+
+\begin{dedication}
+  To someone
+  \\\vspace{12pt}
+  This is a dedication to my cat. Which I do not have yet, but I mean to get one sometime when I'am done writing my Master Thesis.
+\end{dedication}
+
+\begin{acknowledgements}
+  I acknowledge my acknowledgements. And often others acknowledgements, except when they are wrong.
+\end{acknowledgements}
+
+\tableofcontents
+
+\chapter{The beginning is here}
+
+\begin{table}
+ \caption{Force Field Parameters for $CO_2$. (ref Cygan)}
+ \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Nonbond} \\ \hline
+  $q_C$ & +0.6512e  \\ \hline
+  $q_O$ & -0.3256e  \\ \hline
+  $\epsilon _C$ & 0.0559 Kcal/mol \\ \hline
+  $\epsilon _O$ & 0.1597 Kcal/mol \\ \hline
+  $\sigma _C$ & 2.800 \AA{} \\ \hline
+  $\sigma _O$ & 2.800 \AA{} \\ \hline
+ \end{tabular}
+  \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Bond} \\ \hline
+  $k_{CO}$ & 2017.93 Kcal/mol/\AA{}$^2$  \\ \hline
+  $r_{o,CO}$ & 1.162 \AA{}  \\ \hline
+  $k_{OCO}$ & 108.0 Kcal/mol/rad$^2$ \\ \hline
+  $\theta _{0,OCO}$ & 180.0 deg \\ \hline
+                    &           \\ \hline
+                    &           \\ \hline
+
+ \end{tabular}
+ \label{ForceFieldParameters_CO2}
+\end{table}
+
+
+\begin{table}
+ \caption{Force Field Parameters for $H_2O$. (ref ?) }
+  \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Nonbond} \\ \hline
+  $q_H$ & +0.4238e  \\ \hline
+  $q_O$ & -0.8476e  \\ \hline
+  $\epsilon _H$ & 0.0 Kcal/mol \\ \hline
+  $\epsilon _O$ & 0.1553 Kcal/mol \\ \hline
+  $\sigma _H$ & 2.058 \AA{} \\ \hline
+  $\sigma _O$ & 3.5532 \AA{} \\ \hline
+ \end{tabular}
+  \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Bond} \\ \hline
+  $k_{OH}$ & 554.1349 Kcal/mol/\AA{}$^2$  \\ \hline
+  $r_{o,OH}$ & 1.0 \AA{}  \\ \hline
+  $k_{HOH}$ & 45.7696 Kcal/mol/rad$^2$ \\ \hline
+  $\theta _{0,HOH}$ & 109.47 deg \\ \hline
+                    &           \\ \hline
+                    &           \\ \hline
+
+ \end{tabular}
+ \label{ForceFieldParameters_H2O}
+\end{table}
+
+\begin{table}
+ \caption{Force Field Parameters for Portlandite $Ca(OH)_2$ (ref Cygan)}
+  \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Nonbond} \\ \hline
+  $q_{Ca}$ & +1.050e  \\ \hline
+  $q_O$ & -0.820e  \\ \hline
+  $q_H$ & +0.425e  \\ \hline
+
+  $\epsilon _{Ca}$ & 5.0298E-6 Kcal/mol \\ \hline
+  $\epsilon _H$ &  \\ \hline
+  $\epsilon _O$ & 0.1554 Kcal/mol \\ \hline
+  $\sigma _{Ca}$ & 6.2428 \AA{} \\ \hline
+  $\sigma _H$ &  \\ \hline
+  $\sigma _O$ & 3.5532 \AA{} \\ \hline
+ \end{tabular}
+  \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Bond} \\ \hline
+  $k_{OH}$ & 554.1349 Kcal/mol/\AA{}$^2$  \\ \hline
+  $r_{o,OH}$ & 1.0 \AA{}  \\ \hline
+  $k_{HOH}$ & 45.7696 Kcal/mol/rad$^2$ \\ \hline
+  $\theta _{0,HOH}$ & 109.47 deg \\ \hline
+                    &           \\ \hline
+                    &           \\ \hline
+		    &           \\ \hline
+                    &           \\ \hline
+                    &           \\ \hline
+
+ \end{tabular}
+ \label{ForceFieldParameters_Portlandite}
+\end{table}
+
+
+\end{document}
