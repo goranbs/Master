@@ -113,8 +113,8 @@ def gothroughfiles(path,arg=None):
                             pass
                         if (type(char) == int):
                             break
-                        start += 1
                 
+                        start += 1
                     filenames.append(name)
                     numbers.append(int(name[start:-4]))
                     
@@ -420,20 +420,19 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     portlandite_thickness = 11.3  # Angstrom
     lorock = 7.0                  # height of lower portlandite part
     hirock = 37.8                 # height of upper portlandite part
-    zlo = system_size[4]
-    zhi = system_size[5]
-    zsize = (zhi-zlo)
-    #print zlo, zhi,zsize
-    z0 = portlandite_thickness/zsize
-    z1 = (zsize - portlandite_thickness)/zsize
-    xmin = 0.28
-    xmax = 0.72    
-    Nz = 5
-    d_port = (z1-z0)                       # crack opening
-    half_d_port = d_port/2.0               # half crack opening
-    boxsize_z = (half_d_port)/float(Nz)    # boxsize for boxes from surface to center of crack.
-    center_of_port = half_d_port + z0
-    Types = [4]                            # oxygen
+    zlo = system_size[4]          # system origin z
+    zhi = system_size[5]          # system end z
+    zsize = (zhi-zlo)             # lendth of system in z dir. (across pore)
+    z0 = portlandite_thickness/zsize             # relative thickness of the portlandite
+    z1 = (zsize - portlandite_thickness)/zsize   # approximate relative starting point of upper portlandite layer
+    xmin = 0.28                                  # we only want to look at the diffusion inside the pore
+    xmax = 0.72                                  # we only want to look at the diffusion inside the pore
+    Nz = 5                                       # number of boxes!
+    d_port = (z1-z0)                             # width of pore opening
+    half_d_port = d_port/2.0                     # half crack opening
+    boxsize_z = (half_d_port)/float(Nz)          # boxsize for boxes from surface to center of crack.
+    center_of_port = half_d_port + z0            # 
+    Types = [4]                                  # oxygen. only trace oxygen!
     binsz = initialize(Natoms,matrix,Types,Nz,xmin,xmax,z0,z1)
     
     msd = []; msdz = []; msdr = []; time = []
@@ -475,13 +474,13 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     strt = zsize*(boxsize_z/2.0)
     end = Nz*zsize*boxsize_z - strt
     dist = np.linspace(strt,end,Nz)  # midpoints of boxes/bins
-
+    
     fig2 = plt.figure()
     plt.hold(True)
     for i in range(ntimesteps):
         plt.plot(dist,msd[i],'-*')
     plt.hold(False)
-    plt.xlabel('z [Angstrom]'),plt.ylabel(r'msd $[A^2/ps]$')
+    plt.xlabel('z [Angstrom]'),plt.ylabel(r'msd $[Aa^2/ps]$')
     plt.title('Mean square displacement evolution in time \nas a function of  distance from the rock surface')
     if (save == True):
         for Format in Formats:
@@ -493,13 +492,11 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     
     fig3 = plt.figure()
     fig1_name = 'msd_evolution_z' + arg
-    bins = np.linspace(1,Nz,Nz) # bins
-    dist = np.linspace(zsize*(boxsize_z/2.0),zsize*(Nz*boxsize_z/2.0),Nz)  # midpoints of boxes/bins
     plt.hold(True)
     for i in range(ntimesteps):
         plt.plot(bins,msdz[i],'-*')
     plt.hold(False)
-    plt.xlabel('bin [number]'),plt.ylabel(r'msd $[A^2/ps]$')
+    plt.xlabel('bin [number]'),plt.ylabel(r'msd $[Aa^2/ps]$')
     plt.title('Mean square displacement normal to the surface\nas a function of distance from the surface')
     if (save == True):
         for Format in Formats:
@@ -510,13 +507,11 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     # MSD using the x,y component. As function of bins to the surface for the different times.            
     fig4 = plt.figure()
     fig1_name = 'msd_evolution_r_' + arg
-    bins = np.linspace(1,Nz,Nz) # bins
-    dist = np.linspace(zsize*(boxsize_z/2.0),zsize*(Nz*boxsize_z/2.0),Nz)  # midpoints of boxes/bins
     plt.hold(True)
     for i in range(ntimesteps):
         plt.plot(bins,msdr[i],'-*')
     plt.hold(False)
-    plt.xlabel('bin [number]'),plt.ylabel(r'msd $[A^2/ps]$')
+    plt.xlabel('bin [number]'),plt.ylabel(r'msd $[Aa^2/ps]$')
     plt.title('Mean square displacement parallell to the surface\nas a function of distance from the surface')
     if (save == True):
         for Format in Formats:
@@ -546,7 +541,7 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     #------------------------------------- FIGURE 5 -----------------------------------------------
     # MSD as function of time. Also, we are calculating the diffusion coefficients
     Title1 = 'Mean square displacement for different distances from the\n surface wall of the portlandite'
-    Title2 = 'Diffusion coefficient for different distances from the surface\n [Aa^2/ps] = %g [m^2/s] ' % Aaps_to_si_units
+    Title2 = r'Diffusion coefficient for different distances from the surface\n $[Aa^2/ps] = %g [m^2/s]$' % Aaps_to_si_units
    
     degree = 1 # degree of polynomial
     D = []; D_line = []; start = int(len(tid)/4.0)
@@ -614,10 +609,23 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
     plt.plot(dist,Dr_,'--x')
     plt.hold(False)
     plt.title('Diffusion constant as function of distance from the surface')
-    plt.xlabel(r'd $[A]$'), plt.ylabel(ylabel2), plt.legend(['D(d)','Dz(d)','Dr(d)'],loc='upper left')
+    plt.xlabel(r'd $[Aa]$'), plt.ylabel(ylabel2), plt.legend(['D(d)','Dz(d)','Dr(d)'],loc='upper left')
     if (save == True):
         for Format in Formats:
             fig_name = fig7_name + '.' + Format
+            plt.savefig(fig_name, format=Format)
+                
+    fig8 = plt.figure()
+    plt.plot(bins,D,'--*')
+    plt.hold(True)
+    plt.plot(bins,Dz_,'--d')
+    plt.plot(bins,Dr_,'--x')
+    plt.hold(False)
+    plt.title('Diffusion constant as function of bins from the surface')
+    plt.xlabel('bin'), plt.ylabel(ylabel2), plt.legend(['D(d)','Dz(d)','Dr(d)'],loc='upper left')
+    if (save == True):
+        for Format in Formats:
+            fig_name = fig7_name + '_funcOfBins.' + Format
             plt.savefig(fig_name, format=Format)
             
     plt.show(showplots)
@@ -626,12 +634,12 @@ def diffusion(path,date,Formats=None,arg=None,showplots=True,saveplots=True):
 
 def main():
     #path = "/home/goran/lammps-28Jun14/examples/water_portlandite_system/npt_run_and_energyminimization/statefiles"
-    path = "/home/goran/lammps-28Jun14/examples/Abel_runs/PW_system/flat_system/nvt_run"
+    #path = "/home/goran/lammps-28Jun14/examples/Abel_runs/PW_system/flat_system/nvt_run"
+    path = "/home/goran/lammps-28Jun14/examples/Abel_runs/PW_system/preparation/npt_run"
     #arg = 'nve'  # use only filnames containing nve!
-    arg = 'nvt'
-    #date = '04-11-2014'
-    date = '13-11-2014'
-    showplots = False
+    arg = 'npt'
+    date = '24-11-2014'
+    showplots = True
     saveplots = True
     Formats = ['png'] #Formats = ['png','jpg','jpeg']
     diffusion(path,date,Formats,arg,showplots,saveplots)     
