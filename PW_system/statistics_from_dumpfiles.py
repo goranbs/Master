@@ -58,7 +58,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         
     t = []
     Ts = []; Tp = []; Tw = []; P = []; D = []; p_OH = []; w_OH = []; p_ROG = []; w_ROG = []
-    vx = []; vy = []; vz = []; Ekin = []; Epot = []; msd = []
+    vx = []; vy = []; vz = []; Ekin = []; Epot = []; msd = []; Tco2 = []
     
     ofile = open(ScalarInfoFile,'r')
     ofile.readline() # the first line is a header, and should be skipped
@@ -71,12 +71,14 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         t.append(float(ll[0])*tc)  # convert directly to the disirered timeunits
         index = 0
         for i in scalarvalues:
-            if (i == "c_myTemp"):
+            if ("myTemp" in i):
                 Ts.append(float(ll[index]))
-            if (i == "c_tempW"):
+            if ("tempW" in i):
                 Tw.append(float(ll[index]))
-            if (i == "c_tempP"):
+            if ("tempP" in i):
                 Tp.append(float(ll[index]))
+            if ("tempCO2" in i):
+                Tco2.append(float(ll[index]))
             if (i in ("v_blW" , "c_blW")):
                 w_OH.append(float(ll[index]))
             if (i in ("v_blP" , "c_blP")):
@@ -111,7 +113,8 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
     #mean_pROG = np.mean(p_ROG)
     #td_pROG = np.std(p_ROG)
     
-    lt = len(t)
+    lt = len(t)    
+    start = int(3*lt/4.0)
     lenvx = len(vx)
     do_not_plot_vel = False
     if ((lenvx > 0) and (len(vx) == len(vy)) and (len(vy) == len(vz))):        
@@ -119,28 +122,24 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         for i in range(lenvx):
             vw.append(np.sqrt(vx[i]*vx[i] + vy[i]*vy[i] + vz[i]*vz[i]))
         
-        mean_v = np.mean(vw[int(lt/10.0):-1])   # v
-        std_v = np.std(vw[int(lt/10.0):-1])
-        mean_vx = np.mean(vx[int(lt/10.0):-1])  # vx
-        std_vx = np.std(vx[int(lt/10.0):-1])
-        mean_vy = np.mean(vy[int(lt/10.0):-1])  # vy
-        std_vy = np.std(vy[int(lt/10.0):-1])
-        mean_vz = np.mean(vz[int(lt/10.0):-1])  # vz
-        std_vz = np.std(vz[int(lt/10.0):-1])
+        mean_v = np.mean(vw[start:-1])   # v
+        std_v = np.std(vw[start:-1])
+        mean_vx = np.mean(vx[start:-1])  # vx
+        std_vx = np.std(vx[start:-1])
+        mean_vy = np.mean(vy[start:-1])  # vy
+        std_vy = np.std(vy[start:-1])
+        mean_vz = np.mean(vz[start:-1])  # vz
+        std_vz = np.std(vz[start:-1])
     else:
         print "###############################################"
         print " Error!\n len(vx)=%g, len(vy) =%g, len(vz)=%g " % (len(vx),len(vy),len(vz))
         print "###############################################"
         do_not_plot_vel = True
    
-    mean_P = np.mean(P[int(lt/10.0):-1])
-    std_P = np.std(P[int(lt/10.0):-1])
-    mean_Ts = np.mean(Ts[int(lt/10.0):-1])
-    std_Ts = np.std(Ts[int(lt/10.0):-1])
-    mean_Tp = np.mean(Tp[int(lt/10.0):-1])
-    std_Tp = np.std(Tp[int(lt/10.0):-1])
-    mean_Tw = np.mean(Tw[int(lt/10.0):-1])
-    std_Tw = np.std(Tw[int(lt/10.0):-1])
+    mean_P = np.mean(P[start:])
+    std_P = np.std(P[start:])
+    mean_Ts = np.mean(Ts[start:])
+    std_Ts = np.std(Ts[start:])
         
     #########################################################################
     #                             Plotting
@@ -149,8 +148,13 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
     ## for Palatino and other serif fonts use:
     #rc('font',**{'family':'serif','serif':['Palatino']})
     rc('text', usetex=True)    
-    
+
     if ((len(Tp) == lt) and (len(Tp) == len(Tw))):
+        mean_Tp = np.mean(Tp[start:])
+        std_Tp = np.std(Tp[start:])
+        mean_Tw = np.mean(Tw[start:])
+        std_Tw = np.std(Tw[start:])
+    
         plt.figure()
         plt.plot(t,Ts,'b-')
         plt.hold(True)
@@ -167,22 +171,38 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
             plt.savefig(fig_name,format=Format)
             
     else:
-        plt.figure()
-        plt.plot(t,Ts,'b-d')
-        plt.title('Temperature in the system. $ T_{system} = %g \pm %g K $' % (mean_Ts, std_Ts))
-        plt.xlabel('Time [%s]'  % timeunits), plt.ylabel('Temperature [K]'), plt.legend(['T(t)'])
-        if (saveplot):
-            fig_name = 'Temperature_%s.png' % filename
-            print "saving %s " % fig_name
-            plt.savefig(fig_name,format=Format)
-            
-    start = int(lt/10.0)
+        if (len(Tco2) == lt):
+            mean_Tco2 = np.mean(Tco2[start:])
+            std_Tco2 = np.std(Tco2[start:])
 
+            plt.figure()
+            plt.plot(t,Ts,'b-')
+            plt.hold(True)
+            plt.plot(t,Tco2,'r--')
+            plt.title('Temperature in the system. $ T_{system} = %g \pm %g K $\newline $T_{CO_2} = %g \pm %g K $' % (mean_Ts, std_Ts, mean_Tco2, std_Tco2))
+            plt.legend(['$T_s(t)$','$T_{CO_2}(t)$'],loc='upper right'), plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Temperature [K]')
+            if (saveplot):
+                fig_name = 'Temp_CO2_%s.png' % filename
+                print "saving %s " % fig_name
+                plt.savefig(fig_name,format=Format)
+        else:
+            plt.figure()
+            plt.plot(t,Ts,'b-d')
+            plt.title('Temperature in the system. $ T_{system} = %g \pm %g K $' % (mean_Ts, std_Ts))
+            plt.xlabel('Time [%s]'  % timeunits), plt.ylabel('Temperature [K]'), plt.legend(['T(t)'])
+            if (saveplot):
+                fig_name = 'Temp_%s.png' % filename
+                print "saving %s " % fig_name
+                plt.savefig(fig_name,format=Format)
+            
     
     #print "len(P) = %g " % len(P)
     if (lt == len(P)):
         plt.figure()
-        plt.plot(t,P,'b-d')
+        plt.plot(t,P,'b-')
+        plt.hold(True)
+        plt.plot(t[start:],np.linspace(mean_P,mean_P,len(t[start:])),'r--x')
+        plt.hold(False)
         plt.title(r'Pressure in the system\newline $P = %g \pm %g atm $' % (mean_P,std_P))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Pressure [atm]'), plt.legend(['P(t)'],loc='lower right')
         if (saveplot):
@@ -241,9 +261,9 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         plt.plot(t,f,'r--')
         plt.title('Mean square displacement of the water in the system')
         #plt.legend(['msd(t)',r'b + ax = %.2f(%.3f) + %.2f(%.3f)x ' % (p[1],np.sqrt(v[1,1]),p[0],std_D) ],loc='upper left')
-        plt.legend(['msd(t)',r'D = %.2f(%.3f)' % (p[0]/6.0,std_D) ],loc='upper left')
+        plt.legend(['msd(t)',r'D = %.2f(%.3f) [$Aa^2/%s$]' % (p[0]/6.0,std_D,timeunits) ],loc='upper left')
         plt.xlabel('t [%s]' % timeunits)
-        plt.ylabel('Displacement [Aangsrom]')
+        plt.ylabel('Displacement [Aa]')
         if (saveplot):
             fig_name = 'MSD_%s.png' % filename
             print "saving %s " % fig_name
@@ -267,7 +287,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         plt.hold(False)
         plt.title(r'Self diffusion of water in the system.\newline Diffusion constant $D= %.2f \pm %.3f Aa^2/%s $' % (mean_D,std_D,timeunits))
         plt.xlabel('Time [%s]' % timeunits)
-        plt.ylabel(r'D [${Aangsrom}^2/%s $]' % timeunits)
+        plt.ylabel(r'D [${Aa}^2/%s $]' % timeunits)
         if (saveplot):
             fig_name = 'Diffusion_%s.png' % filename
             print "saving %s " % fig_name
@@ -455,7 +475,7 @@ def plotDensity(path,files,tc,timeunits,Format,saveplot,showplot):
     firstvals = firstvals.split(); N = int(firstvals[1])
     waterdens.seek(gobacktothispoint)    # now go back to this point in the filestructure!
     
-    print "Samplevalues = %g. Number of rows = %g. Number of columns = %g" % (n,N, Ncolumns)
+    #print "Samplevalues = %g. Number of rows = %g. Number of columns = %g" % (n,N, Ncolumns)
     
     t1 = np.zeros((n,1))             # time [ps]
     BIN = np.zeros((n,N))            # bin number [1:N+1]
@@ -551,8 +571,8 @@ def plotDensity(path,files,tc,timeunits,Format,saveplot,showplot):
     legends = []
     min_W = 10     # default startvalue
     max_W = 0      # default startvalue 
-    zlo = 7.4      # position of lower surface
-    zhi = 37.0     # position of higher surface
+    #zlo = 7.4      # position of lower surface
+    #zhi = 37.0     # position of higher surface
     for i in range(n):
         if (i == 0):
             add = '*'
@@ -577,16 +597,16 @@ def plotDensity(path,files,tc,timeunits,Format,saveplot,showplot):
     if (max_w > max_W):
         max_W = max_w
 
-    line = np.linspace(min_W,max_W,len(BIN[0,:]))
-    Zlo = np.linspace(zlo,zlo,len(BIN[0,:]))
-    Zhi = np.linspace(zhi,zhi,len(BIN[0,:]))
-    plt.plot(Zlo,line,'k--')
-    plt.plot(Zhi,line,'k--')
-    legends.append('surface')
+    #ine = np.linspace(min_W,max_W,len(BIN[0,:]))
+    #Zlo = np.linspace(zlo,zlo,len(BIN[0,:]))
+    #Zhi = np.linspace(zhi,zhi,len(BIN[0,:]))
+    #plt.plot(Zlo,line,'k--')
+    #plt.plot(Zhi,line,'k--')
+    #legends.append('surface')
     plt.hold(False)
-    plt.axis([0, 60, min_W, max_W])
+    #plt.axis([0, 60, min_W, max_W])
     plt.title(r'Density distribution across the pore\newline Average density of water inside the pore $\rho _w = $ %.2f $ \pm $ %.3f $ [g/cm^3] $' % (m_wp,std_wp))
-    plt.xlabel('z [Aangstrom]')
+    plt.xlabel('z [Aa]')
     plt.ylabel(r'Density $[g/cm^3]$')
     plt.legend(legends,loc='upper right')
     if (saveplot):
@@ -759,7 +779,9 @@ def main():
     #generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"    
     
     generalpath = "/home/goran/lammps-28Jun14/examples/"
-    wp_path = "Abel_runs/PW_system/preparation"
+    wp_path = "Abel_runs/evaporate"
+    #wp_path = "Abel_runs/evaporate/executions/abel_testrun_27-11-14"
+    #wp_path = "Abel_runs/PW_system/preparation/npt_run"
     #wp_path = "Abel_runs/PW_system/flat_system"
     #wp_path = "Abel_runs/carbondioxide"
     #wp_path = "water_portlandite_system/npt_run_and_energyminimization/dump"
@@ -769,10 +791,10 @@ def main():
     
     timeunits='ps'        # desired output units of time
     ftop = 1000           # [fsec] in [ps]
-    tfac = 10             # timesteps in one fsec
+    tfac = 5              # timesteps in one fsec
     psfactor = ftop*tfac  # convert to [ps] 
     tc = 1.0/psfactor     # time conversionfactor
-    saveplot = False       # save all plots
+    saveplot = True       # save all plots
     showplot = True      # show all plots
     Format = 'png'        # output format figures
     
@@ -780,7 +802,7 @@ def main():
     yes_plotRDF        = False       # RDF files present
     yes_plotDensity    = False       # Density files present
     yes_plotEnergy     = False       # Energy files present
-    yes_plotAutoCorr   = False        # Auto Correlation function
+    yes_plotAutoCorr   = False       # Auto Correlation function
     
     ###########################################################################
     ###########################################################################
@@ -864,7 +886,10 @@ def main():
     if (yes_plotEnergy):
         print "#####################################"
         print "plotEnergy..."
-        plotEnergy(path,Energy_files,tc,timeunits,Format,saveplot,showplot)
+        if (len(Energy_files) <= 0):
+            print "Error plotting Energy files! No energyfiles found"
+        else:
+            plotEnergy(path,Energy_files,tc,timeunits,Format,saveplot,showplot)
 
     if(yes_plotAutoCorr):
         print "#####################################"
