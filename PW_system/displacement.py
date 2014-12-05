@@ -640,7 +640,7 @@ def main():
     arg = 'npt'
     date = '24-11-2014'
     showplots = True
-    saveplots = True
+    saveplots = False
     Formats = ['png'] #Formats = ['png','jpg','jpeg']
     diffusion(path,date,Formats,arg,showplots,saveplots)     
     
