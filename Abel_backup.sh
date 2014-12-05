@@ -21,7 +21,7 @@ dest="/media/goran/9196bccb-acd5-42ba-ae64-4231e568fd1d/home/goran/LAMMPS_backup
 
 if [[ $1 == /home/goran* ]]
 then
-	echo "$1 is a valid adress... proceeding"
+	echo "$1 ...seems to be a valid adress... proceeding"
 	backup_files=$1
 else
 	echo "argument given is not a valid path. path must start with /home/goran"
