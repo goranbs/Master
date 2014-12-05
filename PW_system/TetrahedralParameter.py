@@ -204,6 +204,9 @@ def fourNearest(Natoms,matrix,Type,output_filename,end_title_of_plot,showplot=Tr
 def main():
     '''
     Thetrahedral Order Parameter calculation for a statefile produced with LAMMPS.
+    The state file has to be consisting of water only. The program will search for 
+    atoms of type = Type only, and calculate the orderparameter according to the four
+    nearest atoms of type = Type.
     TetrahedralParameter is dependent on os,numpy and displacement (made by goran)
     '''
     
