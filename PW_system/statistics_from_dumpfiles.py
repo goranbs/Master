@@ -162,7 +162,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         plt.plot(t,Tw,'r--')
         plt.hold(False)
         plt.title(r'Temperature in the system\newline $T_{system} = %g \pm %g K $\newline $T_{portlandite} = %g \pm %.2f K $\newline  $T_{water} = %g \pm %g K $' % (mean_Ts, std_Ts,mean_Tp, std_Tp,mean_Tw, std_Tw) )
-        plt.legend([r'$ T_{system}(t)$ ',r'T_{portlandite}(t)$',r'$T_{water}(t)$'],loc='lower right')
+        plt.legend([r'$ T_{system}(t)$ ',r'T_{portlandite}(t)$',r'$T_{water}(t)$'],loc='upper right')
         plt.xlabel('Time [%s]' % timeunits)
         plt.ylabel('Temperature [K]')
         if (saveplot):
@@ -179,7 +179,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
             plt.plot(t,Ts,'b-')
             plt.hold(True)
             plt.plot(t,Tco2,'r--')
-            plt.title('Temperature in the system. $ T_{system} = %g \pm %g K $\newline $T_{CO_2} = %g \pm %g K $' % (mean_Ts, std_Ts, mean_Tco2, std_Tco2))
+            plt.title(r'Temperature in the system.\newline $ T_{system} = %g \pm %g K $\newline $T_{CO_2} = %g \pm %g K $' % (mean_Ts, std_Ts, mean_Tco2, std_Tco2))
             plt.legend(['$T_s(t)$','$T_{CO_2}(t)$'],loc='upper right'), plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Temperature [K]')
             if (saveplot):
                 fig_name = 'Temp_CO2_%s.png' % filename
@@ -189,7 +189,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
             plt.figure()
             plt.plot(t,Ts,'b-d')
             plt.title('Temperature in the system. $ T_{system} = %g \pm %g K $' % (mean_Ts, std_Ts))
-            plt.xlabel('Time [%s]'  % timeunits), plt.ylabel('Temperature [K]'), plt.legend(['T(t)'])
+            plt.xlabel('Time [%s]'  % timeunits), plt.ylabel('Temperature [K]'), plt.legend(['T(t)'],loc='upper right')
             if (saveplot):
                 fig_name = 'Temp_%s.png' % filename
                 print "saving %s " % fig_name
@@ -204,7 +204,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         plt.plot(t[start:],np.linspace(mean_P,mean_P,len(t[start:])),'r--x')
         plt.hold(False)
         plt.title(r'Pressure in the system\newline $P = %g \pm %g atm $' % (mean_P,std_P))
-        plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Pressure [atm]'), plt.legend(['P(t)'],loc='lower right')
+        plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Pressure [atm]'), plt.legend(['P(t)'],loc='upper right')
         if (saveplot):
             fig_name = 'Press_%s.png' % filename
             print "saving %s " % fig_name
@@ -295,7 +295,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
             
     lEkin = len(Ekin)
     if ((lEkin == lt) and (lEkin == len(Epot))):
-        Etot = []
+        Etot = []; Etot_rel = []; Epot_rel = []; Ekin_rel = []
         start = int(lEkin/4.0)
         meanEk = np.mean(Ekin[start:])
         meanEp = np.mean(Epot[start:])
@@ -311,16 +311,16 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         plt.plot(t,Ekin,'r--')
         plt.title(r'Kinetic energy. $ E_k = %g \pm %g [Kcal/mol]$' % (meanEk, stdEk))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'Energy $[Kcal/mole]$')
-        plt.legend([r'$E_k$'],loc='lower right')
+        plt.legend([r'$E_k$'],loc='upper right')
         if (saveplot):
             fig_name = 'KineticEnergy_%s.png' % filename
             print "saving %s" % fig_name
         
         plt.figure()
-        plt.plot(t,Ekin,'r--')
+        plt.plot(t,Epot,'r--')
         plt.title(r'Potential energy. $ E_p = %g \pm %g [Kcal/mol]$' % (meanEp, stdEp))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'Energy $[Kcal/mole]$')
-        plt.legend([r'$E_p$'],loc='lower right')
+        plt.legend([r'$E_p$'],loc='upper right')
         if (saveplot):
             fig_name = 'PotentialEnergy_%s.png' % filename
             print "saving %s" % fig_name
@@ -332,7 +332,7 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         plt.plot(t,Etot,'y-')
         plt.title(r'Energy in the system. $E_{tot} = %g \pm %g [Kcal/mol]$' % (meanEt,stdEt))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Energy [Kcal/mole]')
-        plt.legend(['Ekin','Epot','Etot'],loc='lower right')
+        plt.legend(['Ekin','Epot','Etot'],loc='center right')
         plt.hold(False)
         if (saveplot):
             fig_name = 'Energy_%s.png' % filename
@@ -779,7 +779,9 @@ def main():
     #generalpath = "/home/goran/lammps-28Jun14/examples/water_portlandite_system"    
     
     generalpath = "/home/goran/lammps-28Jun14/examples/"
-    wp_path = "Abel_runs/evaporate"
+    #wp_path = "Abel_runs/evaporate"
+    wp_path = "Abel_runs/evaporate/co2_equilibrated_28-11-14"
+    #wp_path = "Abel_runs/evaporate/executions/nve-water_28-11-14"
     #wp_path = "Abel_runs/evaporate/executions/abel_testrun_27-11-14"
     #wp_path = "Abel_runs/PW_system/preparation/npt_run"
     #wp_path = "Abel_runs/PW_system/flat_system"
@@ -794,7 +796,7 @@ def main():
     tfac = 5              # timesteps in one fsec
     psfactor = ftop*tfac  # convert to [ps] 
     tc = 1.0/psfactor     # time conversionfactor
-    saveplot = True       # save all plots
+    saveplot = False       # save all plots
     showplot = True      # show all plots
     Format = 'png'        # output format figures
     
