@@ -38,7 +38,7 @@ def gothroughfiles(path,arg=None):
     return sortedfilenames
 
 
-def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=True):
+def plotScalarInfo(writetothisfile,path,filename,tc,timeunits,Format,saveplot=False,showplot=True):
     '''
     path is the full path to filename. Where the filename is a scalar info -file.
     ScalarInfoFile contains information like:\n
@@ -154,19 +154,28 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
         std_Tp = np.std(Tp[start:])
         mean_Tw = np.mean(Tw[start:])
         std_Tw = np.std(Tw[start:])
-    
+        
+        Title = ' Temperature in the system\\newline $T_{system} = %g \pm %g K $\newline $T_{portlandite} = %g \pm %.2f K $\\newline $T_{water} = %g \pm %g K $' % (mean_Ts, std_Ts,mean_Tp, std_Tp,mean_Tw, std_Tw)
+        Xlabel = 'Time [%s]' % timeunits
+        Ylabel = 'Temperature [K]'
+        legends = ['$ T_{system}(t)$ ','T_{portlandite}(t)$','$T_{water}(t)$']
+        linestyles = ['b-','y--','r--']
         plt.figure()
-        plt.plot(t,Ts,'b-')
+        plt.plot(t,Ts,linestyles[0])
         plt.hold(True)
-        plt.plot(t,Tp,'y--')
-        plt.plot(t,Tw,'r--')
+        plt.plot(t,Tp,linestyles[1])
+        plt.plot(t,Tw,linestyles[2])
         plt.hold(False)
-        plt.title(r'Temperature in the system\newline $T_{system} = %g \pm %g K $\newline $T_{portlandite} = %g \pm %.2f K $\newline  $T_{water} = %g \pm %g K $' % (mean_Ts, std_Ts,mean_Tp, std_Tp,mean_Tw, std_Tw) )
+        plt.title(r'Temperature in the system\newline $T_{system} = %g \pm %g K $\newline $T_{portlandite} = %g \pm %.2f K $\newline  $T_{water} = %g \pm %g K $' % (mean_Ts, std_Ts,mean_Tp, std_Tp,mean_Tw, std_Tw))
         plt.legend([r'$ T_{system}(t)$ ',r'T_{portlandite}(t)$',r'$T_{water}(t)$'],loc='upper right')
-        plt.xlabel('Time [%s]' % timeunits)
-        plt.ylabel('Temperature [K]')
+        plt.xlabel(Xlabel)
+        plt.ylabel(Ylabel)
+        
+        fig_name = 'Temp_%s' % filename
+        write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,t,[Ts,Tp,Tw])
+        
         if (saveplot):
-            fig_name = 'Temp_%s.png' % filename
+            fig_name = fig_name + '.png'
             print "saving %s " % fig_name
             plt.savefig(fig_name,format=Format)
             
@@ -175,38 +184,69 @@ def plotScalarInfo(path,filename,tc,timeunits,Format,saveplot=False,showplot=Tru
             mean_Tco2 = np.mean(Tco2[start:])
             std_Tco2 = np.std(Tco2[start:])
 
+            Title = 'Temperature in the system.\\newline $T_{system} = %g \pm %g K $\\newline $T_{CO_2} = %g \pm %g K $' % (mean_Ts, std_Ts, mean_Tco2, std_Tco2)
+            Xlabel = 'Time [%s]' % timeunits
+            Ylabel = 'Temperature [K]'
+            legends = ['$T_s(t)$','$T_{CO_2}(t)$']
+            linestyles = ['b-','r--']
+            
             plt.figure()
-            plt.plot(t,Ts,'b-')
+            plt.plot(t,Ts,linestyles[0])
             plt.hold(True)
-            plt.plot(t,Tco2,'r--')
+            plt.plot(t,Tco2,linestyles[1])
             plt.title(r'Temperature in the system.\newline $ T_{system} = %g \pm %g K $\newline $T_{CO_2} = %g \pm %g K $' % (mean_Ts, std_Ts, mean_Tco2, std_Tco2))
-            plt.legend(['$T_s(t)$','$T_{CO_2}(t)$'],loc='upper right'), plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Temperature [K]')
+            plt.legend(legends,loc='upper right'), plt.xlabel(Xlabel), plt.ylabel(Ylabel)
+            
+            fig_name = 'Temp_CO2_%s' % filename
+            write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,t,[Ts,Tco2])
+            
             if (saveplot):
-                fig_name = 'Temp_CO2_%s.png' % filename
+                fig_name += '.png'
                 print "saving %s " % fig_name
                 plt.savefig(fig_name,format=Format)
         else:
+            
+            Title = 'Temperature in the system. $T_{system} = %g \pm %g K $' % (mean_Ts, std_Ts)
+            Xlabel = 'Time [%s]'  % timeunits; Ylabel = 'Temperature [K]'; legends = ['T(t)']
+            linestyles = ['b-d']
+            
             plt.figure()
-            plt.plot(t,Ts,'b-d')
-            plt.title('Temperature in the system. $ T_{system} = %g \pm %g K $' % (mean_Ts, std_Ts))
-            plt.xlabel('Time [%s]'  % timeunits), plt.ylabel('Temperature [K]'), plt.legend(['T(t)'],loc='upper right')
+            plt.plot(t,Ts,linestyles[0])
+            plt.title(Title)
+            plt.xlabel(Xlabel), plt.ylabel(Ylabel), plt.legend(legends,loc='upper right')
+            
+            fig_name = 'Temp_%s' % filename
+            write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,t,[Ts])
             if (saveplot):
-                fig_name = 'Temp_%s.png' % filename
+                fig_name += '.png'
                 print "saving %s " % fig_name
                 plt.savefig(fig_name,format=Format)
             
     
     #print "len(P) = %g " % len(P)
     if (lt == len(P)):
+        
+        Title = 'Pressure in the system\newline $P = %g \pm %g atm $' % (mean_P,std_P)
+        Xlabel = 'Time [%s]' % timeunits
+        Ylabel = 'Pressure [atm]'
+        legends = ['P(t)','mean(P)']
+        linestyles = ['b-','r--x']
+        
         plt.figure()
-        plt.plot(t,P,'b-')
+        plt.plot(t,P,linestyles[0])
         plt.hold(True)
-        plt.plot(t[start:],np.linspace(mean_P,mean_P,len(t[start:])),'r--x')
+        tmean = t[start:]
+        Pmean = np.linspace(mean_P,mean_P,len(t[start:]))
+        plt.plot(tmean,Pmean,linestyles[1])
         plt.hold(False)
         plt.title(r'Pressure in the system\newline $P = %g \pm %g atm $' % (mean_P,std_P))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Pressure [atm]'), plt.legend(['P(t)'],loc='upper right')
+  
+        fig_name = 'Press_%s' % filename
+        write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[t,tmean],[P,Pmean])
+
         if (saveplot):
-            fig_name = 'Press_%s.png' % filename
+            fig_name += '.png'
             print "saving %s " % fig_name
             plt.savefig(fig_name,format=Format)
             
@@ -759,7 +799,39 @@ def plotAutoCorr(path,Acorr_files,tc,timeunits,Format,saveplot,showplot):
         
         plt.show(showplot)
         
-                
+def write_to_file(ofile,title,xlabel,ylabel,plotname,legends,linestyles,xarray,yarrays):
+    
+    titleline = "title " + title + "\n"
+    xlabelline = "xlabel " + xlabel + "\n"
+    ylabelline = "ylabel " + ylabel + "\n"
+    plotnameline = "plotname " + plotname
+    legendline = "legends"
+    for legend in legends:
+        legendline = legendline + " " + legend
+    legendline += "\n"
+    linestyleline = "linestyles"
+    for linestyle in linestyles:
+        linestyleline = linestyleline + " " + linestyle
+    linestyleline += "\n"
+    ofile.write(titleline)
+    ofile.write(xlabelline)
+    ofile.write(ylabelline)
+    ofile.write(plotnameline)
+    ofile.write(legendline)
+    ofile.write(linestyleline)
+    xarrayline = "x-array1"
+    for i in xarray:
+        xarrayline = xarrayline + " " + str(i)
+    xarrayline += "\n"
+    ofile.write(xarrayline)
+    counter = 0
+    for yarray in yarrays:
+        counter += 1
+        yarrayline = "y-array"+str(counter)
+        for i in yarray:
+            yarrayline = yarrayline + " " + str(i)
+        yarrayline += "\n"
+        ofile.write(yarrayline)
 
 def main():
     '''
@@ -797,7 +869,7 @@ def main():
     psfactor = ftop*tfac  # convert to [ps] 
     tc = 1.0/psfactor     # time conversionfactor
     saveplot = False       # save all plots
-    showplot = True      # show all plots
+    showplot = False      # show all plots
     Format = 'png'        # output format figures
     
     yes_plotScalarInfo = True       # Scalar info files present
@@ -854,12 +926,22 @@ def main():
     for acorrfile in Acorr_files:
         print "    %s" % acorrfile
 
+    basefilename = os.path.basename(wp_path)
+    today = datetime.date.today()
+    writetofile = basefilename + "_plotdate_" + str(today) + ".dat"
+    ofile = open(writetofile,'w')
+    #title = 'sometitle'
+    #xlabel = 'x'; ylabel = 'y'; plotname = 'superplot'; legends = ['line1','line2','line3']; linestyles = ['-','-d','-x']
+    #xarray = [1,2,3,4]
+    #yarrays = [[1,2,3,4],[4,3,2,1],[2,2,2,2]]
+    #write_to_file(ofile,title,xlabel,ylabel,plotname,legends,linestyles,xarray,yarrays)
+
     if (yes_plotScalarInfo):
         print "#####################################"
         print "plotScalarInfo..."
         for filename in ScalarInfo_files:
             print filename
-            plotScalarInfo(path,filename,tc,timeunits,Format,saveplot,showplot)
+            plotScalarInfo(ofile,path,filename,tc,timeunits,Format,saveplot,showplot)
     
     if (yes_plotRDF):
         print "#####################################"
@@ -898,10 +980,11 @@ def main():
         print "plotAutoCorr..."
         plotAutoCorr(path,Acorr_files,tc,timeunits,Format,saveplot,showplot)
 
-
+    ofile.close()
 
 if (__name__ == "__main__"):
     import numpy as np
+    import datetime
     import matplotlib.pyplot as plt
     from matplotlib import rc
     import os
