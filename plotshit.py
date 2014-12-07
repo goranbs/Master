@@ -198,6 +198,7 @@ def main(argv):
     counter = 0    
     for aplot in plots:
         counter += 1
+        print "plotting plot number: %g " % counter
         plt.figure()
         plt.hold(True)
         Nxarrays= len(aplot["xarray"])
