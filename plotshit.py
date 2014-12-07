@@ -152,8 +152,10 @@ def main(argv):
                   "Plotname" : None,
                   "Legends" : [],
                   "Linestyles" : [],
-                  "xarray" : None,
-                  "yarray" : []}
+                  "xarray" : [],
+                  "x-arrange" : [],
+                  "yarray" : [],
+                  "y-arrange" : []}
                   
         for lines in range(fig[fignr]):
             wholeline = ofile.readline()
@@ -175,11 +177,15 @@ def main(argv):
             if ("linestyles" in line[0]):                         # Linestyles
                 aplot["Linestyles"] = line[1:]
             if ("x-array" in line[0]):                            # xarray
-                aplot["xarray"] = [float(x) for x in line[1:]]
+                array_nr = int(line[0][7:])
+                xarray = [float(x) for x in line[1:]]
+                aplot["xarray"].append(xarray)
+                aplot["x-arrange"].append(array_nr)
             if ("y-array" in line[0]):                            # yarray
+                array_nr = int(line[0][7:])
                 yarray = [float(y) for y in line[1:]]
                 aplot["yarray"].append(yarray)
-                    
+                aplot["y-arrange"].append(array_nr)
     
         plots.append(aplot)
     
@@ -188,19 +194,28 @@ def main(argv):
     ##########################################################################
     #                              PLOTTING                                  #
     ##########################################################################
-
+    
     counter = 0    
     for aplot in plots:
         counter += 1
         plt.figure()
         plt.hold(True)
-        for i in range(len(aplot["yarray"])):
-            linestyle = aplot["Linestyles"][i]
-            plt.plot(aplot["xarray"], aplot["yarray"][i],linestyle)
+        Nxarrays= len(aplot["xarray"])
+        Nyarrays= len(aplot["yarray"])
+        if (Nxarrays == Nyarrays):  # new part not tested !!!! could be that x1 is not plotted with y1...
+            for i in aplot["x-arrange"]:
+                for j in aplot["y-arrange"]:
+                    if (j == i):
+                        linestyle = aplot["Linestyles"][j-1]
+                        plt.plot(aplot["xarray"][i-1], aplot["yarray"][j-1],linestyle)
+        elif (Nxarrays == 1):
+            for i in range(Nyarrays):
+                linestyle = aplot["Linestyles"][i]
+                plt.plot(aplot["xarray"], aplot["yarray"][i],linestyle)
         plt.hold(False)
         plt.title(aplot["Title"])
         plt.xlabel(aplot["Xlabel"]); plt.ylabel(aplot["Ylabel"])
-        if (len(aplot["Legends"]) == len(aplot["yarray"])):
+        if (len(aplot["Legends"]) == Nyarrays):
             plt.legend(aplot["Legends"],loc="upper right")
         else:
             print "################################################\n Warning!!!\n Error occured when adding legends!"
@@ -208,14 +223,14 @@ def main(argv):
             print "number of graphs  = %g" % (len(aplot["yarray"]))
             print "\n No legends added to the plot!"
         if (saveplot):
-            print " (%g/%g) Saving plot..." % (counter,len(plots))
             name = aplot["Plotname"] + '.png'
+            print " (%g/%g) Saving plot... plotname: %s" % (counter,len(plots),name)
             fname = os.path.join(pathtosavedir,name)
             plt.savefig(fname,format='png')
     
     plt.show(showplot)
     plt.close('all')
-    print "Done saving all the plots, exiting successfully...\n .... At least as far as I know :-)"
+    print "Done saving all the plots, exiting successfully...\n                          .... At least as far as I know :-)"
     
     
 if (__name__ == "__main__"):
