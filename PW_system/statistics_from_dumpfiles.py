@@ -198,7 +198,7 @@ def plotScalarInfo(writetothisfile,path,filename,tc,timeunits,Format,saveplot=Fa
             plt.legend(legends,loc='upper right'), plt.xlabel(Xlabel), plt.ylabel(Ylabel)
             
             fig_name = 'Temp_CO2_%s' % filename
-            write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,t,[Ts,Tco2])
+            write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[t],[Ts,Tco2])
             
             if (saveplot):
                 fig_name += '.png'
@@ -216,7 +216,7 @@ def plotScalarInfo(writetothisfile,path,filename,tc,timeunits,Format,saveplot=Fa
             plt.xlabel(Xlabel), plt.ylabel(Ylabel), plt.legend(legends,loc='upper right')
             
             fig_name = 'Temp_%s' % filename
-            write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,t,[Ts])
+            write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[t],[Ts])
             if (saveplot):
                 fig_name += '.png'
                 print "saving %s " % fig_name
@@ -226,7 +226,7 @@ def plotScalarInfo(writetothisfile,path,filename,tc,timeunits,Format,saveplot=Fa
     #print "len(P) = %g " % len(P)
     if (lt == len(P)):
         
-        Title = 'Pressure in the system\newline $P = %g \pm %g atm $' % (mean_P,std_P)
+        Title = 'Pressure in the system\\newline $P = %g \pm %g atm $' % (mean_P,std_P)
         Xlabel = 'Time [%s]' % timeunits
         Ylabel = 'Pressure [atm]'
         legends = ['P(t)','mean(P)']
@@ -252,38 +252,66 @@ def plotScalarInfo(writetothisfile,path,filename,tc,timeunits,Format,saveplot=Fa
             
     #print "len(w_OH) = %g " % len(w_OH)        
     if (lt == len(w_OH)):
+        
+        Title = 'Bond lenght for OH in water\\newline $d_{wOH} = %g \pm %g \AA{} $' % (mean_wOH,std_wOH)
+        Xlabel = 'Time [%s]' % timeunits
+        Ylabel = '$d_{wOH}$ [\AA{}]'
+        legends = ['$d_{wOH}(t)$']
+        linestyles = ['b-d']
+        
         plt.figure()
-        plt.plot(t,w_OH,'b-d')
+        plt.plot(t,w_OH,linestyles)
         plt.title(r'Bond lenght for OH in water\newline $d_{wOH} = %g \pm %g Aa $' % (mean_wOH,std_wOH))
         plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'$d_{wOH}$ [Aa]'), plt.legend([r'$d_{wOH}(t)$'],loc='lower right')
+        fig_name = 'Bondlength_w_%s' % filename
+        write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[t],[w_OH])
+        
         if (saveplot):
-            fig_name = 'Bondlength_w_%s.png' % filename
+            fig_name = fig_name + '.png'
             print "saving %s " % fig_name
             plt.savefig(fig_name,format=Format)
 
     #print "len(p_OH) = %g " % len(p_OH)        
     if (lt == len(p_OH)):
+        
+        Title = 'Bond lenght for OH in portlandite\\newline $d_{pOH} = %g \pm %g \AA{} $' % (mean_pOH,std_pOH)
+        Xlabel = 'Time [%s]' % timeunits
+        Ylabel = '$d_{pOH}$ [\AA{}]'
+        legends = ['$d_{pOH}(t)$']
+        linestyles = ['b-d']
+
         plt.figure()
         plt.plot(t,p_OH,'b-d')
         plt.title(r'Bond lenght for OH in portlandite\newline $d_{pOH} = %g \pm %g Aa $' % (mean_pOH,std_pOH))
-        plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'$d_{wOH}$ [Aa]'), plt.legend([r'$d_{pOH}(t)$'],loc='lower right')
+        plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'$d_{pOH}$ [Aa]'), plt.legend([r'$d_{pOH}(t)$'],loc='lower right')
+        fig_name = 'Bondlength_p_%s' % filename
+        write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[t],[p_OH])
+
         if (saveplot):
-            fig_name = 'Bondlength_p_%s.png' % filename
+            fig_name = fig_name + '.png'
             print "saving %s " % fig_name
             plt.savefig(fig_name,format=Format)
             
     if (do_not_plot_vel == False):
+        Title = 'Velocityprofile\\newline $v_{rms} = %g \pm %g \AA{}/%s $\\newline $v_x = %g \pm %g \AA{}/%s $\\newline $v_y = %g \pm %g \AA{}/%s $\\newline $v_z = %g \pm %g \AA{}/%s $' % (mean_v,std_v,timeunits,mean_vx,std_vx,timeunits, mean_vy,std_vy,timeunits, mean_vz,std_vz, timeunits)
+        Xlabel = 'Time [%s]' % timeunits
+        Ylabel = 'Velocity [$\AA{}/%s$]' % timeunits
+        legends = ['v','vx','vy','vz']
+        linestyles = ['b-','g--','y--','m--']
+        tt = t[start:-1]
         plt.figure()
-        plt.plot(t[start:-1],vw[start:-1],'b-')
+        plt.plot(tt,vw[start:-1],'b-')
         plt.hold(True)
-        plt.plot(t[start:-1],vx[start:-1],'g--')
-        plt.plot(t[start:-1],vy[start:-1],'y--')
-        plt.plot(t[start:-1],vz[start:-1],'m--')
+        plt.plot(tt,vx[start:-1],'g--')
+        plt.plot(tt,vy[start:-1],'y--')
+        plt.plot(tt,vz[start:-1],'m--')
         plt.hold(False)
         plt.title(r'Velocityprofile \newline $v_{rms} = %g \pm %g Aa/%s $ \newline $v_x = %g \pm %g Aa/%s $\newline $v_y = %g \pm %g Aa/%s $\newline $v_z = %g \pm %g Aa/%s $' % (mean_v,std_v,timeunits,mean_vx,std_vx,timeunits, mean_vy,std_vy,timeunits, mean_vz,std_vz, timeunits))
         plt.xlabel('Time [%s]' % timeunits)
         plt.ylabel('Velocity [Aangstrom/%s]' % timeunits)
         plt.legend(['v','vx','vy','vz'],loc='lower right')
+        fig_name = 'Velocityprofile_%s' % filename
+        write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[tt],[vw[start:-1],vx[start:-1],vy[start:-1],vz[start:-1]])
         if (saveplot):
             fig_name = 'Velocityprofile_%s.png' % filename
             print "saving %s " % fig_name
@@ -291,21 +319,31 @@ def plotScalarInfo(writetothisfile,path,filename,tc,timeunits,Format,saveplot=Fa
     
     if (lt == len(msd)):
         start = int(3*lt/4.0)
+        tt = t[start:]
         deg = 1
-        p,v = np.polyfit(t[start:],msd[start:],deg, full=False,cov=True)
+        p,v = np.polyfit(tt,msd[start:],deg, full=False,cov=True)
         std_D = np.sqrt(v[0,0])
         f = np.polyval(p,t)
+        Title = 'Mean square displacement of the water in the system'
+        Xlabel = 'Time [%s]' % timeunits
+        Ylabel = 'Displacement [\AA{}]'
+        legends = ['msd(t)','D=%.2f(%.3f)[$\AA{}^2/%s$]' % (p[0]/6.0,std_D,timeunits) ]
+        linestyles = ['b-','r--']
+        
         plt.figure()
-        plt.plot(t,msd,'b-')
+        plt.plot(t,msd,linestyles[0])
         plt.hold(True)
-        plt.plot(t,f,'r--')
+        plt.plot(t,f,linestyles[1])
         plt.title('Mean square displacement of the water in the system')
         #plt.legend(['msd(t)',r'b + ax = %.2f(%.3f) + %.2f(%.3f)x ' % (p[1],np.sqrt(v[1,1]),p[0],std_D) ],loc='upper left')
         plt.legend(['msd(t)',r'D = %.2f(%.3f) [$Aa^2/%s$]' % (p[0]/6.0,std_D,timeunits) ],loc='upper left')
-        plt.xlabel('t [%s]' % timeunits)
+        plt.xlabel(Xlabel)
         plt.ylabel('Displacement [Aa]')
+        fig_name = 'MSD_%s' % filename
+        write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[t],[msd,f])
+        
         if (saveplot):
-            fig_name = 'MSD_%s.png' % filename
+            fig_name = fig_name + '.png'
             print "saving %s " % fig_name
             plt.savefig(fig_name,format=Format)
     
@@ -314,10 +352,9 @@ def plotScalarInfo(writetothisfile,path,filename,tc,timeunits,Format,saveplot=Fa
         std_D = np.std(Coeff_D[start:])
         
         tt = np.array(t[start:])
-        Diffusion = np.zeros([len(tt),1])
-        Diffusion.fill(mean_D) 
-        yerror = np.zeros([len(tt),1])
-        yerror.fill(std_D)
+        Diffusion = np.linspace(mean_D,mean_D,len(tt))
+        
+        yerror = np.linspace(std_D,std_D,len(tt))
         
         plt.figure()
         #plt.plot(t[int(lt/10.0):-1],Coeff_D[int(lt/10.0):-1],'b-')
@@ -326,8 +363,13 @@ def plotScalarInfo(writetothisfile,path,filename,tc,timeunits,Format,saveplot=Fa
         plt.plot(tt,Diffusion,'r--')
         plt.hold(False)
         plt.title(r'Self diffusion of water in the system.\newline Diffusion constant $D= %.2f \pm %.3f Aa^2/%s $' % (mean_D,std_D,timeunits))
-        plt.xlabel('Time [%s]' % timeunits)
+        plt.xlabel(Xlabel)
         plt.ylabel(r'D [${Aa}^2/%s $]' % timeunits)
+        Title = 'Self diffusion of water in the system.\\newline Diffusion constant $D= %.2f \pm %.3f \AA{}^2/%s $' % (mean_D,std_D,timeunits)
+        Ylabel = 'Displacement [\AA{}]'
+        legends = ['$D(t)$','$D_{mean}(t)$']
+        linestyles = ['b-','r--']
+        write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[t,tt],[Coeff_D,Diffusion])
         if (saveplot):
             fig_name = 'Diffusion_%s.png' % filename
             print "saving %s " % fig_name
@@ -346,36 +388,52 @@ def plotScalarInfo(writetothisfile,path,filename,tc,timeunits,Format,saveplot=Fa
             
         meanEt = np.mean(Etot[start:])
         stdEt = np.std(Etot[start:])
-        
+        Title = 'Kinetic energy. $ E_k = %g \pm %g [Kcal/mol]$' % (meanEk, stdEk)
+        Xlabel = 'Time [%s]' % timeunits
+        Ylabel = 'Energy $[Kcal/mole]$'
+        legends = ['$E_k$']
+        linestyles = ['r--']
         plt.figure()
-        plt.plot(t,Ekin,'r--')
+        plt.plot(t,Ekin,linestyles[0])
         plt.title(r'Kinetic energy. $ E_k = %g \pm %g [Kcal/mol]$' % (meanEk, stdEk))
-        plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'Energy $[Kcal/mole]$')
+        plt.xlabel(Xlabel), plt.ylabel(Ylabel)
         plt.legend([r'$E_k$'],loc='upper right')
+        fig_name = 'KineticEnergy_%s' % filename
+        write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[t],[Ekin])
         if (saveplot):
-            fig_name = 'KineticEnergy_%s.png' % filename
+            fig_name = fig_name + '.png'
             print "saving %s" % fig_name
         
+        Title = 'Potential energy. $ E_p = %g \pm %g [Kcal/mol]$' % (meanEp, stdEp)
+        legends = ['$E_p$']
         plt.figure()
-        plt.plot(t,Epot,'r--')
+        plt.plot(t,Epot,linestyles[0])
         plt.title(r'Potential energy. $ E_p = %g \pm %g [Kcal/mol]$' % (meanEp, stdEp))
-        plt.xlabel('Time [%s]' % timeunits), plt.ylabel(r'Energy $[Kcal/mole]$')
+        plt.xlabel(Xlabel), plt.ylabel(Ylabel)
         plt.legend([r'$E_p$'],loc='upper right')
+        fig_name = 'PotentialEnergy_%s' % filename
+        write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[t],[Epot])
         if (saveplot):
-            fig_name = 'PotentialEnergy_%s.png' % filename
+            fig_name = fig_name + '.png'
             print "saving %s" % fig_name
             
+        Title = 'Energy in the system. $E_{tot} = %g \pm %g [Kcal/mol]$' % (meanEt,stdEt)
+        legends = ['Ekin','Epot','Etot']
+        linestyles = ['r--','b--','y-']
+        
         plt.figure()
-        plt.plot(t,Ekin,'r--')
+        plt.plot(t,Ekin,linestyles[0])
         plt.hold(True)
-        plt.plot(t,Epot,'b--')
-        plt.plot(t,Etot,'y-')
+        plt.plot(t,Epot,linestyles[1])
+        plt.plot(t,Etot,linestyles[2])
         plt.title(r'Energy in the system. $E_{tot} = %g \pm %g [Kcal/mol]$' % (meanEt,stdEt))
-        plt.xlabel('Time [%s]' % timeunits), plt.ylabel('Energy [Kcal/mole]')
-        plt.legend(['Ekin','Epot','Etot'],loc='center right')
+        plt.xlabel(Xlabel), plt.ylabel(Ylabel)
+        plt.legend(legends,loc='center right')
         plt.hold(False)
+        fig_name = 'Energy_%s' % filename
+        write_to_file(writetothisfile,Title,Xlabel,Ylabel,fig_name,legends,linestyles,[t],[Ekin,Epot,Etot])
         if (saveplot):
-            fig_name = 'Energy_%s.png' % filename
+            fig_name = fig_name + '.png'
             print "saving %s " % fig_name
             plt.savefig(fig_name,format=Format)
         
@@ -799,12 +857,22 @@ def plotAutoCorr(path,Acorr_files,tc,timeunits,Format,saveplot,showplot):
         
         plt.show(showplot)
         
-def write_to_file(ofile,title,xlabel,ylabel,plotname,legends,linestyles,xarray,yarrays):
+def write_to_file(ofile,title,xlabel,ylabel,plotname,legends,linestyles,xarrays,yarrays):
+    '''
+    ofile = opened writable file\newline
+    title = string containing the title of the plot (string)\newline
+    ylabel, xlabel = y and x label name of the plot (string)\newline
+    plotname = filename of the plot. No whitespaces (string)\newline
+    legends = list of legends\newline
+    linestyles = list of linestyles\newline
+    xarray = list of x-arrays to plot against the yarrays. One single x-array can be given in x-array list if it is to be
+    plotted against multiple yarrays. The xarray still has to be contained within a list!
+    '''
     
     titleline = "title " + title + "\n"
     xlabelline = "xlabel " + xlabel + "\n"
     ylabelline = "ylabel " + ylabel + "\n"
-    plotnameline = "plotname " + plotname
+    plotnameline = "plotname " + plotname + "\n"
     legendline = "legends"
     for legend in legends:
         legendline = legendline + " " + legend
@@ -819,11 +887,15 @@ def write_to_file(ofile,title,xlabel,ylabel,plotname,legends,linestyles,xarray,y
     ofile.write(plotnameline)
     ofile.write(legendline)
     ofile.write(linestyleline)
-    xarrayline = "x-array1"
-    for i in xarray:
-        xarrayline = xarrayline + " " + str(i)
-    xarrayline += "\n"
-    ofile.write(xarrayline)
+    counter = 0
+    for xarray in xarrays:
+        counter += 1
+        xarrayline = "x-array" + str(counter)
+        for i in xarray:
+            xarrayline = xarrayline + " " + str(i)
+        xarrayline += "\n"
+        ofile.write(xarrayline)
+        
     counter = 0
     for yarray in yarrays:
         counter += 1
@@ -980,6 +1052,8 @@ def main():
         print "plotAutoCorr..."
         plotAutoCorr(path,Acorr_files,tc,timeunits,Format,saveplot,showplot)
 
+    print "name of output-plot-file: %s" % writetofile
+    print " location of output-plot-file: %s" % os.getcwd()
     ofile.close()
 
 if (__name__ == "__main__"):
