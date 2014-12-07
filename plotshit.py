@@ -211,7 +211,7 @@ def main(argv):
         elif (Nxarrays == 1):
             for i in range(Nyarrays):
                 linestyle = aplot["Linestyles"][i]
-                plt.plot(aplot["xarray"], aplot["yarray"][i],linestyle)
+                plt.plot(aplot["xarray"][0], aplot["yarray"][i],linestyle)
         plt.hold(False)
         plt.title(aplot["Title"])
         plt.xlabel(aplot["Xlabel"]); plt.ylabel(aplot["Ylabel"])
