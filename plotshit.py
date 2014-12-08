@@ -23,12 +23,14 @@ def printhelp(arg):
     print "Name of program:    %s   " % arg
     print "Useage: python % s [path-to-file] [showplots] [saveplots] \n " % arg
     print "%s takes at least one cmd argument [path-to-file]\n " % arg
-    print "showplot and saveplot is optional values yes/no\n "
-    print "The inputfile is a textfile, formatted followingly:\n "
-    print " title <figuretitle>\n xlabel <xlabelname>\n ylabel <ylabelname>\n figurename <output-figure-name>\n linestyle graph1 graph2 .. graphn\n legends graph1 graph2 .... graphn\n x-array1 x11 x12 x13 ......... x1k\n y-array1 y11 y12 y13 ......... y1k\n y-array2 y21 y22 y23 ......... y2k\n .      .   .   .  .........  .\n .      .   .   .  .........  .\n y-arrayn yn1 yn2 yn3 ......... ynk\n "
+    print "showplot and saveplot is optional values (yes/no)\n "
+    print "The inputfile is a textfile, formatted the following way:\n "
+    print " title <figuretitle>\n xlabel <xlabelname>\n ylabel <ylabelname>\n figurename <output-figure-name>\n linestyle graph1 graph2 ... graphn\n legends graph1 graph2 ..... graphn\n x-array1 x11 x12 x13 ......... x1k\n y-array1 y11 y12 y13 ......... y1k\n y-array2 y21 y22 y23 ......... y2k\n .      .   .   .     .........  .\n .      .   .   .     .........  .\n y-arrayn yn1 yn2 yn3 ......... ynk\n "
     string = '\\newline'
-    print "Use:\n %s for newline\n $ signs for math expressions" % (string)
-    print "Whitespaces separeates the input variables, this often is the error\nencountered in the legends option"
+    print "You can also specify one x-array for every y-array.\n Then, x-array1 belongs to y-array1, and so on.\n"
+    print "Use:\n       %s for newline\n       $ signs for math expressions" % (string)
+    print "Whitespaces separeates the input variables,\n this is most often the error encountered in the legends option"
+    print "###################################################################"
     
 def get_savepath(currentpath):
     #print "path is from the submit-folder. That is: %s \n" % currentpath
@@ -195,8 +197,17 @@ def main(argv):
     #                              PLOTTING                                  #
     ##########################################################################
     
+    
     counter = 0    
     for aplot in plots:
+        
+        if (len(aplot["Linestyles"]) == 0 ):
+            colours = ['b','r','g','y','m','k']
+            lines = ['-','--','-x','-d','-o','.','-v']
+            aplot["Linestyles"] = []
+            for line in lines:
+                for colour in colours:
+                    aplot["Linestyles"].append(colour + line)
         counter += 1
         print "plotting plot number: %g " % counter
         plt.figure()
