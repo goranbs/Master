@@ -321,8 +321,8 @@ def plotScalarInfo(writetothisfile,path,filename,tc,timeunits,Format,saveplot=Fa
         start = int(3*lt/4.0)
         tt = t[start:]
         deg = 1
-        p,v = np.polyfit(tt,msd[start:],deg, full=False,cov=True)
-        std_D = np.sqrt(v[0,0])
+        p,vv = np.polyfit(tt,msd[start:],deg, full=False,cov=True)
+        std_D = np.sqrt(vv[0,0])
         f = np.polyval(p,t)
         Title = 'Mean square displacement of the water in the system'
         Xlabel = 'Time [%s]' % timeunits
@@ -1143,7 +1143,8 @@ def main():
     generalpath = "/home/goran/lammps-28Jun14/examples/"
     #wp_path = "Abel_runs/evaporate"
     #wp_path = "Abel_runs/evaporate/co2_equilibrated_28-11-14"
-    wp_path = "Abel_runs/evaporate/executions/smaug_npt_co2_portlandite"
+    #wp_path = "Abel_runs/evaporate/executions/smaug_npt_co2_portlandite"
+    wp_path = "Abel_runs/evaporate/executions/npt_co2_09-12-14"
     #wp_path = "Abel_runs/evaporate/executions/nve-water_28-11-14"
     #wp_path = "Abel_runs/evaporate/executions/abel_testrun_27-11-14"
     #wp_path = "Abel_runs/PW_system/preparation/npt_run"

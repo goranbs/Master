@@ -1,0 +1,51 @@
+\documentclass[twoside,english]{uiofysmaster}
+
+%\bibliography{references}
+\usepackage{subfiles}
+\usepackage{ifxetex}
+\ifxetex
+  \usepackage{fontspec}
+  \newfontfamily\listingsfontfamily[Scale=0.85]{Droid Sans Mono}
+  \renewcommand{\listingsfont}{\listingsfontfamily}
+\fi
+
+\usepackage{pdfpages}                                                 % Front Page
+\pagenumbering{roman}
+\begin{document}
+\includepdf{front-page.pdf}
+\cleardoublepage
+\begin{abstract}
+This is an abstract text. Which will be written close to deadline... 15.May. So far it is just an abstract abstract, and I do not know what to put into this section yet.
+\end{abstract}
+
+\begin{dedication}                                                    % Dedication of the thesis
+  To someone
+  \\\vspace{12pt}
+  This is a dedication to my cat. Which I do not have yet, but I mean to get one sometime when I'am done writing my Master Thesis.
+\end{dedication}
+
+\begin{acknowledgements}                                              % Acknowledgements 
+  I acknowledge my acknowledgements. And often others acknowledgements, except when they are wrong.
+\end{acknowledgements}
+
+\tableofcontents
+
+\chapter{LAMMPS}                                                      % Chapter about LAMMPS
+\subfile{./lammps_chapter/lammps.tex}
+
+\chapter{Moltemplate}                                                 % Chapter about Moltemplate
+Write something serious about moltemplate. What about pymol?
+
+%\chapter{Results}
+%\chapter{Discussion}
+%\chapter{Conclusions}
+%\chapter{Appendix}
+%Write an appendix
+%\begin{thebibliography}{}
+%\end{thebibliography}
+
+
+
+
+
+\end{document}

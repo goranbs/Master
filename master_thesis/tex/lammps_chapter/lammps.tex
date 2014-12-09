@@ -1,0 +1,132 @@
+\documentclass[twoside,english]{uiofysmaster}
+
+%\bibliography{references}
+
+\begin{document}
+
+\section{The Clay Force Field model}
+
+The Clay Force Field model, or ClayFF, were developed by Cygan et.al \textbf{(Reference...)} to effectivly model the behaviour of clay minerals in molecular dynamics simulations. It consists of four potentials, the \textit{van Der Waals} potential, a \textit{Bond} potential, \textit{Coulomb} and a \textit{Angle} potential, along with force-field interaction coefficients for the potentials for a range of atoms.
+
+\begin{equation}
+E_{VDW} = \sum _{i\neq j} D_{O,ij}\Big[ \Big( \frac{R_{O,ij}}{r_{ij}} \Big) ^{12} - \Big( \frac{R_{O,ij}}{r_{ij}} \Big) ^{6} \Big]
+\end{equation}
+
+\begin{equation}
+E_{coul} = \frac{e^2}{4\pi \epsilon _0}\sum _{i\neq j} \frac{q_i q_j}{r_{ij}}
+\end{equation}
+
+\begin{equation}
+E_{bond} = k_1(r_{ij}-r_o)^2
+\end{equation}
+
+\begin{equation}
+E_{angle} = k_2(\theta _{ijk} - \theta _o)^2
+\end{equation}
+
+\begin{equation}
+R_{O,ij} = \frac{1}{2}(R_{O,i} + R_{O,j})
+\end{equation}
+
+\begin{equation}
+D_{O,ij} = \sqrt{D_{O,i}D_{O,j}}
+\end{equation}
+
+%\begin{center}
+\begin{table}
+ \caption{Force Field Parameters for $CO_2$. (ref Cygan)}
+ \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Nonbond} \\ \hline
+  $q_C$ & +0.6512 e  \\ \hline
+  $q_O$ & -0.3256 e  \\ \hline
+  $\epsilon _C$ & 0.0559 Kcal/mol \\ \hline
+  $\epsilon _O$ & 0.1597 Kcal/mol \\ \hline
+  $\sigma _C$ & 2.800 \AA{} \\ \hline
+  $\sigma _O$ & 2.800 \AA{} \\ \hline
+ \end{tabular}
+  \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Bond} \\ \hline
+  $k_{CO}$ & 2017.93 Kcal/mol/\AA{}$^2$  \\ \hline
+  $r_{o,CO}$ & 1.162 \AA{}  \\ \hline
+  $k_{OCO}$ & 108.0 Kcal/mol/rad$^2$ \\ \hline
+  $\theta _{0,OCO}$ & 180.0 deg \\ \hline
+                    &           \\ \hline
+                    &           \\ \hline
+
+ \end{tabular}
+ \label{ForceFieldParameters_CO2}
+\end{table}
+%\end{center}
+
+\begin{table}
+ \caption{Force Field Parameters for $H_2O$. (ref ?) }
+  \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Nonbond} \\ \hline
+  $q_H$ & +0.4238 e  \\ \hline
+  $q_O$ & -0.8476 e  \\ \hline
+  $\epsilon _H$ & 0.0 Kcal/mol \\ \hline
+  $\epsilon _O$ & 0.1553 Kcal/mol \\ \hline
+  $\sigma _H$ & 2.058 \AA{} \\ \hline
+  $\sigma _O$ & 3.5532 \AA{} \\ \hline
+ \end{tabular}
+  \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Bond} \\ \hline
+  $k_{OH}$ & 554.1349 Kcal/mol/\AA{}$^2$  \\ \hline
+  $r_{o,OH}$ & 1.0 \AA{}  \\ \hline
+  $k_{HOH}$ & 45.7696 Kcal/mol/rad$^2$ \\ \hline
+  $\theta _{0,HOH}$ & 109.47 deg \\ \hline
+                    &           \\ \hline
+                    &           \\ \hline
+
+ \end{tabular}
+ \label{ForceFieldParameters_H2O}
+\end{table}
+
+\begin{table}
+ \caption{Force Field Parameters for Portlandite $Ca(OH)_2$ (ref Cygan)}
+  \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Nonbond} \\ \hline
+  $q_{Ca}$ & +1.050 e  \\ \hline
+  $q_O$ & -0.820 e  \\ \hline
+  $q_H$ & +0.425 e  \\ \hline
+
+  $\epsilon _{Ca}$ & 5.0298E-6 Kcal/mol \\ \hline
+  $\epsilon _H$ &  \\ \hline
+  $\epsilon _O$ & 0.1554 Kcal/mol \\ \hline
+  $\sigma _{Ca}$ & 6.2428 \AA{} \\ \hline
+  $\sigma _H$ &  \\ \hline
+  $\sigma _O$ & 3.5532 \AA{} \\ \hline
+ \end{tabular}
+  \begin{tabular}[]{|c|l|}
+  \hline
+  \multicolumn{2}{|c|}{Bond} \\ \hline
+  $k_{OH}$ & 554.1349 Kcal/mol/\AA{}$^2$  \\ \hline
+  $r_{o,OH}$ & 1.0 \AA{}  \\ \hline
+  $k_{HOH}$ & 45.7696 Kcal/mol/rad$^2$ \\ \hline
+  $\theta _{0,HOH}$ & 109.47 deg \\ \hline
+                    &           \\ \hline
+                    &           \\ \hline
+		    &           \\ \hline
+                    &           \\ \hline
+                    &           \\ \hline
+
+ \end{tabular}
+ \label{ForceFieldParameters_Portlandite}
+\end{table}
+
+\section{Informative mistakes}
+
+\begin{enumerate}
+ \item Make sure that you use the correct minus symbol in the \textit{.lt} (moltemplate) files. I managed to use a long minus character in the Carbon Dioxide unit cell template. LAMMPS skips the character. You will notice this when you run the code when LAMMPS gives you a warning about the system not being charge neutral.
+ \item Make sure to triple check that the units you are using is the same as what you have defined LAMMPS to use. Also make sure what output units LAMMPS will give for all outputs.
+ \item Use the LAMMPS internet manual. It is actually pritty good!
+ \item If you wish to use non-periodic boundary conditions in one direction of your system, make sure to orient your system in the z-direction. A lot of functionalities only support non-periodic boundary conditions this way, like Ewald, and some fixes.
+\end{enumerate}
+
+
+\end{document}
