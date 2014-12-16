@@ -21,7 +21,7 @@ def printhelp(arg):
     """
     print "###################################################################"
     print "Name of program:    %s   " % arg
-    print "Useage: python % s [path-to-file] [showplots] [saveplots] \n " % arg
+    print "Useage: python %s [path-to-file] [showplots] [saveplots] \n " % arg
     print "%s takes at least one cmd argument [path-to-file]\n " % arg
     print "showplot and saveplot is optional values (yes/no)\n "
     print "The inputfile is a textfile, formatted the following way:\n "
@@ -32,31 +32,38 @@ def printhelp(arg):
     print "Whitespaces separeates the input variables,\n this is most often the error encountered in the legends option"
     print "###################################################################"
     
-def get_savepath(currentpath):
+def get_savepath(currentpath,pathgiven,truevalues):
     #print "path is from the submit-folder. That is: %s \n" % currentpath
-    print "Where do you want to save the plots?"
-    savepath = raw_input("Give path: ")
-    if (savepath[0] == "~"):
-        home = os.path.expanduser("~")
-        savepath = home + savepath[1:]
-        fullpathtosavedir = os.path.abspath(savepath)
-    else: fullpathtosavedir = os.path.abspath(os.path.join(currentpath,savepath))
-    print "path chosen: %s " % fullpathtosavedir
+    saveindatabase = raw_input("Do you want to save the plots in the directory you gave on the cmd (yes/no)? ")
+    if (saveindatabase in truevalues):
+        fullpathtosavedir = os.path.abspath(os.path.join(currentpath,pathgiven))
+        fullpathtosavedir = os.path.dirname(fullpathtosavedir)
+        print "save in %s" % fullpathtosavedir
+    else:    
+        print "Where do you want to save the plots?"
+        savepath = raw_input("Give path: ")
+        if (savepath[0] == "~"):
+            home = os.path.expanduser("~")
+            savepath = home + savepath[1:]
+            fullpathtosavedir = os.path.abspath(savepath)
+        else: 
+            fullpathtosavedir = os.path.abspath(os.path.join(currentpath,savepath))
+            print "path chosen: %s " % fullpathtosavedir
     
-    if not os.path.isdir(fullpathtosavedir): # if the path is unique, do you wish to create it?
-        createfolder = raw_input("not a valid path. Do you wish to create a folder here? (yes/no) ")
-        if (createfolder in ["Y","y","Yes","yes","true","True"]): 
-            print "creating folder...."
-            os.makedirs(fullpathtosavedir) # use default mode
-        else:
-            print "Ok then..."
-            fullpathtosavedir = get_savepath(currentpath)
-    else: 
-        print "The path '%s'  is an existing path," % fullpathtosavedir
-        savehere = raw_input("Do you wish to save plots here? (yes/no) ")
-        if not (savehere in ["Y","y","Yes","yes","true","True","jepp","Jepp"]):
-            print "Ok then..."
-            fullpathtosavedir = get_savepath(currentpath)
+        if not os.path.isdir(fullpathtosavedir): # if the path is unique, do you wish to create it?
+            createfolder = raw_input("not a valid path. Do you wish to create a folder here? (yes/no) ")
+            if (createfolder in ["Y","y","Yes","yes","true","True"]): 
+                print "creating folder...."
+                os.makedirs(fullpathtosavedir) # use default mode
+            else:
+                print "Ok then..."
+                fullpathtosavedir = get_savepath(currentpath)
+        else: 
+            print "The path '%s'  is an existing path," % fullpathtosavedir
+            savehere = raw_input("Do you wish to save plots here? (yes/no) ")
+            if not (savehere in ["Y","y","Yes","yes","true","True","jepp","Jepp"]):
+                print "Ok then..."
+                fullpathtosavedir = get_savepath(currentpath)
     
     #print "save in: %s " % fullpathtosavedir
     return fullpathtosavedir
@@ -75,6 +82,7 @@ def main(argv):
     #print "pathtofile=     %s" % pathtofile
     #print "pathtocurrent = %s" % pathtocurrent
     #print "fullpathtofile= %s" % fullpathtofile
+    truevalues = ["Y","y","Yes","yes","true","True"]
     
     if (argv[1] in ["-h", "h", "Help", "help", "HELP", "--help"]):
         printhelp(argv[0])
@@ -88,7 +96,7 @@ def main(argv):
         return 1
     if ((len(argv) == 3) or (len(argv) == 4)):
         showplot = argv[2]
-        if (showplot in ["Y","y","Yes","yes","true","True"]):
+        if (showplot in truevalues):
             showplot = True
             print "Show plots = True"
         if (showplot in ["N","n","No","no","false","False"]):
@@ -98,10 +106,10 @@ def main(argv):
             print "Commandline argument for saveplot not given. saveplot = False"
     if (len(argv) == 4):
         saveplot = argv[3]
-        if (saveplot in ["Y","y","Yes","yes","true","True"]):
+        if (saveplot in truevalues):
             saveplot = True
             print "Save plots = True"
-            pathtosavedir = get_savepath(pathtocurrent)
+            pathtosavedir = get_savepath(pathtocurrent,pathtofile,truevalues)
         if (saveplot in ["N","n","No","no","false","False"]):
             saveplot = False
             print "Save plots = False"
