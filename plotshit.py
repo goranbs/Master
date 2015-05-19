@@ -119,14 +119,8 @@ def main(argv):
     ########################################################################
     #                     The plotting program                             #
     
-    import matplotlib.pyplot as plt
-    from matplotlib import rc
-    
-    rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-    ## for Palatino and other serif fonts use:
-    #rc('font',**{'family':'serif','serif':['Palatino']})
-    rc('text', usetex=True) 
-    
+
+
     ofile = open(fullpathtofile,'r')
     
 
@@ -255,5 +249,9 @@ def main(argv):
     
 if (__name__ == "__main__"):
     import sys, os
+    import matplotlib.pyplot as plt
+    print "Hello"
+    plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica'],'size' : 18})
+            
     sys.exit(main(sys.argv))
 

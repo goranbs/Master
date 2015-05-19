@@ -1,0 +1,138 @@
+####################################################################################################
+#                                   PORTLANDITE
+#
+# Unit cell of portlandite, bonds, pairs, angles and settings
+# file "portlandite.lt"
+#            OH    OH
+#           /  \  /
+#        Ca     Ca
+#      /  | \  / |
+#    OH  OH  OH  OH
+#     \ /  \ | /
+#     Ca     Ca   
+#    /   \  /
+#  OH     OH
+#####################################################################################################
+
+CAOH2{
+	write_once("In Init"){
+		units real                              # angstroms, kCal/mole, Daltons, Kelvin
+		atom_style full                         # select column format for Atoms section
+		pair_style lj/cut/coul/long 11.943      # params needed: epsilon sigma
+		bond_style harmonic                     # parameters needed: k_bond, r0
+		angle_style harmonic                    # parameters needed: k_theta, theta0
+		kspace_style pppm 0.0001                # long-range electrostatics sum method
+	}
+
+	write("Data Atoms"){
+		# atomID molID atomType charge coordX coordY coordZ
+		$atom:Ca1 $mol:. @atom:Ca  1.05          0          0          0
+		$atom:O1 $mol:.  @atom:O  -0.95         -1.7945    -1.03606    1.14827
+		$atom:O2 $mol:.  @atom:O  -0.95          1.7945    -1.03606    1.14827
+		$atom:H1 $mol:.  @atom:H   0.425        -1.7945    -1.03606    2.09027
+		$atom:H2 $mol:.  @atom:H   0.425         1.7945    -1.03606    2.09027
+ 		$atom:Ca2 $mol:. @atom:Ca  1.05          1.7945     3.10817    0
+		$atom:O3 $mol:.  @atom:O  -0.95          0          2.07211    1.14827
+	        $atom:O4 $mol:.  @atom:O  -0.95          3.589      2.07211    1.14827
+	        $atom:H3 $mol:.  @atom:H   0.425         0          2.07211    2.09027
+         	$atom:H4 $mol:.  @atom:H   0.425         3.589      2.07211    2.09027
+                $atom:Ca3 $mol:. @atom:Ca  1.05          3.589      0          0
+		$atom:O5 $mol:.  @atom:O  -0.95          1.7945     1.03606   -1.14827
+                $atom:O6 $mol:.  @atom:O  -0.95          5.3835     1.03606   -1.14827
+                $atom:H5 $mol:.  @atom:H   0.425         1.7945     1.03606   -2.09027
+                $atom:H6 $mol:.  @atom:H   0.425         5.3835     1.03606   -2.09027
+                $atom:Ca4 $mol:. @atom:Ca  1.05          5.3835     3.10817    0
+                $atom:O7 $mol:.  @atom:O  -0.95          3.589      4.14422   -1.14827
+                $atom:O8 $mol:.  @atom:O  -0.95          7.178      4.14422   -1.14827
+                $atom:H7 $mol:.  @atom:H   0.425         3.589      4.14422   -2.09027
+                $atom:H8 $mol:.  @atom:H   0.425         7.178      4.14422   -2.09027
+                $atom:Ca5 $mol:. @atom:Ca  1.05          0          0          4.911
+                $atom:O9 $mol:.  @atom:O  -0.95         -1.7945    -1.03606    6.05927
+                $atom:O10 $mol:. @atom:O  -0.95          1.7945    -1.03606    6.05927
+		$atom:H9 $mol:.  @atom:H   0.425        -1.7945    -1.03606    7.00127
+		$atom:H10 $mol:. @atom:H   0.425         1.7945    -1.03606    7.00127
+                $atom:Ca6 $mol:. @atom:Ca  1.05          1.7945     3.10817    4.911
+		$atom:O11 $mol:. @atom:O  -0.95          0          2.07211    6.05927
+		$atom:O12 $mol:. @atom:O  -0.95          3.589      2.07211    6.05927
+		$atom:H11 $mol:. @atom:H   0.425         0          2.07211    7.00127
+		$atom:H12 $mol:. @atom:H   0.425         3.589      2.07211    7.00127
+		$atom:Ca7 $mol:. @atom:Ca  1.05          3.589      0          4.911
+		$atom:O13 $mol:. @atom:O  -0.95          1.7945     1.03606    3.76273
+		$atom:O14 $mol:. @atom:O  -0.95          5.3835     1.03606    3.76273
+		$atom:H13 $mol:. @atom:H   0.425         1.7945     1.03606    2.82073
+		$atom:H14 $mol:. @atom:H   0.425         5.3835     1.03606    2.82073
+		$atom:Ca8 $mol:. @atom:Ca  1.05          5.3835     3.10817    4.911
+		$atom:O15 $mol:. @atom:O  -0.95          3.589      4.14422    3.76273
+		$atom:O16 $mol:. @atom:O  -0.95          7.178      4.14422    3.76273
+		$atom:H15 $mol:. @atom:H   0.425         3.589      4.14422    2.82073
+		$atom:H16 $mol:. @atom:H   0.425         7.178      4.14422    2.82073
+		
+	}
+	write_once("Data Masses") {
+		# atomType mass
+		@atom:Ca 40.078
+		@atom:O  15.9994
+		@atom:H  1.008
+	}
+	write("Data Bonds") {
+		# bondID bondType atomID1 atomID2
+		$bond:OH1  @bond:OH $atom:O1 $atom:H1
+		$bond:OH2  @bond:OH $atom:O2 $atom:H2
+		$bond:OH3  @bond:OH $atom:O3 $atom:H3
+		$bond:OH4  @bond:OH $atom:O4 $atom:H4
+		$bond:OH5  @bond:OH $atom:O5 $atom:H5
+		$bond:OH6  @bond:OH $atom:O6 $atom:H6
+		$bond:OH7  @bond:OH $atom:O7 $atom:H7
+		$bond:OH8  @bond:OH $atom:O8 $atom:H8
+		$bond:OH9  @bond:OH $atom:O9 $atom:H9
+		$bond:OH10 @bond:OH $atom:O10 $atom:H10
+		$bond:OH11 @bond:OH $atom:O11 $atom:H11
+		$bond:OH12 @bond:OH $atom:O12 $atom:H12
+		$bond:OH13 @bond:OH $atom:O13 $atom:H13
+		$bond:OH14 @bond:OH $atom:O14 $atom:H14
+		$bond:OH15 @bond:OH $atom:O15 $atom:H15
+		$bond:OH16 @bond:OH $atom:O16 $atom:H16
+	}
+	write("Data Angles") {
+		# angleID angleType atomID1 atomID2 atomID3
+		$angle:OCaO1 @angle:OCaO $atom:O1 $atom:Ca1 $atom:O2
+		$angle:OCaO2 @angle:OCaO $atom:O3 $atom:Ca2 $atom:O4
+		$angle:OCaO3 @angle:OCaO $atom:O5 $atom:Ca3 $atom:O6
+		$angle:OCaO4 @angle:OCaO $atom:O7 $atom:Ca4 $atom:O8
+		$angle:OCaO5 @angle:OCaO $atom:O9 $atom:Ca5 $atom:O10
+		$angle:OCaO6 @angle:OCaO $atom:O11 $atom:Ca6 $atom:O12
+		$angle:OCaO7 @angle:OCaO $atom:O13 $atom:Ca7 $atom:O14
+		$angle:OCaO8 @angle:OCaO $atom:O15 $atom:Ca8 $atom:O16
+	}
+	write_once("In Settings") {
+		# -- Non-bonded (Pair) interactions --
+		# atomType1 atomType2 parameter-list (epsilon, sigma)
+
+		pair_coeff @atom:Ca @atom:Ca  5.0298e-6 6.2428
+		pair_coeff @atom:Ca @atom:O   8.8401e-4 4.898
+		pair_coeff @atom:Ca @atom:H   0.0 3.1214
+		pair_coeff @atom:O  @atom:O   0.1554 3.5532
+		pair_coeff @atom:O  @atom:H   0.0 1.776 
+		pair_coeff @atom:H  @atom:H   0.0 0.0
+
+		# (mixing rules determine interactions between types @atom:O and @atom:H)
+		# -- Bonded interactions --
+		# bondType parameter list (k_bond, r0)
+
+		bond_coeff @bond:OH 554.1349 1.0
+
+		# angleType parameter-list (k_theta, theta0)
+
+		angle_coeff @angle:OCaO 30.0 109.47
+
+		# Group definitions and constraints can also go in the "In Settings" section
+		
+		group Ca type   @atom:Ca
+		group OH type   @atom:O @atom:H
+		group CaOH type @atom:Ca @atom:O @atom:H
+	}
+} # CAOH2
+
+
+
+

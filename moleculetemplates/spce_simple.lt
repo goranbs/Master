@@ -1,0 +1,72 @@
+# (NOTE: Text following ’#’ characters are comments)
+#
+# file "spce_simple.lt"
+#
+#   H1   H2
+#     \ /
+#      O
+#
+SPCE {
+	# LAMMPS supports a large number of force-field styles. We must select
+	# which ones we need. This information belongs in the "In Init" section.
+	write_once("In Init") {
+		units real                              # angstroms, kCal/mole, Daltons, Kelvin
+		atom_style full                         # select column format for Atoms section
+		pair_style lj/cut/coul/long 10.35       # params needed: epsilon sigma
+		bond_style harmonic                     # parameters needed: k_bond, r0
+		angle_style harmonic                    # parameters needed: k_theta, theta0
+		kspace_style ewald 0.0001               # long-range electrostatics sum method
+		pair_modify tail yes		
+	}
+	## Atom properties and molecular topology go in the various "Data ..." sections
+	# We selected "atom_style full". That means we use this column format:
+	# atomID molID atomType charge coordX coordY coordZ
+	write("Data Atoms") {
+		$atom:O $mol:. @atom:O -0.8476 0.0000000 0.000000 0.00000
+		$atom:H1 $mol:. @atom:H 0.4238 0.8164904 0.5773590 0.00000
+		$atom:H2 $mol:. @atom:H 0.4238 -0.8164904 0.5773590 0.00000
+	}
+	# All 3 atoms share same molID number which is unique for each water molecule
+	# The "O" & "H1","H2" atoms in ALL molecules share same atom types: "O" & "H"
+	write_once("Data Masses") {
+		# atomType mass
+		@atom:O 15.9994
+		@atom:H 1.008
+	}
+	write("Data Bonds") {
+		# bondID bondType atomID1 atomID2
+		$bond:OH1 @bond:OH $atom:O $atom:H1
+		$bond:OH2 @bond:OH $atom:O $atom:H2
+	}
+	write("Data Angles") {
+		# angleID angleType atomID1 atomID2 atomID3
+		$angle:HOH @angle:HOH $atom:H1 $atom:O $atom:H2
+	}
+	# --- Force-field parameters go in the "In Settings" section: ---
+	write_once("In Settings") {
+		# -- Non-bonded (Pair) interactions --
+		# atomType1 atomType2 parameter-list (epsilon, sigma)
+
+		pair_coeff @atom:O @atom:O 0.1553 3.5532
+		pair_coeff @atom:H @atom:H 0.0 2.058
+
+		# (mixing rules determine interactions between types @atom:O and @atom:H)
+		# -- Bonded interactions --
+		# bondType parameter list (k_bond, r0)
+
+		bond_coeff @bond:OH 554.1349 1.0
+
+		# angleType parameter-list (k_theta, theta0)
+
+		angle_coeff @angle:HOH 45.7696 109.47
+
+		# Group definitions and constraints can also go in the "In Settings" section
+
+		group spce type @atom:O @atom:H
+
+		#fix fSHAKE spce shake 0.0001 10 100 b @bond:OH a @angle:HOH
+		# (lammps quirk: Remember to "unfix fSHAKE" during minimization.)
+	}
+} # SPCE
+
+

@@ -1,0 +1,51 @@
+###########################################################################
+#                            CO2 and H2O                                  #
+#                                                                         #
+#                                                                         #
+###########################################################################
+
+
+
+import "spce_simple.lt"
+import "CarbonDioxide.lt"
+
+SPCEwater {
+	water = new SPCE [5].move(3.45,0,0)
+		         [10].move(0,3.45,0)
+			 [10].move(0,0,3.45)
+}
+
+plate_xy {
+	waterplate_xy = new SPCE [11].move(3.45,0,0)
+		                 [12].move(0,3.45,0)
+			         [1].move(0,0,3.45)
+}
+
+plate_xz {
+	waterplate_xz = new SPCE [10].move(3.45,0,0)
+		        	 [1].move(0,3.45,0)
+	                   	 [10].move(0,0,3.45)
+}
+
+buble {
+	co2 = new EMP2 [1].move(7.0,0.0,0.0)
+		       [3].move(0.0,5.0,0.0)
+		       [3].move(0.0,0.0,7.0)
+}
+
+
+Left = new SPCEwater.move(0.0,3.45,3.45)
+Right = new SPCEwater.move(20.7,3.45,3.45)
+CO2 = new buble.move(17.25,6.85,3.45)
+
+xy1 = new plate_xy.move(0.0,0.0,0.0)
+xy2 = new plate_xy.move(0.0,0.0,37.95)
+xz1 = new plate_xz.move(0.0,0.0,3.45)
+xz2 = new plate_xz.move(0.0,37.95,3.45)
+
+write_once("Data Boundary"){
+	0.0 41.4 xlo xhi
+	0.0 41.4 ylo yhi
+	0.0 41.4 zlo zhi 
+}
+

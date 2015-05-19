@@ -10,27 +10,40 @@ The Clay Force Field model, or ClayFF, were developed by Cygan et.al \textbf{(Re
 
 \begin{equation}
 E_{VDW} = \sum _{i\neq j} D_{O,ij}\Big[ \Big( \frac{R_{O,ij}}{r_{ij}} \Big) ^{12} - \Big( \frac{R_{O,ij}}{r_{ij}} \Big) ^{6} \Big]
+\label{equation:Cygan_LJ}
 \end{equation}
 
 \begin{equation}
 E_{coul} = \frac{e^2}{4\pi \epsilon _0}\sum _{i\neq j} \frac{q_i q_j}{r_{ij}}
+\label{equation:Cygan_coul}
 \end{equation}
 
 \begin{equation}
 E_{bond} = k_1(r_{ij}-r_o)^2
+\label{equation:Cygan_bond}
 \end{equation}
 
 \begin{equation}
 E_{angle} = k_2(\theta _{ijk} - \theta _o)^2
+\label{equation:Cygan_angle}
 \end{equation}
 
 \begin{equation}
 R_{O,ij} = \frac{1}{2}(R_{O,i} + R_{O,j})
+\label{equation:arithmetic_avg}
 \end{equation}
 
 \begin{equation}
 D_{O,ij} = \sqrt{D_{O,i}D_{O,j}}
+\label{equation:geometric_avg}
 \end{equation}
+
+In \lammps, they use the Lennard-Jones potential in \ref{equation:LAMMPS_LJ}, which results in the relationship $ R_{o,ij} = 2^{1/6}\sigma $, and, although the conversionfactor is small, it is extremely important for the simulation. A value of $ R_{o,ij} = 3.5532 $, gives then a LAMMPS input value of $ \sigma = 3.166 $. The relationship factor can easly be calculated by setting both \ref{equation:Cygan_LJ,equation:LAMMPS_LJ} to zero, and solve for the equilibrium distance parameter, you can assume that $ \D_{o,ij} = 4\epsilon $, or don't, cause it falls out either way!
+
+\beq
+E_{LJ} = 4\epsilon \Big[ \Big( \frac{\sigma}}{r_{ij}} \Big) ^{12} - 2\Big( \frac{\sigma}{r_{ij}} \Big) ^{6} \Big]
+\eeq
+
 
 %\begin{center}
 \begin{table}
@@ -56,7 +69,7 @@ D_{O,ij} = \sqrt{D_{O,i}D_{O,j}}
                     &           \\ \hline
 
  \end{tabular}
- \label{ForceFieldParameters_CO2}
+ \label{table:ForceFieldParameters_CO2}
 \end{table}
 %\end{center}
 
@@ -83,7 +96,7 @@ D_{O,ij} = \sqrt{D_{O,i}D_{O,j}}
                     &           \\ \hline
 
  \end{tabular}
- \label{ForceFieldParameters_H2O}
+ \label{table:ForceFieldParameters_H2O}
 \end{table}
 
 \begin{table}
@@ -116,8 +129,18 @@ D_{O,ij} = \sqrt{D_{O,i}D_{O,j}}
                     &           \\ \hline
 
  \end{tabular}
- \label{ForceFieldParameters_Portlandite}
+ \label{table:ForceFieldParameters_Portlandite}
 \end{table}
+
+
+\section{The water model}
+The model used for simulation of water in this thesis is the \textit{SPC/E} water model. Where we use the parameters in \ref{table:ForceFieldParameters_H2O} as input for the potentials. We use the Coulumb interaction term between all particles along with the Lennard-Jones potential for the oxygen-oxygen interaction, for the oxygen-hydrogen interaction we use a bond potential described in \ref{equation:Cygan_bond} and a three particle interaction in the angle bend term. The difference between the \textit{SPC/E} and the \textit{SPC} water model is only the point charges of the atoms, the reason for this that they are used to simulate water in some different 
+
+\subsection{The Shake algorithm}
+The shake algorithm is used to keep the hydrogen atoms rigid, locked in their equilibrium angular positions.
+
+\section{The carbon dioxide model}
+The model used for the simulation of carbon dioxide in this thesis is the \textit{EMP 2} model.
 
 \section{Informative mistakes}
 

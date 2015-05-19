@@ -1,0 +1,39 @@
+###########################################################################
+#           Nanopore of portlandite with co2                              #
+#                                                                         #
+#                                                                         #
+###########################################################################
+
+
+
+import "portlandite.lt"
+import "CarbonDioxide.lt"
+
+Matrix {
+	box = new CAOH2 [15].move(7.178,0,0)
+			[15].move(0,6.216330348,0)
+			[2].move(0,0,9.822)
+}
+
+
+buble {
+	co2 = new EMP2 [6].move(17.0,0.0,0.0)
+		       [5].move(0.0,17.0,0.0)
+		       [2].move(0.0,0.0,17.0)
+}
+
+
+Floor = new Matrix.move(0.0,0.0,2.5)
+Roof = new Matrix.move(0.0,0.0,64.106)
+CO2 = new buble.move(0.0,0.0,35.0)
+
+
+#--# total thickness of matrix: 41.788 Angstrom
+#--# thickness of pore  : 43.2 Angstrom 
+
+write_once("Data Boundary"){
+	0.0 107.67 xlo xhi
+	0.0 93.245 ylo yhi
+	0.0 82 zlo zhi 
+}
+

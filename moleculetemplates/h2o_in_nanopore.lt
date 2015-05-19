@@ -1,0 +1,38 @@
+###########################################################################
+#               Nanopore of portlandite with h2o                          #
+#                                                                         #
+#                                                                         #
+###########################################################################
+
+
+import "portlandite.lt"
+import "spce_simple.lt"
+
+Matrix {
+	box = new CAOH2 [11].move(7.178,0,0)
+			[7].move(0,6.216330348,0)
+			[2].move(0,0,9.822)
+}
+
+SPCEwater {
+	water = new SPCE [26].move(3.0,0,0)
+		         [14].move(0,3.1,0)
+			 [16].move(0,0,2.5)
+}
+
+
+portlandite {
+	Floor = new Matrix.move(0.0,0.0,2.5)
+	Roof = new Matrix.move(0.0,0.0,61.6)	
+}
+
+
+inpore_one = new SPCEwater.move(1.5,0.0,21.0)
+portlandia = new portlandite.move(0.0,0.0,0.0)
+
+
+write_once("Data Boundary"){
+	0.0 78.958 xlo xhi
+	0.0 43.514 ylo yhi
+	0.0 78.744 zlo zhi 
+}

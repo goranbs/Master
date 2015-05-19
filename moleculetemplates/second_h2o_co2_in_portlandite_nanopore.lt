@@ -1,0 +1,53 @@
+###########################################################################
+#                CO2 and H2O in portlandite nanopore                      #
+#                                                                         #
+#             carbon dioxide along surface of nanopore                    #
+###########################################################################
+
+
+import "portlandite.lt"
+import "spce_simple.lt"
+import "CarbonDioxide.lt"
+
+
+Matrix {
+	box = new CAOH2 [11].move(7.178,0,0)
+			[7].move(0,6.216330348,0)
+			[2].move(0,0,9.822)
+}
+
+SPCEwater {
+	water = new SPCE [23].move(3.43,0,0)
+		         [12].move(0,3.45,0)
+			 [10].move(0,0,3.45)
+}
+
+
+buble {
+	co2 = new EMP2 [11].move(7.0,0.0,0.0)
+		       [8].move(0.0,5.0,0.0)
+		       [1].move(0.0,0.0,7.0)
+}
+
+
+portlandite {
+	Floor = new Matrix.move(0.0,0.0,2.5)
+	Roof = new Matrix.move(0.0,0.0,61.6)	
+}
+
+liquid {
+	Water = new SPCEwater.move(0.0,0.0,3.45)
+	CO2 = new buble.move(0.0,0.0,0.0)
+}
+
+
+inpore_one = new liquid.move(0.0,0.0,22.0)
+portlandia = new portlandite.move(0.0,0.0,0.0)
+
+
+write_once("Data Boundary"){
+	0.0 78.958 xlo xhi
+	0.0 43.514 ylo yhi
+	0.0 78.744 zlo zhi 
+}
+

@@ -1,0 +1,71 @@
+# file "CarbonDioxide.lt"
+#
+#   O1   O2
+#     \ /
+#      C
+#
+
+EMP2 {
+	# LAMMPS supports a large number of force-field styles. We must select
+	# which ones we need. This information belongs in the "In Init" section.
+	write_once("In Init") {
+		units real                              # angstroms, kCal/mole, Daltons, Kelvin
+		atom_style full                         # select column format for Atoms section
+		pair_style lj/cut/coul/long 8.685       # params needed: epsilon sigma
+		bond_style harmonic                     # parameters needed: k_bond, r0
+		angle_style harmonic                    # parameters needed: k_theta, theta0
+		kspace_style ewald 0.0001               # long-range electrostatics sum method
+		pair_modify tail yes		
+	}
+	## Atom properties and molecular topology go in the various "Data ..." sections
+	# We selected "atom_style full". That means we use this column format:
+	# atomID molID atomType charge coordX coordY coordZ
+	write("Data Atoms") {
+		$atom:C $mol:. @atom:C 0.6512 0.0000000 0.0000000 0.0000
+		$atom:O1 $mol:. @atom:O -0.3256 0.0000000 0.0000000 1.149
+		$atom:O2 $mol:. @atom:O -0.3256 0.0000000 0.000000 -1.149
+	}
+	# All 3 atoms share same molID number which is unique for each molecule
+	write_once("Data Masses") {
+		# atomType mass
+		@atom:O 15.9994
+		@atom:C 12.0107
+	}
+	write("Data Bonds") {
+		# bondID bondType atomID1 atomID2
+		$bond:CO1 @bond:CO $atom:C $atom:O1
+		$bond:CO2 @bond:CO $atom:C $atom:O2
+	}
+	write("Data Angles") {
+		# angleID angleType atomID1 atomID2 atomID3
+		$angle:OCO1 @angle:OCO $atom:O1 $atom:C $atom:O2
+	}
+	# --- Force-field parameters go in the "In Settings" section: ---
+	write_once("In Settings") {
+		# -- Non-bonded (Pair) interactions --
+		# atomType1 atomType2 parameter-list (epsilon [Kcal/mole], sigma [Aagnstrom = A])
+		# FPF model for CO2 - Flexible Point Field 
+		# Sandia report; Cygan et.al. 2010
+
+		pair_coeff @atom:C @atom:C 0.0559 2.4945
+		pair_coeff @atom:O @atom:O 0.1597 2.6976
+
+		# (mixing rules determine interactions between types @atom:O and @atom:H)
+		# -- Bonded interactions --
+		# bondType parameter list (k_bond, r0)
+		# Data from "natural materials for carbon capture" Cygan et.al.
+		# Bond coeff  [Kcal/(mol*Å**2)]
+		# Angle coeff [Kcal/(mol*rad**2)]
+
+		bond_coeff @bond:CO 1008.965 1.1600
+
+		# angleType parameter-list (k_theta, theta0)
+
+		angle_coeff @angle:OCO 54.0 180.0
+
+		group co2 type @atom:C @atom:O
+
+	}
+} # EMP2
+
+
