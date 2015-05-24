@@ -18,7 +18,7 @@ CAOH2{
 	write_once("In Init"){
 		units real                              # angstroms, kCal/mole, Daltons, Kelvin
 		atom_style full                         # select column format for Atoms section
-		pair_style lj/cut/coul/long 11.943      # params needed: epsilon sigma
+		pair_style lj/cut/coul/long 12.0        # params needed: epsilon sigma
 		bond_style harmonic                     # parameters needed: k_bond, r0
 		angle_style harmonic                    # parameters needed: k_theta, theta0
 		kspace_style pppm 0.0001                # long-range electrostatics sum method
@@ -108,11 +108,11 @@ CAOH2{
 		# -- Non-bonded (Pair) interactions --
 		# atomType1 atomType2 parameter-list (epsilon, sigma)
 
-		pair_coeff @atom:Ca @atom:Ca  5.0298e-6 6.2428
-		pair_coeff @atom:Ca @atom:O   8.8401e-4 4.898
-		pair_coeff @atom:Ca @atom:H   0.0 3.1214
-		pair_coeff @atom:O  @atom:O   0.1554 3.5532
-		pair_coeff @atom:O  @atom:H   0.0 1.776 
+		pair_coeff @atom:Ca @atom:Ca  5.0298e-6 5.562
+		pair_coeff @atom:Ca @atom:O   8.8401e-4 4.36375
+		pair_coeff @atom:Ca @atom:H   0.0 2.781
+		pair_coeff @atom:O  @atom:O   0.1554 3.1655
+		pair_coeff @atom:O  @atom:H   0.0 1.58275 
 		pair_coeff @atom:H  @atom:H   0.0 0.0
 
 		# (mixing rules determine interactions between types @atom:O and @atom:H)
@@ -123,7 +123,7 @@ CAOH2{
 
 		# angleType parameter-list (k_theta, theta0)
 
-		angle_coeff @angle:OCaO 30.0 109.47
+		angle_coeff @angle:OCaO  109.47
 
 		# Group definitions and constraints can also go in the "In Settings" section
 		
