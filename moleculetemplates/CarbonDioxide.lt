@@ -8,13 +8,14 @@
 EMP2 {
 	# LAMMPS supports a large number of force-field styles. We must select
 	# which ones we need. This information belongs in the "In Init" section.
+	# EMP2 should be used with a: fix rigid/small molecule -command, see LAMMPS manual pages
 	write_once("In Init") {
 		units real                              # angstroms, kCal/mole, Daltons, Kelvin
 		atom_style full                         # select column format for Atoms section
 		pair_style lj/cut/coul/long 8.685       # params needed: epsilon sigma
 		bond_style harmonic                     # parameters needed: k_bond, r0
 		angle_style harmonic                    # parameters needed: k_theta, theta0
-		kspace_style ewald 0.0001               # long-range electrostatics sum method
+		kspace_style pppm 0.0001                # long-range electrostatics sum method
 		pair_modify tail yes		
 	}
 	## Atom properties and molecular topology go in the various "Data ..." sections
